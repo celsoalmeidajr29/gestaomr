@@ -110,12 +110,16 @@ function bootstrap_session(): void
     $httponly = env_bool('SESSION_HTTPONLY', true);
     $lifetime_seconds = env_int('SESSION_LIFETIME', 480) * 60;
 
+    // SameSite: 'None' é obrigatório quando frontend e backend ficam em origens
+    // diferentes (ex: Cloudflare Pages + Hostinger). Exige SESSION_SECURE=true.
+    $samesite = (string) env('SESSION_SAMESITE', 'Lax');
+
     session_set_cookie_params([
         'lifetime' => 0,                    // cookie de sessão (some ao fechar o browser)
         'path' => '/',
         'secure' => $secure,
         'httponly' => $httponly,
-        'samesite' => 'Lax',
+        'samesite' => $samesite,
     ]);
     ini_set('session.use_strict_mode', '1');
     ini_set('session.use_only_cookies', '1');
@@ -293,7 +297,54 @@ function client_ua(): string
 }
 
 // ---------------------------------------------------------------------------
-// Inicialização — abre sessão imediatamente
+// 9. CORS — autoriza apenas origens explicitamente listadas em CORS_ALLOWED_ORIGINS
+// ---------------------------------------------------------------------------
+//
+// Cenário híbrido: frontend hospedado no Cloudflare Pages e backend no cPanel
+// ficam em origens diferentes. Sem CORS, o navegador bloqueia as chamadas.
+//
+// Configure CORS_ALLOWED_ORIGINS no .env com a URL exata do Pages (sem barra
+// final), separadas por vírgula se houver mais de uma:
+//   CORS_ALLOWED_ORIGINS=https://mrsys.pages.dev,https://mrsys.grupomr.seg.br
+//
+// Para o cookie de sessão funcionar cross-origin, defina também:
+//   SESSION_SAMESITE=None
+//   SESSION_SECURE=true
+
+function handle_cors(): void
+{
+    $origin = (string) ($_SERVER['HTTP_ORIGIN'] ?? '');
+    if ($origin === '') {
+        return; // mesma origem ou request sem Origin (curl, etc)
+    }
+    $raw = (string) env('CORS_ALLOWED_ORIGINS', '');
+    $allowed = array_values(array_filter(array_map('trim', explode(',', $raw))));
+    if (!in_array($origin, $allowed, true)) {
+        // Origem desconhecida: não envia cabeçalhos CORS — o navegador bloqueia.
+        // Se for OPTIONS, ainda assim respondemos 403 limpo pra não confundir o cliente.
+        if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+            http_response_code(403);
+            exit;
+        }
+        return;
+    }
+    header("Access-Control-Allow-Origin: {$origin}");
+    header('Vary: Origin');
+    header('Access-Control-Allow-Credentials: true');
+    header('Access-Control-Allow-Methods: GET, POST, PUT, PATCH, DELETE, OPTIONS');
+    header('Access-Control-Allow-Headers: Content-Type, X-CSRF-Token, X-Requested-With, Accept');
+    header('Access-Control-Max-Age: 86400');
+
+    if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+        // Preflight: encerra sem rodar nada do app
+        http_response_code(204);
+        exit;
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Inicialização — CORS antes da sessão (preflight não deve criar sessão)
 // ---------------------------------------------------------------------------
 
+handle_cors();
 bootstrap_session();

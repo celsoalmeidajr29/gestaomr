@@ -40,9 +40,11 @@ Estas decisões foram debatidas e aprovadas. Trate como invariantes:
 
 | Item | Decisão |
 |---|---|
-| Hospedagem | Compartilhada cPanel (Hostinger Premium recomendado, ~R$25/mês) |
+| Hospedagem (backend) | Compartilhada cPanel (Hostinger Premium recomendado, ~R$25/mês) |
+| Hospedagem (frontend) | **Cloudflare Pages** (build estática React, deploy via git push) |
 | Stack backend | PHP 8.x nativo (sem framework) + MySQL 8 |
 | Stack frontend | Manter React (build estática) + API JSON |
+| Cross-origin | Frontend e backend ficam em domínios distintos. Backend autoriza o Pages via `CORS_ALLOWED_ORIGINS` no `.env`; cookie de sessão usa `SameSite=None; Secure`. |
 | Cor principal | Navy Blue `#1E3A8A` |
 | Usuários simultâneos | 2-5 (financeiro/admin) |
 | Usuário inicial | Apenas Celso, perfil admin, e-mail `celso.almeida@grupomr.seg.br` |

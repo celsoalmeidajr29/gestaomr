@@ -4,7 +4,9 @@
       "Bash(git checkout *)",
       "Bash(git push *)",
       "Bash(git add *)",
-      "Bash(git commit -m ' *)"
+      "Bash(git commit -m ' *)",
+      "Bash(git ls-tree *)",
+      "Bash(git stash *)"
     ]
   }
 }
