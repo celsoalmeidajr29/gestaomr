@@ -1,0 +1,98 @@
+<?php
+/**
+ * ============================================================================
+ * MRSys — Gerador de Hash de Senha
+ * ============================================================================
+ *
+ * Use este arquivo UMA ÚNICA VEZ, logo após importar o MRSys_database.sql.
+ *
+ * COMO USAR:
+ *   1. Faça upload deste arquivo para a raiz do seu site (public_html/)
+ *      via FTP ou pelo Gerenciador de Arquivos do cPanel.
+ *   2. Acesse no navegador: https://seudominio.com.br/gerar_hash.php
+ *   3. A página mostra um comando SQL pronto. Copie ele inteiro.
+ *   4. Vá no phpMyAdmin → selecione o banco MRSys → aba SQL.
+ *   5. Cole o comando e clique "Executar".
+ *   6. PRONTO — agora você pode logar com seu e-mail e senha.
+ *
+ * IMPORTANTE — APAGUE ESTE ARQUIVO depois de usar.
+ * Deixar ele acessível na web é risco de segurança.
+ * ============================================================================
+ */
+
+// Configurações — ajuste o e-mail se mudar de usuário
+$email_admin = 'celso.almeida@grupomr.seg.br';
+$senha_padrao = 'jr4540504@A';
+
+// Gera o hash bcrypt nativo do PHP — compatível com password_verify()
+$hash = password_hash($senha_padrao, PASSWORD_BCRYPT, ['cost' => 10]);
+
+// Verificação imediata: o hash gerado realmente bate com a senha?
+$verificacao = password_verify($senha_padrao, $hash) ? 'OK' : 'FALHOU';
+
+// Comando SQL pronto para colar
+$sql = "UPDATE usuarios SET senha_hash = '{$hash}' WHERE email = '{$email_admin}';";
+
+?><!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>MRSys — Gerador de Hash</title>
+<style>
+  body { font-family: 'Segoe UI', Arial, sans-serif; max-width: 800px; margin: 40px auto; padding: 20px; background: #f1f5f9; color: #1e293b; }
+  h1 { color: #1E3A8A; }
+  .box { background: white; border-radius: 8px; padding: 20px; margin: 20px 0; box-shadow: 0 2px 6px rgba(0,0,0,0.05); }
+  .ok { color: #059669; font-weight: bold; }
+  .alert { background: #fef3c7; border-left: 4px solid #d97706; padding: 14px; border-radius: 4px; margin: 14px 0; }
+  .danger { background: #fee2e2; border-left: 4px solid #dc2626; padding: 14px; border-radius: 4px; margin: 14px 0; color: #991b1b; }
+  pre { background: #0f172a; color: #a5f3fc; padding: 14px; border-radius: 6px; overflow-x: auto; font-size: 13px; user-select: all; }
+  code { background: #e2e8f0; padding: 2px 6px; border-radius: 3px; font-size: 13px; }
+  ol li { margin: 8px 0; }
+  button { background: #1E3A8A; color: white; border: 0; padding: 10px 18px; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600; }
+  button:hover { background: #1e40af; }
+</style>
+</head>
+<body>
+<h1>🔑 MRSys — Hash de Senha Gerado</h1>
+
+<div class="box">
+  <h2>Status</h2>
+  <p>E-mail do admin: <code><?php echo htmlspecialchars($email_admin); ?></code></p>
+  <p>Hash gerado: <code style="word-break: break-all;"><?php echo htmlspecialchars($hash); ?></code></p>
+  <p>Verificação interna: <span class="ok"><?php echo $verificacao; ?></span></p>
+</div>
+
+<div class="box">
+  <h2>📋 Comando SQL para colar no phpMyAdmin</h2>
+  <pre id="sql"><?php echo htmlspecialchars($sql); ?></pre>
+  <button onclick="navigator.clipboard.writeText(document.getElementById('sql').innerText); this.innerText='✓ Copiado!';">Copiar comando</button>
+</div>
+
+<div class="box">
+  <h2>✅ Próximos passos</h2>
+  <ol>
+    <li>Copie o comando SQL acima.</li>
+    <li>Abra o <strong>phpMyAdmin</strong> no painel da sua hospedagem.</li>
+    <li>Selecione o banco do MRSys na lista da esquerda.</li>
+    <li>Clique na aba <strong>SQL</strong> no topo.</li>
+    <li>Cole o comando e clique em <strong>Executar</strong>.</li>
+    <li>Você verá: "1 linha afetada".</li>
+  </ol>
+</div>
+
+<div class="danger">
+  <strong>⚠ MUITO IMPORTANTE — apague este arquivo agora!</strong><br>
+  Deixar <code>gerar_hash.php</code> acessível na web é um risco de segurança grave.
+  Vá no Gerenciador de Arquivos do cPanel ou pelo FTP e <strong>delete este arquivo</strong>
+  imediatamente após copiar o SQL.
+</div>
+
+<div class="alert">
+  <strong>💡 Dica:</strong> No primeiro login do sistema MRSys, considere ir em
+  <em>Meu Perfil → Trocar Senha</em> e definir uma nova, já que esta apareceu em vários
+  lugares (chat, arquivo PHP). Use uma senha que só você conheça e guarde em gerenciador
+  como Bitwarden, 1Password ou Google Senhas.
+</div>
+
+</body>
+</html>
