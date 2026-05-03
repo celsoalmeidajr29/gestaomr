@@ -1,0 +1,45 @@
+# MRSys — arquivos não rastreados
+
+# Variáveis de ambiente (NUNCA comitar)
+.env
+.env.local
+.env.*.local
+backend/.env
+
+# Credenciais e utilitários sensíveis
+backend/gerar_hash.php
+*.key
+*.pem
+
+# Uploads em runtime
+backend/uploads/
+!backend/uploads/.gitkeep
+
+# Dependências
+node_modules/
+vendor/
+composer.lock
+
+# Build do frontend
+frontend/dist/
+frontend/build/
+.vite/
+.parcel-cache/
+
+# Logs
+*.log
+backend/logs/
+
+# Editores e SO
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Backups e temporários
+*.bak
+*.tmp
+*~

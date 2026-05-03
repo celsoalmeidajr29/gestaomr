@@ -1,0 +1,48 @@
+# MRSys — segurança e roteamento do backend
+
+# 1) Força HTTPS
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteCond %{HTTPS} !=on
+  RewriteCond %{HTTP:X-Forwarded-Proto} !https
+  RewriteRule ^(.*)$ https://%{HTTP_HOST}/$1 [R=301,L]
+</IfModule>
+
+# 2) Bloqueia acesso a arquivos sensíveis
+<FilesMatch "^(\.env|\.env\..*|composer\.(json|lock)|.*\.bak|.*\.sql|gerar_hash\.php)$">
+  Require all denied
+</FilesMatch>
+
+# 3) Bloqueia acesso direto aos arquivos com underscore inicial (ex: _bootstrap.php)
+<FilesMatch "^_">
+  Require all denied
+</FilesMatch>
+
+# 4) Headers de segurança
+<IfModule mod_headers.c>
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set X-Frame-Options "DENY"
+  Header always set Referrer-Policy "same-origin"
+  Header always set Permissions-Policy "geolocation=(), camera=(), microphone=()"
+  Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
+  # Backend só serve JSON — CSP estrita
+  Header always set Content-Security-Policy "default-src 'none'; frame-ancestors 'none'"
+  # Remove header revelando versão do PHP (se possível)
+  Header unset X-Powered-By
+</IfModule>
+
+# 5) Sem listagem de diretório
+Options -Indexes -MultiViews
+
+# 6) Limites de PHP (cPanel)
+<IfModule mod_php8.c>
+  php_flag display_errors Off
+  php_flag log_errors On
+  php_value max_execution_time 30
+  php_value memory_limit 128M
+  php_value post_max_size 20M
+  php_value upload_max_filesize 15M
+  php_flag session.cookie_httponly On
+  php_flag session.cookie_secure On
+  php_value session.cookie_samesite "Lax"
+</IfModule>
