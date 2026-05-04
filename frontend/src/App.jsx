@@ -1,3 +1,3 @@
-// Versão ativa: v15 — exibe número de versão no cabeçalho
+// Versão ativa: v16 — responsividade completa
 // Versões anteriores em src/versions/
-export { default } from './versions/MRSys_v15.jsx'
+export { default } from './versions/MRSys_v16.jsx'
