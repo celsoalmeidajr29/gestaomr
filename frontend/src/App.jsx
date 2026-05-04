@@ -1,3 +1,3 @@
-// Versão ativa: v27 — OS único por lançamento: exibido na tabela e como coluna 1 no XLSX
+// Versão ativa: v28 — fix salvamento serviços, horas zeradas/frações, anti-pattern OS migration
 // Versões anteriores em src/versions/
-export { default } from './versions/MRSys_v27.jsx'
+export { default } from './versions/MRSys_v28.jsx'
