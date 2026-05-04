@@ -1,3 +1,3 @@
-// Versão ativa: v31 — importação aceita HORAS TRABALHADAS direto, datetime ISO e HH:MM puro
+// Versão ativa: v32 — 0h cobra base+adicional; somas com round monetário consistente
 // Versões anteriores em src/versions/
-export { default } from './versions/MRSys_v31.jsx'
+export { default } from './versions/MRSys_v32.jsx'
