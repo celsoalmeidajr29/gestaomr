@@ -23,6 +23,9 @@ const _idMap = new Map()
 // Cache em memória: key → array no formato v13
 const _cache = {}
 
+// Fila de sync — impede POSTs paralelos que causam duplicatas
+let _syncQueue = Promise.resolve()
+
 // ─── helpers ────────────────────────────────────────────────────────────────
 const n = v => Number(v) || 0
 const normalizar = s =>
@@ -211,6 +214,42 @@ function apiToDesconto(r) {
     data: r.data || null,
     observacoes: r.observacoes || '',
     criadoEm: r.criado_em,
+  }
+}
+
+function apiToDiaria(r) {
+  _idMap.set(`DI${r.id}`, r.id)
+  // Busca o v13-id do funcionário no cache para o modal de edição
+  const cachedFuncs = _cache['funcionarios'] || []
+  const funcCache = cachedFuncs.find(f => f._apiId === r.funcionario_id)
+  const funcionarioId = funcCache?.id ?? r.funcionario_id
+  return {
+    _apiId:        r.id,
+    id:            `DI${r.id}`,
+    competencia:   r.competencia,
+    data:          r.data,
+    funcionarioId,
+    nome:          r.nome_snapshot,
+    clienteId:     r.cliente_id,
+    clienteNome:   r.cliente_nome,
+    valor:         Number(r.valor) || 0,
+    observacoes:   r.observacoes || '',
+    criadoEm:      r.criado_em,
+  }
+}
+
+function toApiDiaria(v) {
+  // funcionarioId pode ser v13-id ('F001') ou API integer — resolve via _idMap
+  const funcionarioApiId = _idMap.get(v.funcionarioId) ?? v.funcionarioId
+  return {
+    competencia:    v.competencia,
+    data:           v.data,
+    funcionario_id: funcionarioApiId,
+    nome_snapshot:  v.nome,
+    cliente_id:     v.clienteId || null,
+    cliente_nome:   v.clienteNome || '',
+    valor:          Number(v.valor) || 0,
+    observacoes:    v.observacoes || null,
   }
 }
 
@@ -409,6 +448,7 @@ async function loadKey(key) {
       case 'despesas':     return (await api.get('/despesas/index.php') || []).map(apiToDespesa)
       case 'descontos':    return (await api.get('/descontos/index.php') || []).map(apiToDesconto)
       case 'folhas':       return (await api.get('/folhas/index.php') || []).map(apiToFolha)
+      case 'diarias':      return (await api.get('/diarias/index.php') || []).map(apiToDiaria)
       default:             return null
     }
   } catch (e) {
@@ -424,12 +464,26 @@ async function diffSync({ key, newData, oldData, createFn, updateFn, deleteFn })
   const oldByApiId = new Map(
     (oldData || []).filter(x => x._apiId).map(x => [x._apiId, x])
   )
+  // Índice v13-id → _apiId do cache anterior, para recuperar quando o v13
+  // recriar um objeto sem o campo _apiId (causa de duplicatas)
+  const oldByV13Id = new Map(
+    (oldData || []).filter(x => x.id && x._apiId).map(x => [x.id, x._apiId])
+  )
 
   for (let i = 0; i < result.length; i++) {
-    const item = result[i]
+    let item = result[i]
+
+    // Recupera _apiId perdido: primeiro pelo _idMap em memória, depois pelo cache anterior
+    if (!item._apiId && item.id) {
+      const recovered = _idMap.get(item.id) ?? oldByV13Id.get(item.id)
+      if (recovered) {
+        item = { ...item, _apiId: recovered }
+        result[i] = item
+      }
+    }
+
     if (item._apiId) {
       const old = oldByApiId.get(item._apiId)
-      // Simple equality check (skips _apiId-stable unchanged items)
       if (!old || JSON.stringify(item) !== JSON.stringify(old)) {
         try { await updateFn(item._apiId, item) } catch (e) { console.error('[shim] update', key, e.message) }
       }
@@ -445,7 +499,6 @@ async function diffSync({ key, newData, oldData, createFn, updateFn, deleteFn })
     }
   }
 
-  // Soft-delete items removed from the list
   for (const [apiId] of oldByApiId) {
     try { await deleteFn(apiId) } catch (e) { console.error('[shim] delete', key, e.message) }
   }
@@ -473,7 +526,7 @@ async function syncServicos(newData) {
       const cid = item.cliente_id || clientesByNome.get((item.cliente || '').toUpperCase())
       api.put(`/servicos/item.php?id=${apiId}`, toApiServico(item, cid))
     },
-    deleteFn: async apiId => api.put(`/servicos/item.php?id=${apiId}`, { status: 'INATIVO' }),
+    deleteFn: apiId => api.delete(`/servicos/item.php?id=${apiId}`),
   })
 }
 
@@ -484,7 +537,7 @@ async function syncFuncionarios(newData) {
     oldData: _cache['funcionarios'],
     createFn: item => api.post('/funcionarios/index.php', toApiFuncionario(item)),
     updateFn: (apiId, item) => api.put(`/funcionarios/item.php?id=${apiId}`, toApiFuncionario(item)),
-    deleteFn: apiId => api.put(`/funcionarios/item.php?id=${apiId}`, { status: 'INATIVO' }),
+    deleteFn: apiId => api.delete(`/funcionarios/item.php?id=${apiId}`),
   })
 }
 
@@ -546,7 +599,7 @@ async function syncDespesas(newData) {
     oldData: _cache['despesas'],
     createFn: item => api.post('/despesas/index.php', toApiDespesa(item)),
     updateFn: (apiId, item) => api.put(`/despesas/item.php?id=${apiId}`, toApiDespesa(item)),
-    deleteFn: apiId => api.put(`/despesas/item.php?id=${apiId}`, { status: 'cancelado' }),
+    deleteFn: apiId => api.delete(`/despesas/item.php?id=${apiId}`),
   })
 }
 
@@ -566,17 +619,34 @@ async function syncFolhas(newData) {
   _cache['folhas'] = newData
 }
 
-async function syncKey(key, newData) {
-  switch (key) {
-    case 'servicos':     return syncServicos(newData)
-    case 'funcionarios': return syncFuncionarios(newData)
-    case 'lancamentos':  return syncLancamentos(newData)
-    case 'fechamentos':  return syncFechamentos(newData)
-    case 'despesas':     return syncDespesas(newData)
-    case 'descontos':    return syncDescontos(newData)
-    case 'folhas':       return syncFolhas(newData)
-    default:             _cache[key] = newData
+async function syncDiarias(newData) {
+  _cache['diarias'] = await diffSync({
+    key:      'diarias',
+    newData,
+    oldData:  _cache['diarias'],
+    createFn: item => api.post('/diarias/index.php', toApiDiaria(item)),
+    updateFn: (apiId, item) => api.put(`/diarias/item.php?id=${apiId}`, toApiDiaria(item)),
+    deleteFn: apiId => api.delete(`/diarias/item.php?id=${apiId}`),
+  })
+}
+
+function syncKey(key, newData) {
+  const run = () => {
+    switch (key) {
+      case 'servicos':     return syncServicos(newData)
+      case 'funcionarios': return syncFuncionarios(newData)
+      case 'lancamentos':  return syncLancamentos(newData)
+      case 'fechamentos':  return syncFechamentos(newData)
+      case 'despesas':     return syncDespesas(newData)
+      case 'descontos':    return syncDescontos(newData)
+      case 'folhas':       return syncFolhas(newData)
+      case 'diarias':      return syncDiarias(newData)
+      default:             return Promise.resolve(void (_cache[key] = newData))
+    }
   }
+  // Encadeia na fila — erros de um sync não bloqueiam o próximo
+  _syncQueue = _syncQueue.catch(() => {}).then(run)
+  return _syncQueue
 }
 
 // ─── INTERFACE PÚBLICA ───────────────────────────────────────────────────────
@@ -595,7 +665,7 @@ export function initStorageShim() {
       // Carregar do backend
       const data = await loadKey(key)
       _cache[key] = data ?? []
-      return data && data.length > 0 ? { value: JSON.stringify(_cache[key]) } : null
+      return _cache[key] !== undefined ? { value: JSON.stringify(_cache[key]) } : null
     },
 
     async set(key, value) {

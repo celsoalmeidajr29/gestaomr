@@ -12,9 +12,12 @@ if ($method === 'GET') {
         $where[] = 's.cliente_id = :cliente_id';
         $params[':cliente_id'] = (int) $_GET['cliente_id'];
     }
-    if (!empty($_GET['status'])) {
+    // Por padrão retorna apenas ativos; passe ?status=INATIVO ou ?status=todos para ver outros
+    if (!empty($_GET['status']) && $_GET['status'] !== 'todos') {
         $where[] = 's.status = :status';
         $params[':status'] = $_GET['status'];
+    } elseif (empty($_GET['status'])) {
+        $where[] = "s.status = 'ATIVO'";
     }
     if (!empty($_GET['template'])) {
         $where[] = 's.template = :template';

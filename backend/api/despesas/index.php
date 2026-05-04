@@ -12,9 +12,12 @@ if ($method === 'GET') {
         $where[] = 'competencia = :competencia';
         $params[':competencia'] = $_GET['competencia'];
     }
-    if (!empty($_GET['status'])) {
+    // Por padrão exclui 'cancelado'; passe ?status=cancelado ou ?status=todos para ver outros
+    if (!empty($_GET['status']) && $_GET['status'] !== 'todos') {
         $where[] = 'status = :status';
         $params[':status'] = $_GET['status'];
+    } elseif (empty($_GET['status'])) {
+        $where[] = "status != 'cancelado'";
     }
     if (!empty($_GET['tipo'])) {
         $where[] = 'tipo = :tipo';

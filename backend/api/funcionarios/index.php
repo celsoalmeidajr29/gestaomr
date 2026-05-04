@@ -8,9 +8,12 @@ $method = $_SERVER['REQUEST_METHOD'];
 if ($method === 'GET') {
     $params = [];
     $where = [];
-    if (!empty($_GET['status'])) {
+    // Por padrão retorna apenas ativos; passe ?status=INATIVO ou ?status=todos para ver outros
+    if (!empty($_GET['status']) && $_GET['status'] !== 'todos') {
         $where[] = 'status = :status';
         $params[':status'] = $_GET['status'];
+    } elseif (empty($_GET['status'])) {
+        $where[] = "status = 'ATIVO'";
     }
     if (!empty($_GET['categoria'])) {
         $where[] = 'categoria = :categoria';
