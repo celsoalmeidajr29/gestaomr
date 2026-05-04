@@ -1,3 +1,3 @@
-// Versão ativa: v28 — fix salvamento serviços, horas zeradas/frações, anti-pattern OS migration
+// Versão ativa: v29 — fix hora zerada não cobra base; tabela mostra qtd h.extra e km extra
 // Versões anteriores em src/versions/
-export { default } from './versions/MRSys_v28.jsx'
+export { default } from './versions/MRSys_v29.jsx'
