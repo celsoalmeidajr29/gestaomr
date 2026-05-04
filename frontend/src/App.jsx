@@ -1,3 +1,3 @@
-// Versão ativa: v21 — cadastro de clientes + faturas consolidadas por cliente
+// Versão ativa: v22 — feriados nacionais + RJ com gestão de feriados customizados
 // Versões anteriores em src/versions/
-export { default } from './versions/MRSys_v21.jsx'
+export { default } from './versions/MRSys_v22.jsx'
