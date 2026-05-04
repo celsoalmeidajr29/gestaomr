@@ -1,0 +1,52 @@
+# MRSys — segurança, roteamento SPA e configuração PHP
+# Hospedagem: Hostinger cPanel (frontend + backend no mesmo domínio)
+
+Options -Indexes -MultiViews
+
+# 1) Força HTTPS
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+
+  RewriteCond %{HTTPS} !=on
+  RewriteCond %{HTTP:X-Forwarded-Proto} !https
+  RewriteRule ^(.*)$ https://%{HTTP_HOST}/$1 [R=301,L]
+
+  # SPA routing — arquivos reais e /api/ passam direto; todo o resto → index.html
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule ^ /index.html [L]
+</IfModule>
+
+# 2) Bloqueia acesso direto a arquivos sensíveis
+<FilesMatch "^(\.env.*|.*\.bak|.*\.sql|gerar_hash\.php)$">
+  Require all denied
+</FilesMatch>
+
+# Bloqueia acesso direto a _bootstrap.php e arquivos com _ no início
+<FilesMatch "^_">
+  Require all denied
+</FilesMatch>
+
+# 3) Configuração PHP
+<IfModule mod_php8.c>
+  php_flag display_errors      Off
+  php_flag log_errors          On
+  php_value max_execution_time 30
+  php_value memory_limit       128M
+  php_value post_max_size      20M
+  php_value upload_max_filesize 15M
+  php_flag session.cookie_httponly On
+  php_flag session.cookie_secure   On
+  php_value session.cookie_samesite "Lax"
+</IfModule>
+
+# 4) Headers de segurança
+<IfModule mod_headers.c>
+  Header always set X-Content-Type-Options  "nosniff"
+  Header always set X-Frame-Options         "SAMEORIGIN"
+  Header always set Referrer-Policy         "same-origin"
+  Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
+  Header always set Permissions-Policy      "geolocation=(), camera=(), microphone=()"
+  Header unset X-Powered-By
+</IfModule>

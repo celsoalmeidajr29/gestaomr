@@ -335,14 +335,12 @@ function client_ua(): string
 // 9. CORS — autoriza apenas origens explicitamente listadas em CORS_ALLOWED_ORIGINS
 // ---------------------------------------------------------------------------
 //
-// Cenário híbrido: frontend hospedado no Cloudflare Pages e backend no cPanel
-// ficam em origens diferentes. Sem CORS, o navegador bloqueia as chamadas.
+// Cenário atual: frontend e backend no mesmo domínio (Hostinger).
+// Neste cenário o browser não envia header Origin em requisições same-origin,
+// então handle_cors() retorna imediatamente sem adicionar cabeçalhos.
 //
-// Configure CORS_ALLOWED_ORIGINS no .env com a URL exata do Pages (sem barra
-// final), separadas por vírgula se houver mais de uma:
-//   CORS_ALLOWED_ORIGINS=https://mrsys.pages.dev,https://mrsys.grupomr.seg.br
-//
-// Para o cookie de sessão funcionar cross-origin, defina também:
+// Se no futuro o frontend migrar para um domínio diferente, configure:
+//   CORS_ALLOWED_ORIGINS=https://mrsys.grupomr.seg.br
 //   SESSION_SAMESITE=None
 //   SESSION_SECURE=true
 
