@@ -1,3 +1,3 @@
-// Versão ativa: v25 — exportação NATURA no formato padrão + fix horasExtras com 0h trabalhadas
+// Versão ativa: v26 — tipos de serviço: MOTOLINK RJ, VELADA RJ, VELADA SP, ARMADA, FACILITIES
 // Versões anteriores em src/versions/
-export { default } from './versions/MRSys_v25.jsx'
+export { default } from './versions/MRSys_v26.jsx'
