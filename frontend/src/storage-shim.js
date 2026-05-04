@@ -34,8 +34,12 @@ const normalizar = s =>
 // ─── MAPPERS API → v13 ──────────────────────────────────────────────────────
 
 function apiToServico(r) {
+  // id = cod serve de chave para recuperação no diffSync (sem este campo
+  // serviços recém-criados sem _apiId seriam duplicados na próxima sync)
+  _idMap.set(r.codigo, r.id)
   return {
     _apiId: r.id,
+    id: r.codigo,
     cod: r.codigo,
     template: r.template,
     descricao: r.descricao,
@@ -54,6 +58,7 @@ function apiToServico(r) {
     adicionalDomingosFatura: n(r.adicional_domingos_fatura),
     adicionalDomingosPago: n(r.adicional_domingos_pago),
     aliquota: n(r.aliquota),
+    categoriaServico: r.categoria_servico || '',
     status: r.status,
   }
 }

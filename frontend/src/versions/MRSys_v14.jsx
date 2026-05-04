@@ -1209,13 +1209,15 @@ export default function App() {
   };
 
   const salvarServico = (s, codAnterior) => {
-    if (codAnterior && codAnterior !== s.cod) {
-      if (servicos.some(x => x.cod === s.cod)) { alert('Já existe outro serviço com esse código'); return; }
-      setServicos(prev => [...prev.filter(x => x.cod !== codAnterior), s]);
-      setLancamentos(prev => prev.map(l => l.codServico === codAnterior ? { ...l, codServico: s.cod } : l));
-      showToast(`Código alterado de #${codAnterior} para #${s.cod}`);
+    // id = cod garante que o shim pode recuperar o _apiId via _idMap para serviços novos
+    const svc = { ...s, id: s.id ?? s.cod };
+    if (codAnterior && codAnterior !== svc.cod) {
+      if (servicos.some(x => x.cod === svc.cod)) { alert('Já existe outro serviço com esse código'); return; }
+      setServicos(prev => [...prev.filter(x => x.cod !== codAnterior), svc]);
+      setLancamentos(prev => prev.map(l => l.codServico === codAnterior ? { ...l, codServico: svc.cod } : l));
+      showToast(`Código alterado de #${codAnterior} para #${svc.cod}`);
     } else {
-      setServicos(prev => { const i = prev.findIndex(x => x.cod === s.cod); if (i >= 0) { const cp = [...prev]; cp[i] = s; return cp; } return [...prev, s]; });
+      setServicos(prev => { const i = prev.findIndex(x => x.cod === svc.cod); if (i >= 0) { const cp = [...prev]; cp[i] = svc; return cp; } return [...prev, svc]; });
       showToast('Serviço salvo');
     }
     setModal(null);
