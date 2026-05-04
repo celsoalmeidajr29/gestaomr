@@ -22,13 +22,20 @@ Gestor/usuário principal: **Celso Almeida** (`celso.almeida@grupomr.seg.br`)
 
 ## 2. Estado Atual
 
-A versão **MRSys v13** está em produção. Ela é um único arquivo `App.jsx` de ~3.400 linhas, ~277KB, com persistência via `window.storage` (limite de 5MB por chave — esse é o motivo da migração).
+### Fases concluídas
 
-O artefato em produção e a entrega de migração estão em `docs/`:
+| Fase | Status | Entregáveis |
+|---|---|---|
+| Fase 1 — Schema | ✅ Concluída | `database/schema.sql` (17 tabelas, views, triggers) |
+| Fase 2 — Bootstrap PHP | ✅ Concluída | `backend/_bootstrap.php`, `backend/api/auth/` (login/logout/me), `backend/.htaccess`, `frontend/src/api.js` |
+| Scaffold Frontend | ✅ Concluída | `frontend/` com Vite 5 + React 18 + Tailwind 3, deploy via Cloudflare Pages |
 
-- `MRSys_v13.jsx` — versão React monolítica atual
-- `MRSys_database.sql` — schema MySQL completo (17 tabelas)
-- `gerar_hash.php` — utilitário pra ativar senha do admin
+### Próxima fase pendente: **Fase 3 — APIs CRUD**
+
+### Artefatos de referência em `docs/`
+
+- `MRSys_v13.jsx` — versão React monolítica atual em produção (3.426 linhas)
+- `MRSys_database.sql` — schema MySQL de referência (usar `database/schema.sql`)
 - `MRSys_Plano_Migracao_Web.docx` — plano executivo (10 seções)
 - `Modelo_Importacao_Funcionarios.xlsx` — template de importação
 
@@ -88,37 +95,43 @@ Cada cliente tem seu template que define o ciclo de cobrança e estrutura de cam
 
 ---
 
-## 6. Próximo passo: Fase 2 — Bootstrap PHP
+## 6. Próximo passo: Fase 3 — APIs CRUD
 
-A Fase 1 (estrutura do banco) está pronta. Próxima fase pendente:
+Fase 2 e scaffold frontend concluídos. Próxima fase pendente:
 
-**Entregáveis da Fase 2:**
+**Entregáveis da Fase 3** (~60 endpoints PHP em `backend/api/`):
 
-- `backend/_bootstrap.php` — conexão PDO ao MySQL via `.env`, gestão de sessão PHP segura, helpers JSON (`json_response()`, `json_error()`, `require_auth()`)
-- `backend/.env.example` — template das credenciais (`DB_HOST`, `DB_NAME`, `DB_USER`, `DB_PASS`, `APP_URL`, `APP_KEY`)
-- `backend/.htaccess` — força HTTPS, bloqueia `.env`, headers de segurança (X-Frame-Options, CSP)
-- `backend/api/auth/login.php` — POST com email+senha, retorna sessão, com lockout após 5 tentativas (15 min)
-- `backend/api/auth/logout.php`
-- `backend/api/auth/me.php` — GET retorna usuário logado
-- `frontend/src/api.js` — wrapper `fetch()` que troca `window.storage` por chamadas HTTP
+- `servicos/` — CRUD completo (17 serviços iniciais já no schema)
+- `clientes/` — CRUD (5 clientes iniciais já no schema)
+- `funcionarios/` — CRUD + upload foto/documentos
+- `lancamentos/` — CRUD + M:N funcionários + extras
+- `fechamentos/` — criação, atualização de status, geração de folha
+- `despesas/` e `descontos/` — CRUD simples
+- `usuarios/` e `perfis/` — CRUD + gestão de permissões
+- `dashboard/` — GET com resumo da competência atual
 
-**Critério de aceite Fase 2:** login do Celso funcionando com a senha `jr4540504@A`, sessão persistindo entre refreshes, logout limpando.
+**Critério de aceite Fase 3:** Celso consegue criar um lançamento via API e visualizar no frontend.
 
-**Tempo estimado:** 2-3 dias de trabalho focado.
+**Tempo estimado:** 5-7 dias de trabalho focado.
+
+### Pendências antes da Fase 3
+
+1. Ativar senha admin no banco: rodar `gerar_hash.php` no servidor (criar temporariamente, nunca commitar)
+2. Confirmar URL do domínio do cPanel para preencher `CORS_ALLOWED_ORIGINS` e `APP_URL` no `.env`
 
 ---
 
 ## 7. Fases seguintes (visão geral)
 
-| Fase | Entrega | Dias |
-|---|---|---|
-| 3 | APIs CRUD de todos os módulos (servicos, lancamentos, fechamentos, etc) | 5-7 |
-| 4 | Adapter no frontend (substituir `window.storage` por `api.js`) | 3-4 |
-| 5 | Migração: script que importa o JSON de backup do v13 pro novo banco | 1-2 |
-| 6 | Permissões + auditoria por trigger | 2-3 |
-| 7 | Testes + deploy + cron de backup | 2-3 |
+| Fase | Entrega | Status | Dias |
+|---|---|---|---|
+| 3 | APIs CRUD de todos os módulos | ⏳ Pendente | 5-7 |
+| 4 | Adapter no frontend (substituir `window.storage` por `api.js`) | ⏳ Pendente | 3-4 |
+| 5 | Migração: script que importa o JSON de backup do v13 pro novo banco | ⏳ Pendente | 1-2 |
+| 6 | Permissões + auditoria por trigger | ⏳ Pendente | 2-3 |
+| 7 | Testes + deploy + cron de backup | ⏳ Pendente | 2-3 |
 
-**Total restante:** ~3-4 semanas a partir da Fase 2.
+**Total restante:** ~2-3 semanas a partir da Fase 3.
 
 ---
 
@@ -203,4 +216,4 @@ Se você precisar de algo que não tenho aqui (logotipo, credenciais reais, etc)
 
 ---
 
-*Última atualização deste arquivo: Conversa em chat encerrada na entrega da Fase 1 (schema + plano). Início da Fase 2 (Bootstrap PHP) é o próximo passo.*
+*Última atualização: 2026-05-03. Fases 1, 2 e scaffold frontend concluídos. Próximo passo: Fase 3 — APIs CRUD.*
