@@ -6,11 +6,6 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
   return {
     plugins: [react()],
-    resolve: {
-      // garante que imports em arquivos fora de frontend/ (ex: docs/MRSys_v13.jsx)
-      // resolvam dependências contra o node_modules deste pacote
-      modules: [path.resolve(__dirname, 'node_modules'), 'node_modules'],
-    },
     server: {
       proxy: {
         '/api': {
