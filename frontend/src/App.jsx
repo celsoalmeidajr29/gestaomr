@@ -1,3 +1,3 @@
-// Versão ativa: v30 — fix diffHorasDecimal: início == término retorna 0h (não 24h)
+// Versão ativa: v31 — importação aceita HORAS TRABALHADAS direto, datetime ISO e HH:MM puro
 // Versões anteriores em src/versions/
-export { default } from './versions/MRSys_v30.jsx'
+export { default } from './versions/MRSys_v31.jsx'
