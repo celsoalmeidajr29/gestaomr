@@ -253,6 +253,41 @@ function require_auth(): array
 }
 
 // ---------------------------------------------------------------------------
+// 6b. Permissões — verifica bit em perfis.permissoes para o recurso/ação
+// ---------------------------------------------------------------------------
+// Admin (perfil_codigo='admin') passa direto. Para os demais perfis a
+// coluna perfis.permissoes é um JSON  {"servicos":{"read":true,"create":false,...}}
+// $action pode ser 'read'|'create'|'edit'|'delete'|'auto'.
+// Com 'auto' a ação é inferida pelo método HTTP:
+//   GET→read, POST→create, PUT|PATCH→edit, DELETE→delete.
+
+function require_permission(string $resource, string $action = 'auto'): array
+{
+    $u = require_auth();
+
+    if ($u['perfil_codigo'] === 'admin') {
+        return $u;
+    }
+
+    if ($action === 'auto') {
+        $action = match ($_SERVER['REQUEST_METHOD']) {
+            'GET'           => 'read',
+            'POST'          => 'create',
+            'PUT', 'PATCH'  => 'edit',
+            'DELETE'        => 'delete',
+            default         => 'read',
+        };
+    }
+
+    $perms = is_array($u['permissoes']) ? $u['permissoes'] : (json_decode($u['permissoes'] ?? '{}', true) ?: []);
+    if (empty($perms[$resource][$action])) {
+        json_error('Sem permissão para esta operação', 403);
+    }
+
+    return $u;
+}
+
+// ---------------------------------------------------------------------------
 // 7. CSRF — token na sessão, validado em métodos não-idempotentes
 // ---------------------------------------------------------------------------
 

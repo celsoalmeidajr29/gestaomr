@@ -2,7 +2,7 @@
 declare(strict_types=1);
 require_once __DIR__ . '/../../_bootstrap.php';
 
-require_auth();
+require_permission('clientes');
 $method = $_SERVER['REQUEST_METHOD'];
 $id = (int) ($_GET['id'] ?? 0);
 if (!$id) {
