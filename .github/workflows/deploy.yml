@@ -47,7 +47,7 @@ jobs:
           protocol: ftps
           port: 21
           local-dir: ./deploy/
-          server-dir: /u105916795/files/public_html/
+          server-dir: /domains/saddlebrown-zebra-944288.hostingersite.com/public_html/
           log-level: verbose
           exclude: |
             **/.git*
