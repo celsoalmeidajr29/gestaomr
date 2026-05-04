@@ -1,3 +1,3 @@
-// Versão ativa: v19 — checkboxes + ações em massa nos lançamentos
+// Versão ativa: v20 — derivação de horas de início/término com frações
 // Versões anteriores em src/versions/
-export { default } from './versions/MRSys_v19.jsx'
+export { default } from './versions/MRSys_v20.jsx'
