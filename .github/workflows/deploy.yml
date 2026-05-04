@@ -47,7 +47,7 @@ jobs:
           protocol: ftps
           port: 21
           local-dir: ./deploy/
-          server-dir: public_html/
+          server-dir: /b8bc5d127364ec01/files/public_html/
           log-level: verbose
           exclude: |
             **/.git*
