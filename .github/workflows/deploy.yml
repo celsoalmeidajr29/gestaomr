@@ -1,0 +1,57 @@
+name: Deploy para Hostinger
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout do repositório
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Instalar dependências e fazer build
+        run: |
+          cd frontend
+          npm ci
+          npm run build
+
+      - name: Montar estrutura de deploy
+        run: |
+          mkdir -p deploy/api
+
+          # Frontend (index.html, assets/, .htaccess)
+          cp -r frontend/dist/. deploy/
+
+          # Bootstrap do backend (fica na raiz do public_html)
+          cp backend/_bootstrap.php deploy/
+
+          # Endpoints da API
+          cp -r backend/api/. deploy/api/
+
+      - name: Enviar para Hostinger via FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: ./deploy/
+          server-dir: /public_html/
+          exclude: |
+            **/.git*
+            **/.git*/**
+            **/node_modules/**
+            **/.env
+            **/.env.*
+            **/gerar_hash.php
+            **/*.sql
+            **/*.bak
