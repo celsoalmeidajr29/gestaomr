@@ -28,7 +28,7 @@ Gestor/usuário principal: **Celso Almeida** (`celso.almeida@grupomr.seg.br`)
 |---|---|---|
 | Fase 1 — Schema | ✅ Concluída | `database/schema.sql` (17 tabelas, views, triggers) |
 | Fase 2 — Bootstrap PHP | ✅ Concluída | `backend/_bootstrap.php`, `backend/api/auth/` (login/logout/me), `backend/.htaccess`, `frontend/src/api.js` |
-| Scaffold Frontend | ✅ Concluída | `frontend/` com Vite 5 + React 18 + Tailwind 3, deploy via Cloudflare Pages |
+| Scaffold Frontend | ✅ Concluída | `frontend/` com Vite 5 + React 18 + Tailwind 3, deploy via GitHub Actions → Hostinger |
 
 ### Próxima fase pendente: **Fase 3 — APIs CRUD**
 
