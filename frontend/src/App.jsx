@@ -1,3 +1,3 @@
-// Versão ativa: v39 — export XLSX de serviços e funcionários (todos os campos)
+// Versão ativa: v40 — resumo: NATURA faturamento dividido por categoria real dos lançamentos
 // Versões anteriores em src/versions/
-export { default } from './versions/MRSys_v39.jsx'
+export { default } from './versions/MRSys_v40.jsx'
