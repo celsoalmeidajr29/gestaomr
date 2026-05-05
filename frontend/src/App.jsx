@@ -1,3 +1,3 @@
-// Versão ativa: v38 — fix: faturamento usa fechamentos direto; folha agrupa por modelo de exportação
+// Versão ativa: v39 — export XLSX de serviços e funcionários (todos os campos)
 // Versões anteriores em src/versions/
-export { default } from './versions/MRSys_v38.jsx'
+export { default } from './versions/MRSys_v39.jsx'
