@@ -1,3 +1,3 @@
-// Versão ativa: v34 — categoria salva (default válido); export BASE usa equipe||base
+// Versão ativa: v35 — folha paga totalPago completo por funcionário (sem divisão por equipe)
 // Versões anteriores em src/versions/
-export { default } from './versions/MRSys_v34.jsx'
+export { default } from './versions/MRSys_v35.jsx'
