@@ -1,3 +1,3 @@
-// Versão ativa: v40 — resumo: NATURA faturamento dividido por categoria real dos lançamentos
+// Versão ativa: v41 — export NATURA: pedágio somado na coluna ADICIONAL
 // Versões anteriores em src/versions/
-export { default } from './versions/MRSys_v40.jsx'
+export { default } from './versions/MRSys_v41.jsx'
