@@ -1,7 +1,7 @@
-// v34 — fix: categoria salva (default válido); export BASE usa equipe||base; código 9999 ok
+// v35 — folha paga totalPago completo por funcionário (sem divisão por equipe)
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 
-const APP_VERSION = 'v34';
+const APP_VERSION = 'v35';
 import * as XLSX from 'xlsx';
 import {
   BarChart, Bar, LineChart, Line, PieChart, Pie, Cell,
