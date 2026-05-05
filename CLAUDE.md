@@ -6,7 +6,7 @@ Este arquivo é lido automaticamente pelo Claude Code ao abrir esta pasta. Ele c
 
 ## 1. O que é o MRSys
 
-Sistema de Fechamento Financeiro de uma empresa de segurança e escolta armada (Grupo MR), atualmente em produção como aplicação React standalone. O sistema gerencia:
+Sistema de Fechamento Financeiro de uma empresa de segurança e escolta armada (Grupo MR), em produção no Hostinger. O sistema gerencia:
 
 - Catálogo de serviços (operações: NATURA, IRB, TOMBINI, ESCOLTECH, BRK)
 - Lançamentos diários (cada operação executada com KM, horas, funcionários)
@@ -22,19 +22,31 @@ Gestor/usuário principal: **Celso Almeida** (`celso.almeida@grupomr.seg.br`)
 
 ## 2. Estado Atual
 
-### Fases concluídas
+**Todas as 7 fases concluídas. Sistema em produção.**
 
 | Fase | Status | Entregáveis |
 |---|---|---|
 | Fase 1 — Schema | ✅ Concluída | `database/schema.sql` (17 tabelas, views, triggers) |
-| Fase 2 — Bootstrap PHP | ✅ Concluída | `backend/_bootstrap.php`, `backend/api/auth/` (login/logout/me), `backend/.htaccess`, `frontend/src/api.js` |
-| Scaffold Frontend | ✅ Concluída | `frontend/` com Vite 5 + React 18 + Tailwind 3, deploy via GitHub Actions → Hostinger |
+| Fase 2 — Bootstrap PHP | ✅ Concluída | `backend/_bootstrap.php`, `backend/api/auth/`, `frontend/src/api.js` |
+| Scaffold Frontend | ✅ Concluída | `frontend/` com Vite 5 + React 18 + Tailwind 3 |
+| Fase 3 — APIs CRUD | ✅ Concluída | ~60 endpoints PHP em `backend/api/` |
+| Fase 4 — Adapter | ✅ Concluída | Substituição de `window.storage` por `api.js` |
+| Fase 5 — Migração | ✅ Concluída | Script importa JSON do v13 pro banco MySQL |
+| Fase 6 — Permissões | ✅ Concluída | `require_permission()`, triggers de auditoria |
+| Fase 7 — Deploy | ✅ Concluída | GitHub Actions → FTP → Hostinger, banco configurado |
 
-### Próxima fase pendente: **Fase 3 — APIs CRUD**
+### Versão ativa do monolito
+
+**`MRSys_v42.jsx`** — `frontend/src/App.jsx` reexporta a versão ativa:
+```jsx
+export { default } from './versions/MRSys_v42.jsx'
+```
+
+Histórico completo de versões no Obsidian: `01 - Projetos/MRSys/Histórico de Versões.md`
 
 ### Artefatos de referência em `docs/`
 
-- `MRSys_v13.jsx` — versão React monolítica atual em produção (3.426 linhas)
+- `MRSys_v13.jsx` — versão React monolítica original (3.426 linhas, referência histórica)
 - `MRSys_database.sql` — schema MySQL de referência (usar `database/schema.sql`)
 - `MRSys_Plano_Migracao_Web.docx` — plano executivo (10 seções)
 - `Modelo_Importacao_Funcionarios.xlsx` — template de importação
@@ -52,12 +64,10 @@ Estas decisões foram debatidas e aprovadas. Trate como invariantes:
 | Stack backend | PHP 8.x nativo (sem framework) + MySQL 8 |
 | Stack frontend | Manter React (build estática) + API JSON |
 | Cross-origin | Frontend e backend no **mesmo domínio** (sem CORS). Cookie `SameSite=Lax`. Subdomínio atual: `saddlebrown-zebra-944288.hostingersite.com` |
+| Deploy | Push para `main` → GitHub Actions → FTP → Hostinger (`.github/workflows/deploy.yml`) |
 | Cor principal | Navy Blue `#1E3A8A` |
 | Usuários simultâneos | 2-5 (financeiro/admin) |
 | Usuário inicial | Apenas Celso, perfil admin, e-mail `celso.almeida@grupomr.seg.br` |
-| Senha admin temporária | `jr4540504@A` (deve ser trocada no primeiro login) |
-| Domínio | Celso já possui (nome a ser informado) |
-| Logotipo | Celso já possui (arquivo a ser fornecido) |
 | Versionamento | A cada alteração no monolito, salvar como `MRSys_v{N}.jsx` em `frontend/src/versions/` |
 
 ---
@@ -72,7 +82,7 @@ Estas decisões foram debatidas e aprovadas. Trate como invariantes:
 - **Fechamento (4):** `fechamentos`, `fechamento_lancamentos`, `fechamento_status_log`, `folhas`
 - **Auxiliares (2):** `arquivos` (foto+docs com path em disco), `auditoria` (log automático)
 
-Mais 3 views (`vw_lancamentos_completo`, `vw_fechamentos_completo`, `vw_resumo_competencia`) e 3 triggers de auditoria automática.
+Mais 3 views (`vw_lancamentos_completo`, `vw_fechamentos_completo`, `vw_resumo_competencia`) e triggers de auditoria automática.
 
 Schema completo em `database/schema.sql`. **NÃO altere o schema sem antes documentar a mudança em `database/migrations/`.**
 
@@ -95,47 +105,31 @@ Cada cliente tem seu template que define o ciclo de cobrança e estrutura de cam
 
 ---
 
-## 6. Próximo passo: Fase 3 — APIs CRUD
+## 6. Continuidade — como trabalhar no monolito
 
-Fase 2 e scaffold frontend concluídos. Próxima fase pendente:
+O sistema está em produção e o trabalho agora é iterativo: correções de bugs e novas funcionalidades no monolito.
 
-**Entregáveis da Fase 3** (~60 endpoints PHP em `backend/api/`):
+**Fluxo padrão para cada alteração:**
 
-- `servicos/` — CRUD completo (17 serviços iniciais já no schema)
-- `clientes/` — CRUD (5 clientes iniciais já no schema)
-- `funcionarios/` — CRUD + upload foto/documentos
-- `lancamentos/` — CRUD + M:N funcionários + extras
-- `fechamentos/` — criação, atualização de status, geração de folha
-- `despesas/` e `descontos/` — CRUD simples
-- `usuarios/` e `perfis/` — CRUD + gestão de permissões
-- `dashboard/` — GET com resumo da competência atual
+1. Copiar `MRSys_v{N}.jsx` → `MRSys_v{N+1}.jsx`
+2. Editar o novo arquivo
+3. Atualizar `frontend/src/App.jsx` para apontar para `v{N+1}`
+4. Commit + push → deploy automático via GitHub Actions
+5. Atualizar `Histórico de Versões.md` no Obsidian e este `CLAUDE.md`
 
-**Critério de aceite Fase 3:** Celso consegue criar um lançamento via API e visualizar no frontend.
-
-**Tempo estimado:** 5-7 dias de trabalho focado.
-
-### Pendências antes da Fase 3
-
-1. Ativar senha admin no banco: rodar `gerar_hash.php` no servidor (criar temporariamente, nunca commitar)
-2. Confirmar URL do domínio do cPanel para preencher `CORS_ALLOWED_ORIGINS` e `APP_URL` no `.env`
+**Exports XLSX disponíveis (v42):**
+- `exportarFaturaXLSX` — fatura por cliente (router Natura / padrão)
+- `exportarFaturaNaturaXLSX` — fatura NATURA com 17 colunas no padrão da planilha
+- `exportarFaturaPadraoXLSX` — fatura padrão (demais clientes)
+- `exportarResumoFechamentoXLSX` — 6 abas: Faturamento, Folha, Adiantamentos, Despesas Fixas, Avulsas, Parcelamentos
+- `exportarServicosXLSX` — catálogo de serviços (19 colunas)
+- `exportarFuncionariosXLSX` — cadastro de funcionários (20 colunas)
+- `exportarDespesasXLSX` — despesas filtradas (2 abas: listagem + resumo por tipo)
+- `exportarDescontosXLSX` — vales filtrados (2 abas: listagem + resumo por tipo de vale)
 
 ---
 
-## 7. Fases seguintes (visão geral)
-
-| Fase | Entrega | Status | Dias |
-|---|---|---|---|
-| 3 | APIs CRUD de todos os módulos | ⏳ Pendente | 5-7 |
-| 4 | Adapter no frontend (substituir `window.storage` por `api.js`) | ⏳ Pendente | 3-4 |
-| 5 | Migração: script que importa o JSON de backup do v13 pro novo banco | ⏳ Pendente | 1-2 |
-| 6 | Permissões + auditoria por trigger | ⏳ Pendente | 2-3 |
-| 7 | Testes + deploy + cron de backup | ⏳ Pendente | 2-3 |
-
-**Total restante:** ~2-3 semanas a partir da Fase 3.
-
----
-
-## 8. Convenções deste projeto
+## 7. Convenções deste projeto
 
 ### Código JSX (frontend)
 
@@ -156,64 +150,64 @@ Fase 2 e scaffold frontend concluídos. Próxima fase pendente:
 
 - **Branch principal:** `main`
 - **Commits em português**, formato: `feat: ...`, `fix: ...`, `docs: ...`, `refactor: ...`
-- **Cada fase em sua branch** (`fase-2-bootstrap`, `fase-3-apis`, etc), merge para `main` quando aceite
 
 ### Validação obrigatória após edits
 
 Antes de declarar um módulo "pronto", rode estes checks:
 
 ```bash
-# Sintaxe PHP
-php -l backend/_bootstrap.php
-php -l backend/api/**/*.php
-
 # Frontend (se alterado)
 cd frontend && npm run lint && npm run build
 
-# Schema SQL (se alterado)
-mysql -u root -p mrsys_db < database/schema.sql --execute="SHOW TABLES;"
+# Sintaxe PHP (se alterado)
+php -l backend/_bootstrap.php
+php -l backend/api/**/*.php
 ```
 
 ---
 
-## 9. Comportamentos importantes do sistema
+## 8. Comportamentos importantes do sistema
 
-Estes detalhes não são óbvios e foram sangrados em conversas anteriores:
+Estes detalhes não são óbvios e foram consolidados ao longo do desenvolvimento:
 
 - **Status de fatura** vai de `Enviada → Aprovada → NF-emitida → Paga`. `Vencida` é marcada automaticamente quando a data de vencimento passa e o status não é `Paga`. Histórico em `fechamento_status_log`.
-- **Categorias de serviço (5 valores):** ARMADA, VELADA, MOTOLINK, PRONTA RESPOSTA, FACILITIES. Cada uma com cor própria no frontend.
+- **Categorias de serviço (5 valores atuais):** `MOTOLINK RJ`, `VELADA RJ`, `VELADA SP`, `ARMADA`, `FACILITIES`. Cada uma com cor própria no frontend. Valores antigos (`MOTOLINK`, `VELADA`, `PRONTA RESPOSTA`) foram migrados nas versões v26/v34.
 - **Resumo de Fechamento (aba)** tem botão `×` em cada linha que filtra do resumo e do XLSX exportado (não apaga dado real). Útil quando você precisa entregar uma planilha "limpa" sem alguns lançamentos.
 - **Folha de pagamento** considera APENAS lançamentos dentro de faturas geradas (status fechado), nunca pendentes. Funcionário com salário fixo aparece em toda competência ativa, mesmo sem participação.
-- **Funcionários têm fotos e até 5 documentos.** No v13 ficam em chaves separadas do storage (`funcfoto_{id}`, `funcdoc_{id}_{docId}`). Na versão web ficam em `/uploads/funcionarios/{id}/` com referência na tabela `arquivos`.
-- **Importação de funcionários via XLSX** já funciona no v13. Aliases de cabeçalho aceitos: "Funcionário", "Colaborador", "Cargo" → categoria; "Salário Fixo", "Salario" → salário; etc.
-- **Persistência robusta no v13:** salva com debounce 300ms, retry 3x, detecta `quota_exceeded`, bloqueia `beforeunload` se há pendências, força save em `visibilitychange='hidden'`. Replicar comportamento equivalente na versão web (loading states + mensagens de erro claras).
+- **Cada funcionário recebe o `totalPago` completo do lançamento** (sem divisão por número de agentes) — mudança feita na v35.
+- **Feriados:** detecção automática (nacionais + RJ + Páscoa móvel). Feriados customizados editáveis. Badge 🎉 na tabela de lançamentos.
+- **Numeração OS sequencial** (`OS-0001`, `OS-0002`...) por lançamento, persistida em `osCounter`.
+- **Rounds monetários:** `roundMoney`/`sumMoney`/`sumQty` em todas as somas — evita drift de floating-point. Não remover.
+- **`num(v)`** normaliza vírgula decimal (pt-BR) antes de converter — não substituir por `Number(v)`.
+- **Export NATURA (v41+):** coluna ADICIONAL inclui `adicDomFatura + pedagioFatura`.
+- **Resumo NATURA (v40+):** dividido por categoria real dos lançamentos (VELADA / MOTOLINK / ARMADA).
+- **Exports de despesas e vales (v42+):** respeitam os filtros ativos na tela.
 
 ---
 
-## 10. Como começar uma sessão de trabalho
+## 9. Como começar uma sessão de trabalho
 
 Sempre que abrir o Claude Code nesta pasta, comece com:
 
-> Leia o CLAUDE.md e o HISTORICO.md, depois confirme:
-> 1. Em que fase estamos
-> 2. Qual é o próximo entregável
-> 3. Existe alguma decisão pendente que precisa ser tomada agora?
+> Busque no Obsidian (`01 - Projetos/MRSys/`) o contexto atualizado — especialmente `Histórico de Versões.md` e `MRSys.md`. Depois confirme:
+> 1. Qual é a versão atual do monolito
+> 2. O que foi feito na última sessão
+> 3. O que o usuário quer trabalhar agora
 
 Se eu (Celso) der uma instrução que conflita com algo nas Decisões já tomadas (seção 3), me avise antes de mudar — pode ser que eu tenha esquecido o motivo da escolha original.
 
-Se você precisar de algo que não tenho aqui (logotipo, credenciais reais, etc), me peça explicitamente em vez de assumir.
-
 ---
 
-## 11. O que NÃO fazer
+## 10. O que NÃO fazer
 
 - ❌ Não criar testes automatizados antes de pedido explícito (foco é entregar funcionalidade, não cobertura)
 - ❌ Não trocar a stack (sem React Native, sem Vue, sem Laravel — manter PHP nativo + React)
 - ❌ Não criar componentes em arquivos separados sem necessidade clara
-- ❌ Não usar `localStorage`/`sessionStorage` no frontend novo (vai contra o objetivo de centralizar dados)
+- ❌ Não usar `localStorage`/`sessionStorage` diretamente (sistema usa `window.storage` com debounce/retry)
 - ❌ Não commitar `.env`, credenciais, ou o `gerar_hash.php`
 - ❌ Não rodar `DELETE` ou `DROP` no banco sem confirmação explícita
+- ❌ Não remover `roundMoney`/`sumMoney` — são críticos para precisão monetária
 
 ---
 
-*Última atualização: 2026-05-03. Fases 1, 2 e scaffold frontend concluídos. Próximo passo: Fase 3 — APIs CRUD.*
+*Última atualização: 2026-05-05. Sistema em produção na v42. Trabalho atual: iterações e melhorias no monolito.*
