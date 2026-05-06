@@ -186,6 +186,8 @@ CREATE TABLE `lancamentos` (
   `os` VARCHAR(20) DEFAULT NULL COMMENT 'Numero da OS (OS-NNNN ou customizado)',
   `servico_id` INT UNSIGNED NOT NULL,
   `data` DATE NOT NULL,
+  `competencia` CHAR(7) DEFAULT NULL COMMENT 'Override da competencia da folha (AAAA-MM). Vazio usa data.',
+  `categoria_folha` VARCHAR(60) DEFAULT NULL COMMENT 'Categoria/grupo de folha — espelha folha_categorias.nome',
   `is_domingo` TINYINT(1) NOT NULL DEFAULT 0,
   `is_feriado` TINYINT(1) NOT NULL DEFAULT 0,
   `nome_feriado` VARCHAR(120) DEFAULT NULL COMMENT 'Nome do feriado quando is_feriado=1',
@@ -221,6 +223,8 @@ CREATE TABLE `lancamentos` (
   KEY `idx_data` (`data`),
   KEY `idx_status` (`status`),
   KEY `idx_os` (`os`),
+  KEY `idx_competencia` (`competencia`),
+  KEY `idx_categoria_folha` (`categoria_folha`),
   KEY `idx_criado_por` (`criado_por`),
   CONSTRAINT `fk_lancamentos_servico` FOREIGN KEY (`servico_id`) REFERENCES `servicos` (`id`),
   CONSTRAINT `fk_lancamentos_usuario` FOREIGN KEY (`criado_por`) REFERENCES `usuarios` (`id`) ON DELETE SET NULL
@@ -392,6 +396,17 @@ CREATE TABLE `folhas` (
 -- ============================================================================
 -- 5. AUXILIARES
 -- ============================================================================
+
+DROP TABLE IF EXISTS `folha_categorias`;
+CREATE TABLE `folha_categorias` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `nome` VARCHAR(60) NOT NULL,
+  `cor` VARCHAR(20) DEFAULT NULL COMMENT 'Cor sugerida (azul/verde/amarelo etc) — opcional',
+  `criado_em` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `atualizado_em` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_nome` (`nome`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 DROP TABLE IF EXISTS `arquivos`;
 CREATE TABLE `arquivos` (

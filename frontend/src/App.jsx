@@ -1,6 +1,6 @@
-// Versão ativa: v54 — Resumo consolidado: item 2 vira Folha por Categoria (com salário fixo embutido); Folha de Pagamento e Salários Fixos removidos
+// Versão ativa: v55 — Categoria e competência da folha migradas para o lançamento + nova aba Cat. Folha
 // Versões anteriores em src/versions/
-import MRSysApp from './versions/MRSys_v54.jsx'
+import MRSysApp from './versions/MRSys_v55.jsx'
 
 export default function App(props) {
   return <MRSysApp {...props} />
