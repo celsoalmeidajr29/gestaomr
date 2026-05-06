@@ -178,10 +178,12 @@ CREATE TABLE `funcionarios` (
 DROP TABLE IF EXISTS `lancamentos`;
 CREATE TABLE `lancamentos` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `os` VARCHAR(20) DEFAULT NULL COMMENT 'Numero da OS (OS-NNNN ou customizado)',
   `servico_id` INT UNSIGNED NOT NULL,
   `data` DATE NOT NULL,
   `is_domingo` TINYINT(1) NOT NULL DEFAULT 0,
   `is_feriado` TINYINT(1) NOT NULL DEFAULT 0,
+  `nome_feriado` VARCHAR(120) DEFAULT NULL COMMENT 'Nome do feriado quando is_feriado=1',
   `horas_trabalhadas` DECIMAL(6,2) NOT NULL DEFAULT 0,
   `km_rodados` DECIMAL(8,2) NOT NULL DEFAULT 0,
   `pedagio` DECIMAL(8,2) NOT NULL DEFAULT 0,
@@ -213,6 +215,7 @@ CREATE TABLE `lancamentos` (
   KEY `idx_servico_data` (`servico_id`, `data`),
   KEY `idx_data` (`data`),
   KEY `idx_status` (`status`),
+  KEY `idx_os` (`os`),
   KEY `idx_criado_por` (`criado_por`),
   CONSTRAINT `fk_lancamentos_servico` FOREIGN KEY (`servico_id`) REFERENCES `servicos` (`id`),
   CONSTRAINT `fk_lancamentos_usuario` FOREIGN KEY (`criado_por`) REFERENCES `usuarios` (`id`) ON DELETE SET NULL
