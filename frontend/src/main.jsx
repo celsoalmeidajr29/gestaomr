@@ -4,11 +4,13 @@ import { auth } from './api.js'
 import { initStorageShim } from './storage-shim.js'
 import App from './App.jsx'
 import Login from './Login.jsx'
+import SistemasHub from './SistemasHub.jsx'
 import './index.css'
 
 function Root() {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [sistemaAtivo, setSistemaAtivo] = useState(null)
 
   useEffect(() => {
     auth.me()
@@ -27,6 +29,14 @@ function Root() {
     setUser(usuario)
   }
 
+  const handleLogout = async () => {
+    try { await auth.logout() } catch (_) {}
+    setUser(null)
+    setSistemaAtivo(null)
+  }
+
+  const handleVoltarHub = () => setSistemaAtivo(null)
+
   if (loading) {
     return (
       <div className="min-h-screen bg-slate-900 flex items-center justify-center">
@@ -39,7 +49,15 @@ function Root() {
     return <Login onLogin={handleLogin} />
   }
 
-  return <App />
+  if (!sistemaAtivo) {
+    return <SistemasHub usuario={user} onSelecionarSistema={setSistemaAtivo} onLogout={handleLogout} />
+  }
+
+  if (sistemaAtivo === 'mrsys') {
+    return <App onVoltarHub={handleVoltarHub} onLogout={handleLogout} />
+  }
+
+  return null
 }
 
 ReactDOM.createRoot(document.getElementById('root')).render(<Root />)
