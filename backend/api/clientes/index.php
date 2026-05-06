@@ -25,21 +25,28 @@ if ($method === 'POST') {
         json_error('Campo obrigatório: nome', 422);
     }
     $stmt = db()->prepare(
-        'INSERT INTO clientes (nome, nome_fantasia, cnpj, inscricao_estadual, endereco, cep, cidade, uf,
-         contato_nome, contato_email, contato_telefone, observacoes, status)
-         VALUES (:nome, :nome_fantasia, :cnpj, :ie, :endereco, :cep, :cidade, :uf,
-         :contato_nome, :contato_email, :contato_telefone, :observacoes, :status)'
+        'INSERT INTO clientes (nome, razao_social, cnpj, inscricao_estadual, aliquota,
+         endereco, numero, complemento, bairro, cep, cidade, uf,
+         contato_nome, cargo_contato, contato_email, contato_telefone, observacoes, status)
+         VALUES (:nome, :razao_social, :cnpj, :ie, :aliquota,
+         :endereco, :numero, :complemento, :bairro, :cep, :cidade, :uf,
+         :contato_nome, :cargo_contato, :contato_email, :contato_telefone, :observacoes, :status)'
     );
     $stmt->execute([
         ':nome'             => $d['nome'],
-        ':nome_fantasia'    => $d['nome_fantasia'] ?? null,
+        ':razao_social'     => $d['razao_social'] ?? null,
         ':cnpj'             => $d['cnpj'] ?? null,
         ':ie'               => $d['inscricao_estadual'] ?? null,
+        ':aliquota'         => $d['aliquota'] ?? 0.00,
         ':endereco'         => $d['endereco'] ?? null,
+        ':numero'           => $d['numero'] ?? null,
+        ':complemento'      => $d['complemento'] ?? null,
+        ':bairro'           => $d['bairro'] ?? null,
         ':cep'              => $d['cep'] ?? null,
         ':cidade'           => $d['cidade'] ?? null,
         ':uf'               => $d['uf'] ?? null,
         ':contato_nome'     => $d['contato_nome'] ?? null,
+        ':cargo_contato'    => $d['cargo_contato'] ?? null,
         ':contato_email'    => $d['contato_email'] ?? null,
         ':contato_telefone' => $d['contato_telefone'] ?? null,
         ':observacoes'      => $d['observacoes'] ?? null,
