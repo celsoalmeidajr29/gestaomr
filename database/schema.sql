@@ -83,14 +83,19 @@ DROP TABLE IF EXISTS `clientes`;
 CREATE TABLE `clientes` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
   `nome` VARCHAR(150) NOT NULL,
-  `nome_fantasia` VARCHAR(150) DEFAULT NULL,
+  `razao_social` VARCHAR(150) DEFAULT NULL,
   `cnpj` VARCHAR(18) DEFAULT NULL,
   `inscricao_estadual` VARCHAR(30) DEFAULT NULL,
+  `aliquota` DECIMAL(5,2) NOT NULL DEFAULT 0.00,
   `endereco` VARCHAR(255) DEFAULT NULL,
+  `numero` VARCHAR(20) DEFAULT NULL,
+  `complemento` VARCHAR(80) DEFAULT NULL,
+  `bairro` VARCHAR(100) DEFAULT NULL,
   `cep` VARCHAR(10) DEFAULT NULL,
   `cidade` VARCHAR(80) DEFAULT NULL,
   `uf` CHAR(2) DEFAULT NULL,
   `contato_nome` VARCHAR(100) DEFAULT NULL,
+  `cargo_contato` VARCHAR(80) DEFAULT NULL,
   `contato_email` VARCHAR(120) DEFAULT NULL,
   `contato_telefone` VARCHAR(20) DEFAULT NULL,
   `observacoes` TEXT DEFAULT NULL,
@@ -512,12 +517,12 @@ INSERT INTO `usuarios` (`nome`, `email`, `senha_hash`, `perfil_id`, `status`) VA
 -- DADOS INICIAIS — clientes do MRSys atual
 -- ============================================================================
 
-INSERT INTO `clientes` (`nome`, `cnpj`, `status`) VALUES
-('NATURA COSMÉTICOS S.A', '71.673.990/0001-77', 'ATIVO'),
-('IRB LOGÍSTICA ITRACKER', NULL, 'ATIVO'),
-('GRUPO TOMBINI', NULL, 'ATIVO'),
-('ESCOLTECH', NULL, 'ATIVO'),
-('BRK TECNOLOGIA', NULL, 'ATIVO');
+INSERT INTO `clientes` (`nome`, `razao_social`, `cnpj`, `aliquota`, `cidade`, `uf`, `status`) VALUES
+('NATURA COSMÉTICOS S.A',  'NATURA COSMÉTICOS S.A', '71.673.990/0001-77', 15.60, 'Cajamar', 'SP', 'ATIVO'),
+('IRB LOGÍSTICA ITRACKER', NULL,                      NULL,                  8.65, NULL,      NULL, 'ATIVO'),
+('GRUPO TOMBINI',          NULL,                      NULL,                  8.65, NULL,      NULL, 'ATIVO'),
+('ESCOLTECH',              NULL,                      NULL,                  8.65, NULL,      NULL, 'ATIVO'),
+('BRK TECNOLOGIA',         NULL,                      NULL,                 15.60, NULL,      NULL, 'ATIVO');
 
 -- ============================================================================
 -- DADOS INICIAIS — serviços do catálogo atual
