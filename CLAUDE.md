@@ -37,9 +37,9 @@ Gestor/usuário principal: **Celso Almeida** (`celso.almeida@grupomr.seg.br`)
 
 ### Versão ativa do monolito
 
-**`MRSys_v42.jsx`** — `frontend/src/App.jsx` reexporta a versão ativa:
+**`MRSys_v46.jsx`** — `frontend/src/App.jsx` reexporta a versão ativa:
 ```jsx
-export { default } from './versions/MRSys_v42.jsx'
+export { default } from './versions/MRSys_v46.jsx'
 ```
 
 Histórico completo de versões no Obsidian: `01 - Projetos/MRSys/Histórico de Versões.md`
@@ -77,7 +77,7 @@ Estas decisões foram debatidas e aprovadas. Trate como invariantes:
 17 tabelas no MySQL agrupadas em 5 áreas:
 
 - **Auth (3):** `perfis`, `usuarios`, `sessoes`
-- **Cadastros (3):** `clientes` (5 iniciais), `servicos` (17 iniciais), `funcionarios`
+- **Cadastros (3):** `clientes` (5 iniciais — migration 004 adicionou `razao_social`, `aliquota`, `numero`, `complemento`, `bairro`, `cargo_contato`), `servicos` (17 iniciais), `funcionarios` (migration 003 adicionou `folha_grupo`)
 - **Operação (5):** `lancamentos`, `lancamento_funcionarios` (M:N), `lancamento_extras`, `despesas`, `descontos`
 - **Fechamento (4):** `fechamentos`, `fechamento_lancamentos`, `fechamento_status_log`, `folhas`
 - **Auxiliares (2):** `arquivos` (foto+docs com path em disco), `auditoria` (log automático)
@@ -117,11 +117,11 @@ O sistema está em produção e o trabalho agora é iterativo: correções de bu
 4. Commit + push → deploy automático via GitHub Actions
 5. Atualizar `Histórico de Versões.md` no Obsidian e este `CLAUDE.md`
 
-**Exports XLSX disponíveis (v42):**
+**Exports XLSX disponíveis (v46):**
 - `exportarFaturaXLSX` — fatura por cliente (router Natura / padrão)
 - `exportarFaturaNaturaXLSX` — fatura NATURA com 17 colunas no padrão da planilha
 - `exportarFaturaPadraoXLSX` — fatura padrão (demais clientes)
-- `exportarResumoFechamentoXLSX` — 6 abas: Faturamento, Folha, Adiantamentos, Despesas Fixas, Avulsas, Parcelamentos
+- `exportarResumoFechamentoXLSX` — 7 abas: Faturamento, Folha Clientes, Salários Fixos, Adiantamentos, Despesas Fixas, Avulsas, Parcelamentos
 - `exportarServicosXLSX` — catálogo de serviços (19 colunas)
 - `exportarFuncionariosXLSX` — cadastro de funcionários (20 colunas)
 - `exportarDespesasXLSX` — despesas filtradas (2 abas: listagem + resumo por tipo)
@@ -180,7 +180,13 @@ Estes detalhes não são óbvios e foram consolidados ao longo do desenvolviment
 - **Rounds monetários:** `roundMoney`/`sumMoney`/`sumQty` em todas as somas — evita drift de floating-point. Não remover.
 - **`num(v)`** normaliza vírgula decimal (pt-BR) antes de converter — não substituir por `Number(v)`.
 - **Export NATURA (v41+):** coluna ADICIONAL inclui `adicDomFatura + pedagioFatura`.
-- **Resumo NATURA (v40+):** dividido por categoria real dos lançamentos (VELADA / MOTOLINK / ARMADA).
+- **Resumo Faturamento NATURA (v46+):** dividido em 4 linhas por `categoriaServico` real dos lançamentos dentro da fatura:
+  - `NATURA COSMÉTICOS - VELADA SP` → categoria contém `VELADA SP` (ou VELADA sem sufixo)
+  - `NATURA COSMÉTICOS - VELADA RJ` → categoria contém `VELADA RJ`
+  - `NATURA COSMÉTICOS - ARMADA` → categoria contém `ARMADA`
+  - `NATURA COSMÉTICOS - MOTOLINK` → categoria contém `MOTOLINK` (RJ ou SP)
+- **Resumo Faturamento — colunas Modelo e Qtd removidas (v45+):** tabela exibe apenas Cliente | Valor.
+- **Salários fixos por grupo de folha (v43+):** campo `folhaGrupo` em funcionários agrupa salários fixos no painel "Salários Fixos" do Resumo, independente de fechamentos.
 - **Exports de despesas e vales (v42+):** respeitam os filtros ativos na tela.
 
 ---
@@ -210,4 +216,4 @@ Se eu (Celso) der uma instrução que conflita com algo nas Decisões já tomada
 
 ---
 
-*Última atualização: 2026-05-05. Sistema em produção na v42. Trabalho atual: iterações e melhorias no monolito.*
+*Última atualização: 2026-05-05. Sistema em produção na v46. Trabalho atual: iterações e melhorias no monolito.*
