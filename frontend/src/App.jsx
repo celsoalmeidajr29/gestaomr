@@ -1,6 +1,6 @@
-// Versão ativa: v52 — import de salários fixos via texto + diárias com Tipo de Folha
+// Versão ativa: v53 — Lucro→Total Pago + categorias editáveis nas folhas + bulk edit + Folha por Categoria no Resumo
 // Versões anteriores em src/versions/
-import MRSysApp from './versions/MRSys_v52.jsx'
+import MRSysApp from './versions/MRSys_v53.jsx'
 
 export default function App(props) {
   return <MRSysApp {...props} />
