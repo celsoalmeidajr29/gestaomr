@@ -37,10 +37,13 @@ Gestor/usuário principal: **Celso Almeida** (`celso.almeida@grupomr.seg.br`)
 
 ### Versão ativa do monolito
 
-**`MRSys_v46.jsx`** — `frontend/src/App.jsx` reexporta a versão ativa:
+**`MRSys_v53.jsx`** — `frontend/src/App.jsx` é wrapper que repassa props para o monolito:
 ```jsx
-export { default } from './versions/MRSys_v46.jsx'
+import MRSysApp from './versions/MRSys_v53.jsx'
+export default function App(props) { return <MRSysApp {...props} /> }
 ```
+
+A partir de v49, o `App` recebe `{ onVoltarHub, onLogout }` do `SistemasHub.jsx` (após login).
 
 Histórico completo de versões no Obsidian: `01 - Projetos/MRSys/Histórico de Versões.md`
 
@@ -117,7 +120,14 @@ O sistema está em produção e o trabalho agora é iterativo: correções de bu
 4. Commit + push → deploy automático via GitHub Actions
 5. Atualizar `Histórico de Versões.md` no Obsidian e este `CLAUDE.md`
 
-**Exports XLSX disponíveis (v46):**
+**Imports/Exports disponíveis (v53):**
+
+Imports (com modelos XLSX baixáveis e parsers permissivos):
+- Funcionários (planilha cheia, ~20 colunas) — aba Funcionários
+- **Salários fixos** (Nome, Salário, Grupo Folha) — aba Folha → modal com 2 modos: **XLSX** ou **Texto colado** (v52)
+- **Diárias avulsas** (Data, Nome, Valor, Tipo de Folha) — aba Diárias → 2 botões: **Importar XLSX** ou **Importar texto** (v50/v52)
+
+Exports XLSX:
 - `exportarFaturaXLSX` — fatura por cliente (router Natura / padrão)
 - `exportarFaturaNaturaXLSX` — fatura NATURA com 17 colunas no padrão da planilha
 - `exportarFaturaPadraoXLSX` — fatura padrão (demais clientes)
@@ -188,6 +198,12 @@ Estes detalhes não são óbvios e foram consolidados ao longo do desenvolviment
 - **Resumo Faturamento — colunas Modelo e Qtd removidas (v45+):** tabela exibe apenas Cliente | Valor.
 - **Salários fixos por grupo de folha (v43+):** campo `folhaGrupo` em funcionários agrupa salários fixos no painel "Salários Fixos" do Resumo, independente de fechamentos.
 - **Exports de despesas e vales (v42+):** respeitam os filtros ativos na tela.
+- **Categoria editável de folha (v53+):** cada folha tem `categoriaFolha` derivada de `funcionario.folhaGrupo` por default, com override editável inline. Bulk edit via seleção (checkbox) + barra de ações.
+- **Painel "3. Folha por Categoria" no Resumo (v53+):** agrupa folhas da competência por `categoriaFolha`. Posicionado entre "2. Folha de Pagamento" e "4. Salários Fixos".
+- **Card "Total Pago" nos lançamentos (v53+):** substituiu o card "Lucro" no topo. Coluna Lucro removida da tabela (redundante com PAGO Total).
+- **Hub de Sistemas (v49+):** após login, mostra `SistemasHub.jsx` com 1 card MRSys ativo + 5 placeholders. Para adicionar sistema novo, editar array `SISTEMAS`.
+- **Consolidação Faturas+Fechamentos (v51+):** aba "Faturas" removida. Aba "Fechamentos" agora tem faturas abertas (badge amarelo, botões Ver/Fechar) + fechadas (Status/Vencimento/Enviar/Reabrir).
+- **Envio de medição por email (v51+):** botão "Enviar" no fechamento. Modal com destinatários (chip), assunto pré-preenchido `MEDIÇÃO DE SERVIÇOS - {CLIENTE} {COMPETENCIA}`. Anexa PDF (jsPDF) + XLSX. Backend: `backend/api/email/enviar_medicao.php`.
 
 ---
 
@@ -216,4 +232,4 @@ Se eu (Celso) der uma instrução que conflita com algo nas Decisões já tomada
 
 ---
 
-*Última atualização: 2026-05-05. Sistema em produção na v46. Trabalho atual: iterações e melhorias no monolito.*
+*Última atualização: 2026-05-06. Sistema em produção na v53 em `https://celso.cloud`. Trabalho atual: iterações e melhorias no monolito.*
