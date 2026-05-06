@@ -1,3 +1,3 @@
-// Versão ativa: v44 — responsividade nos modais + campos completos de cliente (alíquota, endereço, contato)
+// Versão ativa: v45 — faturamento NATURA dividido por categoria real (VELADA SP/RJ, ARMADA, MOTOLINK)
 // Versões anteriores em src/versions/
-export { default } from './versions/MRSys_v44.jsx'
+export { default } from './versions/MRSys_v45.jsx'
