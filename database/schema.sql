@@ -590,38 +590,56 @@ FROM fechamentos
 GROUP BY competencia;
 
 -- ============================================================================
--- TRIGGERS — auditoria automática (exemplo para servicos)
+-- TRIGGERS — auditoria automática
+-- Formato compatível com phpMyAdmin (SQL tab e Import): sem DELIMITER, sem BEGIN...END
 -- ============================================================================
 
-DELIMITER $$
-
+-- servicos
 CREATE TRIGGER `trg_servicos_after_insert` AFTER INSERT ON `servicos`
-FOR EACH ROW BEGIN
+FOR EACH ROW
   INSERT INTO auditoria (usuario_id, acao, entidade, entidade_id, dados_depois)
   VALUES (@usuario_id, 'CREATE', 'servicos', NEW.id, JSON_OBJECT(
     'codigo', NEW.codigo, 'descricao', NEW.descricao, 'cliente_id', NEW.cliente_id,
     'valor_fatura', NEW.valor_fatura, 'aliquota', NEW.aliquota
   ));
-END$$
 
 CREATE TRIGGER `trg_servicos_after_update` AFTER UPDATE ON `servicos`
-FOR EACH ROW BEGIN
+FOR EACH ROW
   INSERT INTO auditoria (usuario_id, acao, entidade, entidade_id, dados_antes, dados_depois)
   VALUES (@usuario_id, 'UPDATE', 'servicos', NEW.id,
     JSON_OBJECT('codigo', OLD.codigo, 'descricao', OLD.descricao, 'valor_fatura', OLD.valor_fatura, 'aliquota', OLD.aliquota),
     JSON_OBJECT('codigo', NEW.codigo, 'descricao', NEW.descricao, 'valor_fatura', NEW.valor_fatura, 'aliquota', NEW.aliquota)
   );
-END$$
 
 CREATE TRIGGER `trg_servicos_after_delete` AFTER DELETE ON `servicos`
-FOR EACH ROW BEGIN
+FOR EACH ROW
   INSERT INTO auditoria (usuario_id, acao, entidade, entidade_id, dados_antes)
   VALUES (@usuario_id, 'DELETE', 'servicos', OLD.id, JSON_OBJECT(
     'codigo', OLD.codigo, 'descricao', OLD.descricao, 'cliente_id', OLD.cliente_id
   ));
-END$$
 
-DELIMITER ;
+-- clientes
+CREATE TRIGGER `trg_clientes_after_insert` AFTER INSERT ON `clientes`
+FOR EACH ROW
+  INSERT INTO auditoria (usuario_id, acao, entidade, entidade_id, dados_depois)
+  VALUES (@usuario_id, 'CREATE', 'clientes', NEW.id, JSON_OBJECT(
+    'nome', NEW.nome, 'cnpj', NEW.cnpj, 'status', NEW.status
+  ));
+
+CREATE TRIGGER `trg_clientes_after_update` AFTER UPDATE ON `clientes`
+FOR EACH ROW
+  INSERT INTO auditoria (usuario_id, acao, entidade, entidade_id, dados_antes, dados_depois)
+  VALUES (@usuario_id, 'UPDATE', 'clientes', NEW.id,
+    JSON_OBJECT('nome', OLD.nome, 'status', OLD.status),
+    JSON_OBJECT('nome', NEW.nome, 'status', NEW.status)
+  );
+
+CREATE TRIGGER `trg_clientes_after_delete` AFTER DELETE ON `clientes`
+FOR EACH ROW
+  INSERT INTO auditoria (usuario_id, acao, entidade, entidade_id, dados_antes)
+  VALUES (@usuario_id, 'DELETE', 'clientes', OLD.id, JSON_OBJECT(
+    'nome', OLD.nome, 'cnpj', OLD.cnpj
+  ));
 
 -- ============================================================================
 -- FIM DO SCRIPT — Verificações e próximos passos
