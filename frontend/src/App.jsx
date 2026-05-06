@@ -1,3 +1,3 @@
-// Versão ativa: v46 — renomeia NATURA ARMADA → NATURA COSMÉTICOS - ARMADA
+// Versão ativa: v47 — fix categorização NATURA no Resumo (ID mismatch + fallback VELADA RJ)
 // Versões anteriores em src/versions/
-export { default } from './versions/MRSys_v46.jsx'
+export { default } from './versions/MRSys_v47.jsx'
