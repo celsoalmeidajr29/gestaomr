@@ -1,5 +1,5 @@
 # Deploy MRSys — Hostinger cPanel
-**URL temporária:** `https://saddlebrown-zebra-944288.hostingersite.com`
+**URL de produção:** `https://celso.cloud`
 
 ---
 
@@ -147,7 +147,7 @@ Cole o conteúdo abaixo, substituindo os valores marcados:
 APP_NAME="MRSys"
 APP_ENV=production
 APP_DEBUG=false
-APP_URL=https://saddlebrown-zebra-944288.hostingersite.com
+APP_URL=https://celso.cloud
 APP_TIMEZONE="America/Sao_Paulo"
 
 # Gere uma chave em: https://generate-secret.vercel.app/64
@@ -166,7 +166,7 @@ SESSION_SECURE=true
 SESSION_HTTPONLY=true
 SESSION_SAMESITE=Lax
 
-CORS_ALLOWED_ORIGINS=https://saddlebrown-zebra-944288.hostingersite.com
+CORS_ALLOWED_ORIGINS=https://celso.cloud
 
 LOGIN_MAX_ATTEMPTS=5
 LOGIN_LOCKOUT_MINUTES=15
@@ -193,7 +193,7 @@ No File Manager, dentro de `public_html/`, crie o arquivo **`gerar_hash.php`**:
 
 Abra no navegador:
 ```
-https://saddlebrown-zebra-944288.hostingersite.com/gerar_hash.php
+https://celso.cloud/gerar_hash.php
 ```
 
 Você vai ver uma string parecida com:
@@ -234,7 +234,7 @@ Clique com o botão direito na pasta `uploads/` → **Permissões** → defina `
 
 ## Passo 8 — Teste final
 
-Acesse `https://saddlebrown-zebra-944288.hostingersite.com` e faça login com:
+Acesse `https://celso.cloud` e faça login com:
 
 - **E-mail:** `celso.almeida@grupomr.seg.br`
 - **Senha:** `jr4540504@A`
