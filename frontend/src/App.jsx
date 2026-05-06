@@ -1,3 +1,3 @@
-// Versão ativa: v45 — faturamento NATURA dividido por categoria real (VELADA SP/RJ, ARMADA, MOTOLINK)
+// Versão ativa: v46 — renomeia NATURA ARMADA → NATURA COSMÉTICOS - ARMADA
 // Versões anteriores em src/versions/
-export { default } from './versions/MRSys_v45.jsx'
+export { default } from './versions/MRSys_v46.jsx'
