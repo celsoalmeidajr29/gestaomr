@@ -37,9 +37,9 @@ Gestor/usuário principal: **Celso Almeida** (`celso.almeida@grupomr.seg.br`)
 
 ### Versão ativa do monolito
 
-**`MRSys_v53.jsx`** — `frontend/src/App.jsx` é wrapper que repassa props para o monolito:
+**`MRSys_v56.jsx`** — `frontend/src/App.jsx` é wrapper que repassa props para o monolito:
 ```jsx
-import MRSysApp from './versions/MRSys_v53.jsx'
+import MRSysApp from './versions/MRSys_v56.jsx'
 export default function App(props) { return <MRSysApp {...props} /> }
 ```
 
@@ -198,8 +198,10 @@ Estes detalhes não são óbvios e foram consolidados ao longo do desenvolviment
 - **Resumo Faturamento — colunas Modelo e Qtd removidas (v45+):** tabela exibe apenas Cliente | Valor.
 - **Salários fixos por grupo de folha (v43+):** campo `folhaGrupo` em funcionários agrupa salários fixos no painel "Salários Fixos" do Resumo, independente de fechamentos.
 - **Exports de despesas e vales (v42+):** respeitam os filtros ativos na tela.
-- **Categoria editável de folha (v53+):** cada folha tem `categoriaFolha` derivada de `funcionario.folhaGrupo` por default, com override editável inline. Bulk edit via seleção (checkbox) + barra de ações.
-- **Painel "3. Folha por Categoria" no Resumo (v53+):** agrupa folhas da competência por `categoriaFolha`. Posicionado entre "2. Folha de Pagamento" e "4. Salários Fixos".
+- **Categoria e competência da folha vêm dos lançamentos (v55+):** novos campos `competencia` (override AAAA-MM) e `categoriaFolha` em cada lançamento. `folhasPorFunc` agrupa por `(funcId, l.competencia ?? data.slice(0,7))` e categoria = mais comum entre lançamentos.
+- **Aba "Cat. Folha" (v55+):** CRUD do catálogo de categorias de folha. Lista categorias em uso mas não cadastradas com botão de auto-registro.
+- **Competência segue a data por padrão (v56+):** form mostra `data.slice(0,7)` como default. Só persiste override quando o usuário escolhe um mês diferente. Sincroniza automaticamente quando a data muda (a menos que tenha sido override manual).
+- **Resumo consolidado em 6 painéis (v54+):** painéis "2. Folha de Pagamento" (template) e "4. Salários Fixos" removidos. Item 2 agora é "Folha por Categoria" (Categoria | Valor + bruto). Painéis 3-6 são Adiantamentos/Despesas Fixas/Avulsas/Parcelamentos.
 - **Card "Total Pago" nos lançamentos (v53+):** substituiu o card "Lucro" no topo. Coluna Lucro removida da tabela (redundante com PAGO Total).
 - **Hub de Sistemas (v49+):** após login, mostra `SistemasHub.jsx` com 1 card MRSys ativo + 5 placeholders. Para adicionar sistema novo, editar array `SISTEMAS`.
 - **Consolidação Faturas+Fechamentos (v51+):** aba "Faturas" removida. Aba "Fechamentos" agora tem faturas abertas (badge amarelo, botões Ver/Fechar) + fechadas (Status/Vencimento/Enviar/Reabrir).
@@ -232,4 +234,4 @@ Se eu (Celso) der uma instrução que conflita com algo nas Decisões já tomada
 
 ---
 
-*Última atualização: 2026-05-06. Sistema em produção na v53 em `https://celso.cloud`. Trabalho atual: iterações e melhorias no monolito.*
+*Última atualização: 2026-05-06. Sistema em produção na v56 em `https://celso.cloud`. Trabalho atual: iterações e melhorias no monolito.*
