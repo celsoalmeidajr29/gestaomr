@@ -22,9 +22,9 @@ export default function SistemasHub({ usuario, onSelecionarSistema, onLogout }) 
       <header className="border-b border-slate-800 bg-slate-900/80 backdrop-blur sticky top-0 z-10">
         <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3 min-w-0">
-            <div className="w-10 h-10 rounded-xl bg-blue-800 flex-shrink-0 flex items-center justify-center text-white font-bold">MR</div>
+            <img src="/logo.png" alt="celso.cloud" className="w-10 h-10 object-contain flex-shrink-0" />
             <div className="min-w-0">
-              <div className="text-sm font-semibold leading-tight">Grupo MR — Hub</div>
+              <div className="text-sm font-semibold leading-tight">celso.cloud</div>
               <div className="text-xs text-slate-400 truncate">{usuario?.nome || ''}</div>
             </div>
           </div>
@@ -36,8 +36,8 @@ export default function SistemasHub({ usuario, onSelecionarSistema, onLogout }) 
 
       <main className="max-w-6xl mx-auto px-4 py-12">
         <div className="mb-10">
-          <h1 className="text-3xl font-bold">Selecione um sistema</h1>
-          <p className="text-slate-400 text-sm mt-2">Acesse o sistema desejado ou prepare espaço para sistemas futuros.</p>
+          <h1 className="text-3xl font-bold">Sistemas Inteligentes de Gestão</h1>
+          <p className="text-slate-400 text-sm mt-2">Selecione o sistema desejado ou prepare espaço para sistemas futuros.</p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
