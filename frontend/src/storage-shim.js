@@ -743,9 +743,41 @@ async function syncCategoriasFolha(newData) {
   })
 }
 
+async function syncClientes(newData) {
+  const toApi = v => ({
+    nome:               v.nome,
+    razao_social:       v.razaoSocial || null,
+    cnpj:               v.cnpj || null,
+    inscricao_estadual: v.inscricaoEstadual || null,
+    aliquota:           v.aliquota ?? 0,
+    endereco:           v.endereco || null,
+    numero:             v.numero || null,
+    complemento:        v.complemento || null,
+    bairro:             v.bairro || null,
+    cep:                v.cep || null,
+    cidade:             v.cidade || null,
+    uf:                 v.uf || null,
+    contato_nome:       v.nomeContato || null,
+    cargo_contato:      v.cargoContato || null,
+    contato_email:      v.email || null,
+    contato_telefone:   v.telefone || null,
+    observacoes:        v.observacoes || null,
+    status:             v.status || 'ATIVO',
+  })
+  _cache['clientes'] = await diffSync({
+    key:      'clientes',
+    newData,
+    oldData:  _cache['clientes'],
+    createFn: item => api.post('/clientes/index.php', toApi(item)),
+    updateFn: (apiId, item) => api.put(`/clientes/item.php?id=${apiId}`, toApi(item)),
+    deleteFn: apiId => api.delete(`/clientes/item.php?id=${apiId}`),
+  })
+}
+
 function syncKey(key, newData) {
   const run = () => {
     switch (key) {
+      case 'clientes':     return syncClientes(newData)
       case 'servicos':     return syncServicos(newData)
       case 'funcionarios': return syncFuncionarios(newData)
       case 'lancamentos':  return syncLancamentos(newData)
