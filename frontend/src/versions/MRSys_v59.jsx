@@ -1925,6 +1925,8 @@ export default function App({ onVoltarHub, onLogout } = {}) {
     const competencia = (compInput && compInput !== compFromData) ? compInput : '';
     // Categoria de folha: preserva exatamente o que veio do form (em caixa alta), aceita string vazia.
     const categoriaFolha = String(dados.categoriaFolha ?? '').trim().toUpperCase();
+    // Se a categoria não existe no Cat. Folha, cria automaticamente
+    if (categoriaFolha) garantirCategoriasFolha([categoriaFolha]);
     const lanc = { id: dados.id || `L${Date.now()}`, os: dados.os || gerarOS(), data: dados.data, competencia, categoriaFolha, codServico: dados.codServico, descricao: s.descricao, cliente: s.cliente, cnpj: s.cnpj, template: s.template, horasTrabalhadas: num(dados.horasTrabalhadas), kmRodados: num(dados.kmRodados), pedagio: num(dados.pedagio), batidaExtra: num(dados.batidaExtra), outros: num(dados.outros), isDomingo: dados.isDomingo === undefined ? eDomingo(dados.data) : !!dados.isDomingo, isFeriado: !!dados.isFeriado, nomeFeriado: dados.nomeFeriado || '', extras: dados.extras || {}, observacoes: dados.observacoes || '', status: dados.status || 'pendente', ...calc, atualizadoEm: new Date().toISOString() };
     setLancamentos(prev => { const i = prev.findIndex(x => x.id === lanc.id); if (i >= 0) { const cp = [...prev]; cp[i] = lanc; return cp; } return [lanc, ...prev]; });
     showToast(dados.id ? 'Lançamento atualizado' : 'Lançamento adicionado'); setModal(null);
@@ -1990,6 +1992,8 @@ export default function App({ onVoltarHub, onLogout } = {}) {
   const atualizarCategoriaFolhaLancamentosMassa = (ids, cat) => {
     if (!ids || ids.length === 0) return;
     const c = (cat || '').toUpperCase();
+    // Se a categoria não existe no Cat. Folha, cria automaticamente
+    if (c) garantirCategoriasFolha([c]);
     setLancamentos(prev => prev.map(l => ids.includes(l.id) ? { ...l, categoriaFolha: c, atualizadoEm: new Date().toISOString() } : l));
     showToast(`Categoria de folha atualizada em ${ids.length} lançamento(s)`);
   };
@@ -2130,27 +2134,52 @@ export default function App({ onVoltarHub, onLogout } = {}) {
   };
 
   // Importação dedicada de salários fixos (atualiza apenas salarioFixo e folhaGrupo de quem já existe)
+  // Helper: cria categorias de folha que ainda não existem no catálogo, com base em uma lista de nomes
+  const garantirCategoriasFolha = (nomes) => {
+    const validos = [...new Set(nomes.map(n => (n || '').trim().toUpperCase()).filter(Boolean))];
+    if (validos.length === 0) return 0;
+    let criadas = 0;
+    setCategoriasFolha(prev => {
+      const existentes = new Set(prev.map(c => c.nome));
+      const novas = validos.filter(n => !existentes.has(n)).map(n => ({
+        id: `CF${Date.now()}_${Math.random().toString(36).slice(2, 5)}_${n.slice(0, 3)}`,
+        nome: n,
+        cor: 'blue',
+      }));
+      criadas = novas.length;
+      if (novas.length === 0) return prev;
+      return [...prev, ...novas].sort((a, b) => a.nome.localeCompare(b.nome));
+    });
+    return criadas;
+  };
+
   const importarSalariosFixos = ({ atualizar }) => {
     if (!atualizar || atualizar.length === 0) { showToast('Nenhum colaborador atualizado', 'error'); setModal(null); return; }
     const agora = new Date().toISOString();
+    // Cria categorias novas que vieram na importação e ainda não existem
+    const criadas = garantirCategoriasFolha(atualizar.map(u => u.novo.folhaGrupo).filter(Boolean));
     setFuncionarios(prev => prev.map(f => {
       const u = atualizar.find(x => x.existente.id === f.id);
       if (!u) return f;
       return { ...f, salarioFixo: num(u.novo.salarioFixo), folhaGrupo: u.novo.folhaGrupo || f.folhaGrupo || '', atualizadoEm: agora };
     }));
-    showToast(`Salários atualizados: ${atualizar.length}`, 'success');
+    const msg = `Salários atualizados: ${atualizar.length}` + (criadas > 0 ? ` · ${criadas} categoria(s) nova(s) criada(s)` : '');
+    showToast(msg, 'success');
     setModal(null);
   };
 
   // Importação XLSX de diárias avulsas (mesmo padrão dos demais imports)
   const importarDiariasXLSX = ({ itens }) => {
     if (!itens || itens.length === 0) { showToast('Nenhuma diária válida encontrada', 'error'); setModal(null); return; }
+    // Cria categorias que vieram nas diárias e não existem
+    const criadas = garantirCategoriasFolha(itens.map(it => it.folhaGrupo).filter(Boolean));
     const novos = itens.map((it, i) => ({
       ...it,
       id: `DI_${Date.now()}_${i}_${Math.random().toString(36).slice(2, 6)}`,
     }));
     setDiarias(prev => [...prev, ...novos]);
-    showToast(`${novos.length} diária(s) importada(s)`, 'success');
+    const msg = `${novos.length} diária(s) importada(s)` + (criadas > 0 ? ` · ${criadas} categoria(s) nova(s) criada(s)` : '');
+    showToast(msg, 'success');
     setModal(null);
   };
 
@@ -2843,6 +2872,8 @@ export default function App({ onVoltarHub, onLogout } = {}) {
                   categoriasFolha={categoriasFolha}
                   clientesUnicos={clientesDiarias}
                   onSalvar={(d) => {
+                    // Se a categoria informada não existe no Cat. Folha, cria automaticamente
+                    if (d.folhaGrupo) garantirCategoriasFolha([d.folhaGrupo]);
                     if (d.id) setDiarias(prev => prev.map(x => x.id === d.id ? d : x));
                     else setDiarias(prev => [...prev, { ...d, id: `DI_${Date.now()}` }]);
                     setModal(null);

@@ -1,4 +1,4 @@
-// Versão ativa: v59 — Folha por Categoria considera todos os lançamentos da competência + lista categorias cadastradas
+// Versão ativa: v59 — Folha por Categoria robusta + persistência DB de categoria/folhaGrupo + auto-cria categorias em imports
 // Versões anteriores em src/versions/
 import MRSysApp from './versions/MRSys_v59.jsx'
 

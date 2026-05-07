@@ -25,7 +25,7 @@ if ($method === 'GET') {
     }
     $whereClause = $where ? ('WHERE ' . implode(' AND ', $where)) : '';
     $sql = "SELECT id, codigo_externo, nome, categoria, funcao, cpf, telefone, email,
-                   salario_fixo, valor_diaria, tipo_pix, chave_pix,
+                   salario_fixo, valor_diaria, folha_grupo, tipo_pix, chave_pix,
                    data_admissao, data_demissao, status, criado_em
             FROM funcionarios {$whereClause}
             ORDER BY nome";
@@ -42,11 +42,11 @@ if ($method === 'POST') {
     $stmt = db()->prepare(
         'INSERT INTO funcionarios (codigo_externo, nome, categoria, funcao, cpf, rg,
          data_nascimento, estado_civil, nacionalidade, naturalidade, telefone, email,
-         endereco, cep, cidade, uf, salario_fixo, valor_diaria,
+         endereco, cep, cidade, uf, salario_fixo, valor_diaria, folha_grupo,
          tipo_pix, chave_pix, data_admissao, data_demissao, notas, status)
          VALUES (:ce, :nome, :cat, :funcao, :cpf, :rg,
          :dn, :ec, :nac, :nat, :tel, :email,
-         :end, :cep, :cidade, :uf, :sal, :diaria,
+         :end, :cep, :cidade, :uf, :sal, :diaria, :fgrupo,
          :tipopix, :pix, :admissao, :demissao, :notas, :status)'
     );
     $stmt->execute([
@@ -68,6 +68,7 @@ if ($method === 'POST') {
         ':uf'      => $d['uf'] ?? null,
         ':sal'     => $d['salario_fixo'] ?? 0,
         ':diaria'  => $d['valor_diaria'] ?? 0,
+        ':fgrupo'  => $d['folha_grupo'] ?: null,
         ':tipopix' => $d['tipo_pix'] ?? 'CPF',
         ':pix'     => $d['chave_pix'] ?? null,
         ':admissao'=> $d['data_admissao'] ?? null,

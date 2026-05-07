@@ -33,7 +33,7 @@ if ($method === 'PUT' || $method === 'PATCH') {
          cpf=:cpf, rg=:rg, data_nascimento=:dn, estado_civil=:ec,
          nacionalidade=:nac, naturalidade=:nat, telefone=:tel, email=:email,
          endereco=:end, cep=:cep, cidade=:cidade, uf=:uf,
-         salario_fixo=:sal, valor_diaria=:diaria,
+         salario_fixo=:sal, valor_diaria=:diaria, folha_grupo=:fgrupo,
          tipo_pix=:tipopix, chave_pix=:pix,
          data_admissao=:admissao, data_demissao=:demissao,
          notas=:notas, status=:status
@@ -58,6 +58,7 @@ if ($method === 'PUT' || $method === 'PATCH') {
         ':uf'      => $d['uf'] ?? null,
         ':sal'     => $d['salario_fixo'] ?? 0,
         ':diaria'  => $d['valor_diaria'] ?? 0,
+        ':fgrupo'  => $d['folha_grupo'] ?: null,
         ':tipopix' => $d['tipo_pix'] ?? 'CPF',
         ':pix'     => $d['chave_pix'] ?? null,
         ':admissao'=> $d['data_admissao'] ?? null,
