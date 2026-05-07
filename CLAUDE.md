@@ -37,11 +37,18 @@ Gestor/usuário principal: **Celso Almeida** (`celso.almeida@grupomr.seg.br`)
 
 ### Versão ativa do monolito
 
-**`MRSys_v67.jsx`** — `frontend/src/App.jsx` é wrapper que repassa props para o monolito:
+**`MRSys_v68.jsx`** — `frontend/src/App.jsx` é wrapper que repassa props para o monolito:
 ```jsx
-import MRSysApp from './versions/MRSys_v67.jsx'
+import MRSysApp from './versions/MRSys_v68.jsx'
 export default function App(props) { return <MRSysApp {...props} /> }
 ```
+
+Novidades v68:
+- **Aba "Faturas"**: aba renomeada de "Fechamentos" para "Faturas" em toda a UI. ID interno `fechamentos` mantido
+- **NF número**: mudar status → "NF-emitida" abre modal para informar número e data da NF. Badge no card. Persiste em `numero_nf` no banco
+- **Exportar XML NF-e**: botão "XML NF-e" — modal com filtro por cliente, lista NFs emitidas, baixa XML com 1 `<NF>` por fatura (Número, Data, Tomador, Valor)
+- **Fix crítico medição**: backend GET /fechamentos agora inclui IDs dos lançamentos. Corrige XLSX e PDF vazios ao enviar medição por email
+- **Fix shim**: `nfNumero` mapeado corretamente para `numero_nf` no DB
 
 Novidades v67:
 - **ModalBase reescrito**: scroll correto — outer `overflow-y-auto`, inner `flex min-h-full items-start justify-center`. Funciona com qualquer altura de conteúdo
@@ -270,4 +277,4 @@ Se eu (Celso) der uma instrução que conflita com algo nas Decisões já tomada
 
 ---
 
-*Última atualização: 2026-05-07. Sistema em produção na v67 em `https://celso.cloud`. Trabalho atual: iterações e melhorias no monolito. Pendente: rodar migration 008 no phpMyAdmin (`database/migrations/008_despesas_chefia.sql`).*
+*Última atualização: 2026-05-07. Sistema em produção na v68 em `https://celso.cloud`. Trabalho atual: iterações e melhorias no monolito. Pendente: rodar migration 008 no phpMyAdmin (`database/migrations/008_despesas_chefia.sql`).*
