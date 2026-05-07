@@ -26,7 +26,7 @@ if ($method === 'GET') {
     db()->exec(
         "UPDATE fechamentos SET status_fatura='Vencida'
          WHERE data_vencimento < CURDATE()
-         AND status_fatura NOT IN ('Paga','Vencida')"
+         AND status_fatura NOT IN ('Paga','Vencida','NF-emitida','Aprovada')"
     );
 
     $stmt = db()->prepare(
