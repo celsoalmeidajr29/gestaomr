@@ -37,11 +37,15 @@ Gestor/usuário principal: **Celso Almeida** (`celso.almeida@grupomr.seg.br`)
 
 ### Versão ativa do monolito
 
-**`MRSys_v68.jsx`** — `frontend/src/App.jsx` é wrapper que repassa props para o monolito:
+**`MRSys_v69.jsx`** — `frontend/src/App.jsx` é wrapper que repassa props para o monolito:
 ```jsx
-import MRSysApp from './versions/MRSys_v68.jsx'
+import MRSysApp from './versions/MRSys_v69.jsx'
 export default function App(props) { return <MRSysApp {...props} /> }
 ```
+
+Novidades v69:
+- **Importar XML NF-e**: botão "Importar XML NF-e" na aba Faturas. Lê arquivo XML padrão SEFAZ (DOMParser), extrai nNF, data, emitente/destinatário (matching automático de cliente por CNPJ), valor, competência. Campos editáveis antes de confirmar. Gera fatura com status "NF-emitida" diretamente
+- **Import Despesas da Chefia**: botão "Importar (XLSX/Texto)" na aba Desp. Chefia. Mesmo padrão das despesas normais (2 abas: XLSX + texto colado, modelo baixável, preview). Origem obrigatória: MANHÃES ou RICARDO
 
 Novidades v68:
 - **Aba "Faturas"**: aba renomeada de "Fechamentos" para "Faturas" em toda a UI. ID interno `fechamentos` mantido
@@ -277,4 +281,4 @@ Se eu (Celso) der uma instrução que conflita com algo nas Decisões já tomada
 
 ---
 
-*Última atualização: 2026-05-07. Sistema em produção na v68 em `https://celso.cloud`. Trabalho atual: iterações e melhorias no monolito. Pendente: rodar migration 008 no phpMyAdmin (`database/migrations/008_despesas_chefia.sql`).*
+*Última atualização: 2026-05-07. Sistema em produção na v69 em `https://celso.cloud`. Trabalho atual: iterações e melhorias no monolito. Pendente: rodar migration 008 no phpMyAdmin (`database/migrations/008_despesas_chefia.sql`).*
