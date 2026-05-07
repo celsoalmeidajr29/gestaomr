@@ -466,6 +466,28 @@ async function loadKey(key) {
       case 'folhas':           return (await api.get('/folhas/index.php') || []).map(apiToFolha)
       case 'diarias':          return (await api.get('/diarias/index.php') || []).map(apiToDiaria)
       case 'categoriasFolha':  return (await api.get('/folha_categorias/index.php') || []).map(r => ({ _apiId: r.id, id: `CF${r.id}`, nome: r.nome, cor: r.cor || 'blue' }))
+      case 'clientes':         return (await api.get('/clientes/index.php') || []).map(r => ({
+        _apiId: r.id,
+        id: r.id,
+        nome: r.nome,
+        razaoSocial: r.razao_social || r.nome,
+        cnpj: r.cnpj || '',
+        inscricaoEstadual: r.inscricao_estadual || '',
+        email: r.contato_email || '',
+        telefone: r.contato_telefone || '',
+        endereco: r.endereco || '',
+        numero: r.numero || '',
+        complemento: r.complemento || '',
+        bairro: r.bairro || '',
+        cidade: r.cidade || '',
+        uf: r.uf || '',
+        cep: r.cep || '',
+        nomeContato: r.contato_nome || '',
+        cargoContato: r.cargo_contato || '',
+        aliquota: n(r.aliquota),
+        observacoes: r.observacoes || '',
+        status: r.status || 'ATIVO',
+      }))
       default:                 return null
     }
   } catch (e) {
@@ -530,17 +552,30 @@ async function syncServicos(newData) {
     for (const c of cl || []) clientesByNome.set(c.nome.toUpperCase(), c.id)
   } catch (_) {}
 
+  // Fallback: deriva cliente_id de serviços já carregados no cache (que têm cliente_id do banco).
+  // Garante que novos serviços criados na UI sejam persistidos mesmo se o GET /clientes falhar
+  // ou se houver pequena divergência nos nomes.
+  const cidPorNomeFallback = new Map()
+  for (const s of (_cache['servicos'] || [])) {
+    if (s.cliente && s.cliente_id) cidPorNomeFallback.set(s.cliente.toUpperCase(), s.cliente_id)
+  }
+
+  const resolveCid = item =>
+    item.cliente_id
+    || clientesByNome.get((item.cliente || '').toUpperCase())
+    || cidPorNomeFallback.get((item.cliente || '').toUpperCase())
+
   _cache['servicos'] = await diffSync({
     key: 'servicos',
     newData,
     oldData: _cache['servicos'],
     createFn: async item => {
-      const cid = item.cliente_id || clientesByNome.get((item.cliente || '').toUpperCase())
-      if (!cid) return null
+      const cid = resolveCid(item)
+      if (!cid) { console.error('[shim] syncServicos: cliente não encontrado para', item.cliente); return null }
       return api.post('/servicos/index.php', toApiServico(item, cid))
     },
     updateFn: async (apiId, item) => {
-      const cid = item.cliente_id || clientesByNome.get((item.cliente || '').toUpperCase())
+      const cid = resolveCid(item)
       api.put(`/servicos/item.php?id=${apiId}`, toApiServico(item, cid))
     },
     deleteFn: apiId => api.delete(`/servicos/item.php?id=${apiId}`),

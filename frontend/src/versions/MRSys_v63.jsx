@@ -2549,7 +2549,7 @@ export default function App({ onVoltarHub, onLogout } = {}) {
 
       <div className="flex print:block">
         {/* Sidebar lateral (md+) — menu de módulos com ícones */}
-        <aside className="hidden md:flex flex-col bg-slate-900/60 border-r border-slate-800 sticky top-[57px] self-start gap-1 px-2 py-3 print:hidden" style={{ height: 'calc(100vh - 57px)', minWidth: '64px', overflowY: 'auto' }}>
+        <aside className="hidden md:flex flex-col bg-slate-900/60 border-r border-slate-800 sticky top-[57px] self-start gap-0.5 px-2 py-3 print:hidden" style={{ height: 'calc(100vh - 57px)', width: '160px', flexShrink: 0, overflowY: 'auto' }}>
           {[
             { id: 'dashboard', l: 'Dashboard', i: BarChart3 },
             { id: 'resumo', l: 'Resumo', i: ClipboardList },
@@ -2567,13 +2567,10 @@ export default function App({ onVoltarHub, onLogout } = {}) {
             <button
               key={t.id}
               onClick={() => setAba(t.id)}
-              title={t.l}
-              className={`w-12 h-12 rounded-lg flex flex-col items-center justify-center gap-0.5 transition group relative ${ativo ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/30' : 'text-slate-400 hover:bg-slate-800 hover:text-white'}`}
+              className={`w-full rounded-lg flex flex-row items-center gap-2.5 px-3 py-2.5 transition text-left ${ativo ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/30' : 'text-slate-400 hover:bg-slate-800 hover:text-white'}`}
             >
-              <I className="w-5 h-5" />
-              <span className="text-[9px] leading-tight font-medium truncate w-full text-center px-1">{t.l.split(' ')[0]}</span>
-              {/* Tooltip do nome completo no hover */}
-              <span className="absolute left-full ml-2 px-2 py-1 bg-slate-900 border border-slate-700 rounded text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition z-50">{t.l}</span>
+              <I className="w-4 h-4 flex-shrink-0" />
+              <span className="text-xs font-medium leading-tight">{t.l}</span>
             </button>
           ); })}
         </aside>
