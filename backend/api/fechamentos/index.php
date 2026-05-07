@@ -39,7 +39,26 @@ if ($method === 'GET') {
          ORDER BY f.numero DESC"
     );
     $stmt->execute($params);
-    json_response($stmt->fetchAll());
+    $rows = $stmt->fetchAll();
+
+    // Inclui IDs dos lançamentos de cada fechamento (necessário para PDF/XLSX da medição)
+    if ($rows) {
+        $fIds = array_column($rows, 'id');
+        $ph = implode(',', array_fill(0, count($fIds), '?'));
+        $stmt2 = db()->prepare(
+            "SELECT fechamento_id, lancamento_id AS id FROM fechamento_lancamentos WHERE fechamento_id IN ({$ph}) ORDER BY lancamento_id"
+        );
+        $stmt2->execute($fIds);
+        $lancMap = [];
+        foreach ($stmt2->fetchAll() as $r) {
+            $lancMap[$r['fechamento_id']][] = ['id' => $r['id']];
+        }
+        foreach ($rows as &$row) {
+            $row['lancamentos'] = $lancMap[$row['id']] ?? [];
+        }
+        unset($row);
+    }
+    json_response($rows);
 }
 
 if ($method === 'POST') {

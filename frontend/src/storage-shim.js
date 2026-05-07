@@ -181,6 +181,7 @@ function apiToFechamento(r) {
     qtdLancamentos: n(r.qtd_lancamentos),
     lancamentos,
     statusFatura: r.status_fatura,
+    nfNumero: r.numero_nf || null,
     historicoStatus: (r.historico_status || []).map(h => ({
       status: h.status_novo, em: h.em, auto: !!h.automatico,
     })),
@@ -673,7 +674,7 @@ async function syncFechamentos(newData) {
         status_fatura: item.statusFatura,
         data_vencimento: item.dataVencimento || null,
         data_pagamento: item.dataPagamento || null,
-        numero_nf: item.numeroNF || null,
+        numero_nf: item.nfNumero || null,
         observacoes: item.observacoes || null,
       })
     },
