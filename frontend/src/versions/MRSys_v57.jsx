@@ -2016,7 +2016,12 @@ export default function App({ onVoltarHub, onLogout } = {}) {
       const isFeriado = !!nomeFeriado;
       const lancData = { horasTrabalhadas, kmRodados, pedagio: num(dados.pedagio ?? ext.pedagio), batidaExtra: num(dados.batidaExtra ?? ext.batidaExtra), outros: 0, isDomingo: eDomingo(dados.data), isFeriado };
       const calc = calcular(s, lancData, t);
-      novos.push({ id: `L${baseId}_${idx}`, os: gerarOS(), data: dados.data, codServico: dados.codServico, descricao: s.descricao, cliente: s.cliente, cnpj: s.cnpj, template: s.template, horasTrabalhadas, kmRodados, pedagio: lancData.pedagio, batidaExtra: lancData.batidaExtra, outros: 0, isDomingo: lancData.isDomingo, isFeriado, nomeFeriado, extras: ext, observacoes: ext.observacao || ext.obs || '', status: 'pendente', ...calc, atualizadoEm: new Date().toISOString() });
+      // Preserva competencia/categoriaFolha do dados se vierem da planilha
+      const compInput = String(dados.competencia || '').trim();
+      const compFromData = String(dados.data || '').slice(0, 7);
+      const competencia = (compInput && compInput !== compFromData) ? compInput : '';
+      const categoriaFolha = String(dados.categoriaFolha ?? '').trim().toUpperCase();
+      novos.push({ id: `L${baseId}_${idx}`, os: gerarOS(), data: dados.data, competencia, categoriaFolha, codServico: dados.codServico, descricao: s.descricao, cliente: s.cliente, cnpj: s.cnpj, template: s.template, horasTrabalhadas, kmRodados, pedagio: lancData.pedagio, batidaExtra: lancData.batidaExtra, outros: 0, isDomingo: lancData.isDomingo, isFeriado, nomeFeriado, extras: ext, observacoes: ext.observacao || ext.obs || '', status: 'pendente', ...calc, atualizadoEm: new Date().toISOString() });
     });
     setLancamentos(prev => [...novos, ...prev]);
     let msg = `${novos.length} lançamentos importados`;
