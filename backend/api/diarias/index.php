@@ -44,6 +44,7 @@ if ($method === 'POST') {
 
     $inseridos = 0;
     $erros     = [];
+    $idsInseridos = [];
     $pdo->beginTransaction();
     try {
         $stmt = $pdo->prepare(
@@ -70,6 +71,7 @@ if ($method === 'POST') {
                 ':obs'   => $d['observacoes'] ?? null,
                 ':uid'   => $user['id'],
             ]);
+            $idsInseridos[] = (int) $pdo->lastInsertId();
             $inseridos++;
         }
         $pdo->commit();
@@ -78,7 +80,21 @@ if ($method === 'POST') {
         throw $e;
     }
 
-    json_response(['inseridos' => $inseridos, 'erros' => $erros], $erros ? 207 : 201);
+    // Single insert → retorna o registro criado (com id) para o frontend mapear _apiId
+    if (count($itens) === 1 && $inseridos === 1 && empty($erros)) {
+        $id = $idsInseridos[0];
+        $row = db()->query(
+            "SELECT d.*, f.nome AS funcionario_nome, c.nome AS cliente_nome_atual
+             FROM diarias_freelancer d
+             JOIN funcionarios f ON f.id = d.funcionario_id
+             LEFT JOIN clientes c ON c.id = d.cliente_id
+             WHERE d.id = {$id}"
+        )->fetch();
+        json_response($row, 201);
+    }
+
+    // Bulk → retorna sumário com IDs criados
+    json_response(['inseridos' => $inseridos, 'ids' => $idsInseridos, 'erros' => $erros], $erros ? 207 : 201);
 }
 
 json_error('Método não permitido', 405);

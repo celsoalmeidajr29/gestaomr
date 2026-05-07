@@ -708,5 +708,19 @@ export function initStorageShim() {
     async delete(key) {
       delete _cache[key]
     },
+
+    // v63: força recarregar do backend (limpa cache e refaz GET).
+    // Útil ao trocar de aba para garantir sync com outros usuários ou outros clientes.
+    async refresh(key) {
+      if (key.startsWith('funcfoto_') || key.startsWith('funcdoc_')) return null
+      // Aguarda fila de sync para não competir com saves em curso
+      try { await _syncQueue } catch (_) {}
+      const data = await loadKey(key)
+      if (data !== null) {
+        _cache[key] = data
+        return { value: JSON.stringify(data) }
+      }
+      return null
+    },
   }
 }

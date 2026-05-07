@@ -1,5 +1,8 @@
 import React from 'react'
 
+// Versão atual do sistema MRSys (atualizada a cada release)
+export const MRSYS_VERSION = 'v63'
+
 const SISTEMAS = [
   {
     id: 'mrsys',
@@ -8,6 +11,7 @@ const SISTEMAS = [
     icone: 'MR',
     cor: 'from-indigo-500 to-blue-600',
     ativo: true,
+    versao: MRSYS_VERSION,
   },
   { id: 'placeholder1', placeholder: true },
   { id: 'placeholder2', placeholder: true },
@@ -57,8 +61,11 @@ export default function SistemasHub({ usuario, onSelecionarSistema, onLogout }) 
               onClick={() => onSelecionarSistema(s.id)}
               className="group text-left p-6 rounded-2xl border border-slate-200 bg-white hover:border-indigo-500 hover:shadow-lg transition-all min-h-[180px] flex flex-col cursor-pointer hover:scale-[1.02]"
             >
-              <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${s.cor} flex items-center justify-center text-white text-lg font-bold mb-4 group-hover:shadow-lg group-hover:shadow-indigo-500/30 transition`}>
-                {s.icone}
+              <div className="flex items-start justify-between mb-4">
+                <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${s.cor} flex items-center justify-center text-white text-lg font-bold group-hover:shadow-lg group-hover:shadow-indigo-500/30 transition`}>
+                  {s.icone}
+                </div>
+                {s.versao && <span className="text-[10px] font-mono text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">{s.versao}</span>}
               </div>
               <div className="text-lg font-semibold mb-1 text-slate-900">{s.nome}</div>
               <div className="text-sm text-slate-600 leading-snug">{s.descricao}</div>
