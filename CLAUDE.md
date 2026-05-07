@@ -37,20 +37,24 @@ Gestor/usuário principal: **Celso Almeida** (`celso.almeida@grupomr.seg.br`)
 
 ### Versão ativa do monolito
 
-**`MRSys_v63.jsx`** — `frontend/src/App.jsx` é wrapper que repassa props para o monolito:
+**`MRSys_v64.jsx`** — `frontend/src/App.jsx` é wrapper que repassa props para o monolito:
 ```jsx
-import MRSysApp from './versions/MRSys_v63.jsx'
+import MRSysApp from './versions/MRSys_v64.jsx'
 export default function App(props) { return <MRSysApp {...props} /> }
 ```
 
-Novidades v63:
+Novidades v64:
+- Fix: serviços criados manualmente agora persistem no banco (`storage-shim` com fallback de `cliente_id` + `loadKey('clientes')` carrega do banco)
+- Sidebar lateral com labels completos e legíveis (160px, ícone + texto lado a lado)
+- Resumo: painel "1. Faturamento" exibe somente visão consolidada por cliente (NATURA agrupada numa linha)
+
+Novidades v63 (base):
 - Auto-refresh ao trocar de aba (`window.storage.refresh(key)` no shim) com indicador "Sincronizando..." no header
 - Sidebar lateral em md+ com ícones (mobile mantém tabs scrolláveis)
 - Importação de despesas por XLSX/Texto (mesmo padrão das diárias avulsas)
-- Painel "1. Faturamento" no Resumo: tabela **Detalhada** (cliente + categoria NATURA) + tabela **Consolidada** (apenas cliente, NATURA agrupada)
 - Dashboard "Pago" agora soma lançamentos avulsos das competências com fatura gerada
 - Folha de pagamento: funcionários com APENAS lançamentos avulsos passam a aparecer na folha
-- Fix duplicação de avulsos: backend `POST /diarias` retorna o registro completo quando insert único (storage-shim consegue mapear `_apiId`)
+- Fix duplicação de avulsos: backend `POST /diarias` retorna o registro completo quando insert único
 - SistemasHub mostra badge da versão atual do MRSys
 
 A partir de v49, o `App` recebe `{ onVoltarHub, onLogout }` do `SistemasHub.jsx` (após login).
@@ -250,4 +254,4 @@ Se eu (Celso) der uma instrução que conflita com algo nas Decisões já tomada
 
 ---
 
-*Última atualização: 2026-05-06. Sistema em produção na v63 em `https://celso.cloud`. Trabalho atual: iterações e melhorias no monolito.*
+*Última atualização: 2026-05-07. Sistema em produção na v64 em `https://celso.cloud`. Trabalho atual: iterações e melhorias no monolito.*
