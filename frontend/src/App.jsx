@@ -1,6 +1,6 @@
-// Versão ativa: v81 — Folha = lançamentos + avulsos (sem adicionais no bruto); Resumo categoriza por l.categoriaFolha e d.folhaGrupo
+// Versão ativa: v82 — Resumo folha = soma direta por categoria do lançamento e da diária
 // Versões anteriores em src/versions/
-import MRSysApp from './versions/MRSys_v81.jsx'
+import MRSysApp from './versions/MRSys_v82.jsx'
 
 export default function App(props) {
   return <MRSysApp {...props} />
