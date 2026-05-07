@@ -435,7 +435,7 @@ function toApiFechamento(v, clientesByNome) {
     total_imposto: n(v.totalImposto),
     lucro: n(v.lucro),
     status_fatura: v.statusFatura || 'Enviada',
-    numero_nf: v.numeroNF || null,
+    numero_nf: v.nfNumero || null,
     is_custom: v.custom ? 1 : 0,
     observacoes: v.observacoes || null,
     lancamento_ids: lancamentoIds,
@@ -665,7 +665,8 @@ async function syncFechamentos(newData) {
     oldData: _cache['fechamentos'],
     createFn: async item => {
       const payload = toApiFechamento(item, clientesByNome)
-      if (!payload.cliente_id || !payload.lancamento_ids.length) return null
+      if (!payload.cliente_id) return null
+      if (!item.custom && !payload.lancamento_ids.length) return null
       return api.post('/fechamentos/index.php', payload)
     },
     updateFn: async (apiId, item) => {

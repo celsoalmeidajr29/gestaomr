@@ -68,8 +68,11 @@ if ($method === 'POST') {
             json_error("Campo obrigatório: {$f}", 422);
         }
     }
-    if (empty($d['lancamento_ids']) || !is_array($d['lancamento_ids'])) {
+    if (!isset($d['lancamento_ids']) || !is_array($d['lancamento_ids'])) {
         json_error('Campo obrigatório: lancamento_ids (array)', 422);
+    }
+    if (empty($d['lancamento_ids']) && empty($d['is_custom'])) {
+        json_error('Fatura sem is_custom requer ao menos um lançamento', 422);
     }
 
     $user = current_user();
@@ -110,16 +113,17 @@ if ($method === 'POST') {
         ]);
         $fid = (int) $pdo->lastInsertId();
 
-        // Vincular lançamentos
-        $slink = $pdo->prepare(
-            'INSERT IGNORE INTO fechamento_lancamentos (fechamento_id, lancamento_id) VALUES (:fid, :lid)'
-        );
-        foreach ($d['lancamento_ids'] as $lid) {
-            $slink->execute([':fid' => $fid, ':lid' => (int) $lid]);
+        // Vincular lançamentos (pode ser vazio para faturas custom/XML)
+        if (!empty($d['lancamento_ids'])) {
+            $slink = $pdo->prepare(
+                'INSERT IGNORE INTO fechamento_lancamentos (fechamento_id, lancamento_id) VALUES (:fid, :lid)'
+            );
+            foreach ($d['lancamento_ids'] as $lid) {
+                $slink->execute([':fid' => $fid, ':lid' => (int) $lid]);
+            }
+            $ids = implode(',', array_map('intval', $d['lancamento_ids']));
+            $pdo->exec("UPDATE lancamentos SET status='fechado' WHERE id IN ({$ids})");
         }
-        // Marcar lançamentos como fechados
-        $ids = implode(',', array_map('intval', $d['lancamento_ids']));
-        $pdo->exec("UPDATE lancamentos SET status='fechado' WHERE id IN ({$ids})");
 
         // Log de status inicial
         $pdo->prepare(
