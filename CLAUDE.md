@@ -37,11 +37,19 @@ Gestor/usuário principal: **Celso Almeida** (`celso.almeida@grupomr.seg.br`)
 
 ### Versão ativa do monolito
 
-**`MRSys_v65.jsx`** — `frontend/src/App.jsx` é wrapper que repassa props para o monolito:
+**`MRSys_v67.jsx`** — `frontend/src/App.jsx` é wrapper que repassa props para o monolito:
 ```jsx
-import MRSysApp from './versions/MRSys_v65.jsx'
+import MRSysApp from './versions/MRSys_v67.jsx'
 export default function App(props) { return <MRSysApp {...props} /> }
 ```
+
+Novidades v67:
+- **ModalBase reescrito**: scroll correto — outer `overflow-y-auto`, inner `flex min-h-full items-start justify-center`. Funciona com qualquer altura de conteúdo
+- **Campo spans estáticos**: objeto SPAN map substitui `sm:col-span-${span}` (não detectado pelo Tailwind JIT). Corrige campos de endereço com largura errada
+- **ModalFuncionario layout**: grid único `sm:grid-cols-2`, nome como primeiro campo (topo), foto via CSS grid placement. Campo nome agora acessível imediatamente na edição
+
+Novidades v66:
+- Fix responsividade em altas resoluções: wrapper `flex` ganhou `max-w-7xl mx-auto`, alinhando sidebar+conteúdo com o header centralizado
 
 Novidades v65:
 - Nova aba **"Despesas da Chefia"**: CRUD para despesas de MANHÃES e RICARDO, separadas das operacionais. Breakdown por origem com badges coloridos. Conectado ao backend `/api/despesas_chefia/` + migration 008
@@ -262,4 +270,4 @@ Se eu (Celso) der uma instrução que conflita com algo nas Decisões já tomada
 
 ---
 
-*Última atualização: 2026-05-07. Sistema em produção na v65 em `https://celso.cloud`. Trabalho atual: iterações e melhorias no monolito. Pendente: rodar migration 008 no phpMyAdmin (`database/migrations/008_despesas_chefia.sql`).*
+*Última atualização: 2026-05-07. Sistema em produção na v67 em `https://celso.cloud`. Trabalho atual: iterações e melhorias no monolito. Pendente: rodar migration 008 no phpMyAdmin (`database/migrations/008_despesas_chefia.sql`).*
