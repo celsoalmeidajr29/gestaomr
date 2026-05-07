@@ -37,11 +37,19 @@ Gestor/usuário principal: **Celso Almeida** (`celso.almeida@grupomr.seg.br`)
 
 ### Versão ativa do monolito
 
-**`MRSys_v64.jsx`** — `frontend/src/App.jsx` é wrapper que repassa props para o monolito:
+**`MRSys_v65.jsx`** — `frontend/src/App.jsx` é wrapper que repassa props para o monolito:
 ```jsx
-import MRSysApp from './versions/MRSys_v64.jsx'
+import MRSysApp from './versions/MRSys_v65.jsx'
 export default function App(props) { return <MRSysApp {...props} /> }
 ```
+
+Novidades v65:
+- Nova aba **"Despesas da Chefia"**: CRUD para despesas de MANHÃES e RICARDO, separadas das operacionais. Breakdown por origem com badges coloridos. Conectado ao backend `/api/despesas_chefia/` + migration 008
+- **Sidebar recolhível**: toggle com ChevronLeft/Right. Recolhido = 52px (ícones apenas); expandido = 164px (ícone + label)
+- **Despesas aba**: tabela "Por Origem" (breakdown do total filtrado por cada origem)
+- **Resumo**: Painel 7 "Despesas da Chefia" com botões ×, incluída no custoTotal e no card de resumo (violeta)
+- Export XLSX Resumo: nova aba "Desp. Chefia", faturamento consolidado por cliente (respeita exclusões ×)
+- Dados de chefia incluídos em `resumoFechamento` e `resumoLimpo`
 
 Novidades v64:
 - Fix: serviços criados manualmente agora persistem no banco (`storage-shim` com fallback de `cliente_id` + `loadKey('clientes')` carrega do banco)
@@ -254,4 +262,4 @@ Se eu (Celso) der uma instrução que conflita com algo nas Decisões já tomada
 
 ---
 
-*Última atualização: 2026-05-07. Sistema em produção na v64 em `https://celso.cloud`. Trabalho atual: iterações e melhorias no monolito.*
+*Última atualização: 2026-05-07. Sistema em produção na v65 em `https://celso.cloud`. Trabalho atual: iterações e melhorias no monolito. Pendente: rodar migration 008 no phpMyAdmin (`database/migrations/008_despesas_chefia.sql`).*
