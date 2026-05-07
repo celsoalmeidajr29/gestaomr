@@ -670,13 +670,13 @@ async function syncFechamentos(newData) {
       return api.post('/fechamentos/index.php', payload)
     },
     updateFn: async (apiId, item) => {
-      // Only mutable fields after creation
       api.put(`/fechamentos/item.php?id=${apiId}`, {
         status_fatura: item.statusFatura,
         data_vencimento: item.dataVencimento || null,
         data_pagamento: item.dataPagamento || null,
         numero_nf: item.nfNumero || null,
         observacoes: item.observacoes || null,
+        competencia: item.periodo || null,
       })
     },
     deleteFn: apiId => api.delete(`/fechamentos/item.php?id=${apiId}`),
