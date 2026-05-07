@@ -1,6 +1,6 @@
-// Versão ativa: v63 — Auto-refresh ao trocar aba + sidebar lateral + import despesas (XLSX/Texto) + faturamento consolidado por cliente + lançamentos avulsos no dashboard e folha + fix duplicação de avulsos
+// Versão ativa: v64 — Fix serviços criados manualmente não persistiam + sidebar com labels legíveis + faturamento somente consolidado por cliente
 // Versões anteriores em src/versions/
-import MRSysApp from './versions/MRSys_v63.jsx'
+import MRSysApp from './versions/MRSys_v64.jsx'
 
 export default function App(props) {
   return <MRSysApp {...props} />
