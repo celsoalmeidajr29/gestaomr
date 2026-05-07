@@ -63,7 +63,7 @@ if ($method === 'GET') {
 
 if ($method === 'POST') {
     $d = json_input();
-    foreach (['cliente_id', 'competencia', 'template'] as $f) {
+    foreach (['cliente_id', 'competencia'] as $f) {
         if (empty($d[$f])) {
             json_error("Campo obrigatório: {$f}", 422);
         }
@@ -95,7 +95,7 @@ if ($method === 'POST') {
         $stmt->execute([
             ':num'    => $nextNum,
             ':cid'    => (int) $d['cliente_id'],
-            ':tpl'    => $d['template'],
+            ':tpl'    => $d['template'] ?? '',
             ':comp'   => $d['competencia'],
             ':di'     => $d['data_inicio'] ?? null,
             ':df'     => $d['data_fim'] ?? null,

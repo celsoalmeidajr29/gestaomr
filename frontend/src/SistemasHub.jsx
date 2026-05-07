@@ -1,7 +1,7 @@
 import React from 'react'
 
 // Versão atual do sistema MRSys (atualizada a cada release)
-export const MRSYS_VERSION = 'v74'
+export const MRSYS_VERSION = 'v75'
 
 const SISTEMAS = [
   {

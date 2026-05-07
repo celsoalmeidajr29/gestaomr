@@ -425,7 +425,7 @@ function toApiFechamento(v, clientesByNome) {
   const clienteId = clientesByNome.get((v.cliente || '').toUpperCase())
   return {
     cliente_id: clienteId ?? null,
-    template: v.template,
+    template: v.template || '',
     competencia: v.periodo || v.competencia,
     data_inicio: v.dataInicio || null,
     data_fim: v.dataFim || null,
