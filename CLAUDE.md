@@ -37,9 +37,9 @@ Gestor/usuário principal: **Celso Almeida** (`celso.almeida@grupomr.seg.br`)
 
 ### Versão ativa do monolito
 
-**`MRSys_v61.jsx`** — `frontend/src/App.jsx` é wrapper que repassa props para o monolito:
+**`MRSys_v62.jsx`** — `frontend/src/App.jsx` é wrapper que repassa props para o monolito:
 ```jsx
-import MRSysApp from './versions/MRSys_v61.jsx'
+import MRSysApp from './versions/MRSys_v62.jsx'
 export default function App(props) { return <MRSysApp {...props} /> }
 ```
 
@@ -206,6 +206,7 @@ Estes detalhes não são óbvios e foram consolidados ao longo do desenvolviment
 - **Folha por Categoria considera todos os lançamentos da competência (v59+):** itera lançamentos diretamente (qualquer status), não só os fechados. Lista categorias cadastradas mesmo com R$0.
 - **Persistência DB de folhaGrupo + auto-criação no Cat. Folha (v60+):** `funcionarios.folha_grupo` agora persiste no MySQL via storage-shim. Categorias novas usadas em imports/edições são criadas automaticamente no Cat. Folha via helper `garantirCategoriasFolha`.
 - **Lançamentos Avulsos (v61+):** aba renomeada de "Diárias Avulsas". Modelo de import: `data, Colaborador, Valor, Grupo Folha`. Aceita XLSX e texto colado em um único modal com tabs. Salário fixo do funcionário removido do cadastro — agora 100% via lançamentos avulsos.
+- **Salário fixo desconsiderado (v62+):** removidos todos os cálculos e visualizações de salário fixo (folha bruto/líquido, Stat na Folha, badge "+R$" no row, Card no detalhe, linhas nos PDFs, contribuição em Resumo Folha por Categoria). Folha agora vem só de lançamentos + lançamentos avulsos + ajustes manuais. Campo `salarioFixo` mantido em 0 (não destrói dados existentes).
 - **Resumo consolidado em 6 painéis (v54+):** painéis "2. Folha de Pagamento" (template) e "4. Salários Fixos" removidos. Item 2 agora é "Folha por Categoria" (Categoria | Valor + bruto). Painéis 3-6 são Adiantamentos/Despesas Fixas/Avulsas/Parcelamentos.
 - **Card "Total Pago" nos lançamentos (v53+):** substituiu o card "Lucro" no topo. Coluna Lucro removida da tabela (redundante com PAGO Total).
 - **Hub de Sistemas (v49+):** após login, mostra `SistemasHub.jsx` com 1 card MRSys ativo + 5 placeholders. Para adicionar sistema novo, editar array `SISTEMAS`.
@@ -239,4 +240,4 @@ Se eu (Celso) der uma instrução que conflita com algo nas Decisões já tomada
 
 ---
 
-*Última atualização: 2026-05-07. Sistema em produção na v61 em `https://celso.cloud`. Trabalho atual: iterações e melhorias no monolito.*
+*Última atualização: 2026-05-07. Sistema em produção na v62 em `https://celso.cloud`. Trabalho atual: iterações e melhorias no monolito.*
