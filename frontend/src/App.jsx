@@ -1,6 +1,6 @@
-// Versão ativa: v80 — Folha por categoria: atribuição por lançamento + avulsos, fonte única folhasPorFunc
+// Versão ativa: v81 — Folha = lançamentos + avulsos (sem adicionais no bruto); Resumo categoriza por l.categoriaFolha e d.folhaGrupo
 // Versões anteriores em src/versions/
-import MRSysApp from './versions/MRSys_v80.jsx'
+import MRSysApp from './versions/MRSys_v81.jsx'
 
 export default function App(props) {
   return <MRSysApp {...props} />
