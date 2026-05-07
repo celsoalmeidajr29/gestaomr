@@ -37,11 +37,21 @@ Gestor/usuário principal: **Celso Almeida** (`celso.almeida@grupomr.seg.br`)
 
 ### Versão ativa do monolito
 
-**`MRSys_v62.jsx`** — `frontend/src/App.jsx` é wrapper que repassa props para o monolito:
+**`MRSys_v63.jsx`** — `frontend/src/App.jsx` é wrapper que repassa props para o monolito:
 ```jsx
-import MRSysApp from './versions/MRSys_v62.jsx'
+import MRSysApp from './versions/MRSys_v63.jsx'
 export default function App(props) { return <MRSysApp {...props} /> }
 ```
+
+Novidades v63:
+- Auto-refresh ao trocar de aba (`window.storage.refresh(key)` no shim) com indicador "Sincronizando..." no header
+- Sidebar lateral em md+ com ícones (mobile mantém tabs scrolláveis)
+- Importação de despesas por XLSX/Texto (mesmo padrão das diárias avulsas)
+- Painel "1. Faturamento" no Resumo: tabela **Detalhada** (cliente + categoria NATURA) + tabela **Consolidada** (apenas cliente, NATURA agrupada)
+- Dashboard "Pago" agora soma lançamentos avulsos das competências com fatura gerada
+- Folha de pagamento: funcionários com APENAS lançamentos avulsos passam a aparecer na folha
+- Fix duplicação de avulsos: backend `POST /diarias` retorna o registro completo quando insert único (storage-shim consegue mapear `_apiId`)
+- SistemasHub mostra badge da versão atual do MRSys
 
 A partir de v49, o `App` recebe `{ onVoltarHub, onLogout }` do `SistemasHub.jsx` (após login).
 
@@ -240,4 +250,4 @@ Se eu (Celso) der uma instrução que conflita com algo nas Decisões já tomada
 
 ---
 
-*Última atualização: 2026-05-07. Sistema em produção na v62 em `https://celso.cloud`. Trabalho atual: iterações e melhorias no monolito.*
+*Última atualização: 2026-05-06. Sistema em produção na v63 em `https://celso.cloud`. Trabalho atual: iterações e melhorias no monolito.*
