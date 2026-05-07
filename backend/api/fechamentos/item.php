@@ -76,13 +76,13 @@ if ($method === 'PUT' || $method === 'PATCH') {
         ':id'     => $id,
     ]);
 
-    if ($novoStatus !== $atual) {
+    if ($novoStatus !== $row_atual['status_fatura']) {
         $pdo->prepare(
             'INSERT INTO fechamento_status_log (fechamento_id, status_anterior, status_novo, usuario_id, observacao)
              VALUES (:fid, :ant, :novo, :uid, :obs)'
         )->execute([
             ':fid' => $id,
-            ':ant' => $atual,
+            ':ant' => $row_atual['status_fatura'],
             ':novo'=> $novoStatus,
             ':uid' => $user['id'],
             ':obs' => $d['observacoes'] ?? null,

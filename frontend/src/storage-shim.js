@@ -670,7 +670,7 @@ async function syncFechamentos(newData) {
       return api.post('/fechamentos/index.php', payload)
     },
     updateFn: async (apiId, item) => {
-      api.put(`/fechamentos/item.php?id=${apiId}`, {
+      await api.put(`/fechamentos/item.php?id=${apiId}`, {
         status_fatura: item.statusFatura,
         data_vencimento: item.dataVencimento || null,
         data_pagamento: item.dataPagamento || null,
