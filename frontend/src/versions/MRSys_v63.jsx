@@ -3508,53 +3508,27 @@ export default function App({ onVoltarHub, onLogout } = {}) {
                     </div>
                   )}
                   {resumoFechamento.faturamento.length === 0 ? null : (() => {
-                    // v63: visão por cliente CONSOLIDADO (agrupa NATURA-categorias num único "NATURA COSMÉTICOS")
+                    // Agrupa NATURA-categorias num único "NATURA COSMÉTICOS" — exibe só por cliente
                     const consolidadoMap = {};
                     resumoFechamento.faturamento.forEach(f => {
-                      // "NATURA COSMÉTICOS - VELADA RJ" → "NATURA COSMÉTICOS"
                       const baseCliente = (f.cliente || '').split(' - ')[0].trim();
-                      if (!consolidadoMap[baseCliente]) consolidadoMap[baseCliente] = { cliente: baseCliente, valor: 0, imposto: 0, qtd: 0, key: `C|${baseCliente}` };
+                      if (!consolidadoMap[baseCliente]) consolidadoMap[baseCliente] = { cliente: baseCliente, valor: 0, key: `C|${baseCliente}` };
                       consolidadoMap[baseCliente].valor += num(f.valor);
-                      consolidadoMap[baseCliente].imposto += num(f.imposto);
-                      consolidadoMap[baseCliente].qtd += 1;
                     });
                     const consolidado = Object.values(consolidadoMap).map(c => ({ ...c, valor: roundMoney(c.valor) })).sort((a, b) => a.cliente.localeCompare(b.cliente));
                     const totalConsolidado = sumMoney(consolidado, c => c.valor);
                     return (
-                      <div className="space-y-4">
-                        {/* Visão DETALHADA (por cliente + categoria NATURA) */}
-                        <div>
-                          <div className="text-xs uppercase font-semibold text-slate-400 mb-1.5">Detalhado (cliente + categoria NATURA)</div>
-                          <div className="overflow-x-auto">
-                            <table className="w-full text-sm">
-                              <thead className="text-xs text-slate-400 border-b border-slate-800"><tr><th className="w-8"></th><th className="text-left py-2 px-2">Cliente</th><th className="text-right px-2">Valor</th></tr></thead>
-                              <tbody>{resumoFechamento.faturamento.map((f, i) => { const excl = isExclResumo('faturamento', f.key); return (
-                                <tr key={f.key} className={`border-b border-slate-800/50 ${excl ? 'opacity-40 line-through' : ''}`}>
-                                  <td className="px-1"><BotaoXResumo excluido={excl} onClick={() => toggleExclResumo('faturamento', f.key)} /></td>
-                                  <td className="py-1.5 px-2 font-medium text-xs">{f.cliente}</td>
-                                  <td className="text-right px-2 text-emerald-400 font-medium">{fmt(f.valor)}</td>
-                                </tr>
-                              ); })}</tbody>
-                              <tfoot className="border-t border-slate-700 font-semibold"><tr><td></td><td className="py-2 px-2">TOTAL{(excluidosResumo.faturamento || []).length > 0 ? ' (limpo)' : ''}</td><td className="text-right px-2 text-emerald-400">{fmt(resumoLimpo.totalFaturamento)}</td></tr></tfoot>
-                            </table>
-                          </div>
-                        </div>
-                        {/* Visão CONSOLIDADA (somente por cliente — NATURA agrupada) */}
-                        <div>
-                          <div className="text-xs uppercase font-semibold text-slate-400 mb-1.5">Consolidado (por cliente)</div>
-                          <div className="overflow-x-auto">
-                            <table className="w-full text-sm">
-                              <thead className="text-xs text-slate-400 border-b border-slate-800"><tr><th className="text-left py-2 px-2">Cliente</th><th className="text-right px-2">Valor</th></tr></thead>
-                              <tbody>{consolidado.map(c => (
-                                <tr key={c.key} className="border-b border-slate-800/50">
-                                  <td className="py-1.5 px-2 font-medium text-xs">{c.cliente}</td>
-                                  <td className="text-right px-2 text-emerald-400 font-medium">{fmt(c.valor)}</td>
-                                </tr>
-                              ))}</tbody>
-                              <tfoot className="border-t border-slate-700 font-semibold"><tr><td className="py-2 px-2">TOTAL</td><td className="text-right px-2 text-emerald-400">{fmt(totalConsolidado)}</td></tr></tfoot>
-                            </table>
-                          </div>
-                        </div>
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-sm">
+                          <thead className="text-xs text-slate-400 border-b border-slate-800"><tr><th className="text-left py-2 px-2">Cliente</th><th className="text-right px-2">Valor</th></tr></thead>
+                          <tbody>{consolidado.map(c => (
+                            <tr key={c.key} className="border-b border-slate-800/50">
+                              <td className="py-1.5 px-2 font-medium text-xs">{c.cliente}</td>
+                              <td className="text-right px-2 text-emerald-400 font-medium">{fmt(c.valor)}</td>
+                            </tr>
+                          ))}</tbody>
+                          <tfoot className="border-t border-slate-700 font-semibold"><tr><td className="py-2 px-2">TOTAL</td><td className="text-right px-2 text-emerald-400">{fmt(totalConsolidado)}</td></tr></tfoot>
+                        </table>
                       </div>
                     );
                   })()}
