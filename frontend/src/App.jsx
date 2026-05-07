@@ -1,6 +1,6 @@
-// Versão ativa: v77 — Export resumo XLSX Aba 2 usa Folha por Categoria
+// Versão ativa: v78 — Bruto na tabela Folha inclui avulsos; export XLSX por categoria/funcionário
 // Versões anteriores em src/versions/
-import MRSysApp from './versions/MRSys_v77.jsx'
+import MRSysApp from './versions/MRSys_v78.jsx'
 
 export default function App(props) {
   return <MRSysApp {...props} />
