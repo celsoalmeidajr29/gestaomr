@@ -677,6 +677,7 @@ async function syncFechamentos(newData) {
         numero_nf: item.nfNumero || null,
         observacoes: item.observacoes || null,
         competencia: item.periodo || null,
+        cliente_id: clientesByNome.get((item.cliente || '').toUpperCase()) || null,
       })
     },
     deleteFn: apiId => api.delete(`/fechamentos/item.php?id=${apiId}`),

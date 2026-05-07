@@ -53,13 +53,16 @@ if ($method === 'PUT' || $method === 'PATCH') {
     $pdo = db();
 
     // Status transition — registra no log
-    $row_atual = $pdo->query("SELECT status_fatura, competencia FROM fechamentos WHERE id={$id}")->fetch();
+    $row_atual = $pdo->query("SELECT status_fatura, competencia, cliente_id FROM fechamentos WHERE id={$id}")->fetch();
     $novoStatus = $d['status_fatura'] ?? $row_atual['status_fatura'];
     $novaComp   = $d['competencia'] ?? $row_atual['competencia'];
 
+    $novoClienteId = isset($d['cliente_id']) && $d['cliente_id'] ? (int) $d['cliente_id'] : $row_atual['cliente_id'];
+
     $stmt = $pdo->prepare(
         'UPDATE fechamentos SET status_fatura=:status, numero_nf=:nf,
-         data_vencimento=:dv, data_pagamento=:dp, observacoes=:obs, competencia=:comp
+         data_vencimento=:dv, data_pagamento=:dp, observacoes=:obs,
+         competencia=:comp, cliente_id=:cid
          WHERE id=:id'
     );
     $stmt->execute([
@@ -69,6 +72,7 @@ if ($method === 'PUT' || $method === 'PATCH') {
         ':dp'     => $d['data_pagamento'] ?? null,
         ':obs'    => $d['observacoes'] ?? null,
         ':comp'   => $novaComp,
+        ':cid'    => $novoClienteId,
         ':id'     => $id,
     ]);
 
