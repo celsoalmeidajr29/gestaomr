@@ -209,6 +209,26 @@ function apiToDespesa(r) {
   }
 }
 
+function apiToDespChefia(r) {
+  _idMap.set(`DC2${r.id}`, r.id)
+  return {
+    _apiId: r.id,
+    id: `DC2${r.id}`,
+    descricao: r.descricao,
+    competencia: r.competencia,
+    tipo: r.tipo,
+    valor: n(r.valor),
+    origem: r.origem || 'MANHÃES',
+    dataLancamento: r.data_lancamento || '',
+    dataPagamento: r.data_pagamento || '',
+    parcelaAtual: r.parcela_atual ?? null,
+    parcelaTotal: r.parcela_total ?? null,
+    status: r.status,
+    observacoes: r.observacoes || '',
+    criadoEm: r.criado_em,
+  }
+}
+
 function apiToDesconto(r) {
   _idMap.set(`DC${r.id}`, r.id)
   return {
@@ -438,6 +458,22 @@ function toApiDespesa(v) {
   }
 }
 
+function toApiDespChefia(v) {
+  return {
+    descricao: v.descricao,
+    competencia: v.competencia,
+    tipo: v.tipo || 'AVULSA',
+    valor: n(v.valor),
+    origem: v.origem || 'MANHÃES',
+    data_lancamento: v.dataLancamento || null,
+    data_pagamento: v.dataPagamento || null,
+    parcela_atual: v.parcelaAtual || null,
+    parcela_total: v.parcelaTotal || null,
+    status: v.status || 'pendente',
+    observacoes: v.observacoes || null,
+  }
+}
+
 function toApiDesconto(v) {
   return {
     alvo_nome: v.alvoNome,
@@ -465,6 +501,7 @@ async function loadKey(key) {
       case 'descontos':        return (await api.get('/descontos/index.php') || []).map(apiToDesconto)
       case 'folhas':           return (await api.get('/folhas/index.php') || []).map(apiToFolha)
       case 'diarias':          return (await api.get('/diarias/index.php') || []).map(apiToDiaria)
+      case 'despChefia':        return (await api.get('/despesas_chefia/index.php') || []).map(apiToDespChefia)
       case 'categoriasFolha':  return (await api.get('/folha_categorias/index.php') || []).map(r => ({ _apiId: r.id, id: `CF${r.id}`, nome: r.nome, cor: r.cor || 'blue' }))
       case 'clientes':         return (await api.get('/clientes/index.php') || []).map(r => ({
         _apiId: r.id,
@@ -655,6 +692,17 @@ async function syncDespesas(newData) {
   })
 }
 
+async function syncDespChefia(newData) {
+  _cache['despChefia'] = await diffSync({
+    key: 'despChefia',
+    newData,
+    oldData: _cache['despChefia'],
+    createFn: item => api.post('/despesas_chefia/index.php', toApiDespChefia(item)),
+    updateFn: (apiId, item) => api.put(`/despesas_chefia/item.php?id=${apiId}`, toApiDespChefia(item)),
+    deleteFn: apiId => api.delete(`/despesas_chefia/item.php?id=${apiId}`),
+  })
+}
+
 async function syncDescontos(newData) {
   _cache['descontos'] = await diffSync({
     key: 'descontos',
@@ -702,6 +750,7 @@ function syncKey(key, newData) {
       case 'lancamentos':  return syncLancamentos(newData)
       case 'fechamentos':  return syncFechamentos(newData)
       case 'despesas':     return syncDespesas(newData)
+      case 'despChefia':   return syncDespChefia(newData)
       case 'descontos':    return syncDescontos(newData)
       case 'folhas':           return syncFolhas(newData)
       case 'diarias':          return syncDiarias(newData)

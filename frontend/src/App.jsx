@@ -1,6 +1,6 @@
-// Versão ativa: v64 — Fix serviços criados manualmente não persistiam + sidebar com labels legíveis + faturamento somente consolidado por cliente
+// Versão ativa: v65 — Desp. Chefia + sidebar recolhível + export/painel Resumo com exclusões + despesas por origem
 // Versões anteriores em src/versions/
-import MRSysApp from './versions/MRSys_v64.jsx'
+import MRSysApp from './versions/MRSys_v65.jsx'
 
 export default function App(props) {
   return <MRSysApp {...props} />
