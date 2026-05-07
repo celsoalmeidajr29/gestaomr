@@ -48,8 +48,8 @@ if ($method === 'POST') {
     try {
         $stmt = $pdo->prepare(
             'INSERT INTO diarias_freelancer
-             (competencia, data, funcionario_id, nome_snapshot, cliente_id, cliente_nome, valor, observacoes, criado_por)
-             VALUES (:comp, :data, :fid, :nome, :cid, :cnome, :valor, :obs, :uid)'
+             (competencia, data, funcionario_id, nome_snapshot, cliente_id, cliente_nome, folha_grupo, valor, observacoes, criado_por)
+             VALUES (:comp, :data, :fid, :nome, :cid, :cnome, :fgrupo, :valor, :obs, :uid)'
         );
         foreach ($itens as $idx => $d) {
             if (empty($d['funcionario_id']) || empty($d['data']) || empty($d['valor'])) {
@@ -65,6 +65,7 @@ if ($method === 'POST') {
                 ':nome'  => $d['nome_snapshot'] ?? '',
                 ':cid'   => isset($d['cliente_id']) ? (int) $d['cliente_id'] : null,
                 ':cnome' => $d['cliente_nome'] ?? '',
+                ':fgrupo'=> $d['folha_grupo'] ?: null,
                 ':valor' => (float) $d['valor'],
                 ':obs'   => $d['observacoes'] ?? null,
                 ':uid'   => $user['id'],

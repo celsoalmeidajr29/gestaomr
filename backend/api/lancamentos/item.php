@@ -44,7 +44,8 @@ if ($method === 'PUT' || $method === 'PATCH') {
     $pdo->beginTransaction();
     try {
         $stmt = $pdo->prepare(
-            'UPDATE lancamentos SET servico_id=:sid, data=:data, is_domingo=:isdom, is_feriado=:isferia,
+            'UPDATE lancamentos SET servico_id=:sid, os=:os, data=:data, competencia=:comp, categoria_folha=:catfolha,
+             is_domingo=:isdom, is_feriado=:isferia, nome_feriado=:nomeferia,
              horas_trabalhadas=:ht, km_rodados=:km, pedagio=:ped, outros=:outros, batida_extra=:batida,
              horas_extras=:hext, km_extras=:kext,
              extra_horas_fatura=:hef, extra_km_fatura=:kef, adic_dom_fatura=:adf,
@@ -56,9 +57,13 @@ if ($method === 'PUT' || $method === 'PATCH') {
         );
         $stmt->execute([
             ':sid'    => (int) $d['servico_id'],
+            ':os'     => $d['os'] ?: null,
             ':data'   => $d['data'],
+            ':comp'   => $d['competencia'] ?: null,
+            ':catfolha' => $d['categoria_folha'] ?: null,
             ':isdom'  => (int) ($d['is_domingo'] ?? 0),
             ':isferia'=> (int) ($d['is_feriado'] ?? 0),
+            ':nomeferia' => $d['nome_feriado'] ?: null,
             ':ht'     => $d['horas_trabalhadas'] ?? 0,
             ':km'     => $d['km_rodados'] ?? 0,
             ':ped'    => $d['pedagio'] ?? 0,

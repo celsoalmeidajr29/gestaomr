@@ -30,6 +30,9 @@ CREATE TABLE IF NOT EXISTS `folha_categorias` (
 ALTER TABLE lancamentos ADD COLUMN IF NOT EXISTS `competencia`     CHAR(7)     DEFAULT NULL AFTER `data`;
 ALTER TABLE lancamentos ADD COLUMN IF NOT EXISTS `categoria_folha` VARCHAR(60) DEFAULT NULL AFTER `competencia`;
 
+-- 2b) Coluna em diarias_freelancer
+ALTER TABLE diarias_freelancer ADD COLUMN IF NOT EXISTS `folha_grupo` VARCHAR(60) DEFAULT NULL AFTER `cliente_nome`;
+
 -- 3) Índices auxiliares (cria só se não existir)
 SET @idx := (SELECT COUNT(*) FROM information_schema.statistics WHERE table_schema = DATABASE() AND table_name = 'lancamentos' AND index_name = 'idx_competencia');
 SET @s := IF(@idx = 0, 'ALTER TABLE lancamentos ADD KEY `idx_competencia` (`competencia`)', 'SELECT 1');

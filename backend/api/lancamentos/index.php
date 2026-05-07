@@ -83,7 +83,8 @@ if ($method === 'POST') {
     $pdo->beginTransaction();
     try {
         $stmt = $pdo->prepare(
-            'INSERT INTO lancamentos (servico_id, data, is_domingo, is_feriado,
+            'INSERT INTO lancamentos (servico_id, os, data, competencia, categoria_folha,
+             is_domingo, is_feriado, nome_feriado,
              horas_trabalhadas, km_rodados, pedagio, outros, batida_extra,
              horas_extras, km_extras,
              extra_horas_fatura, extra_km_fatura, adic_dom_fatura,
@@ -91,7 +92,8 @@ if ($method === 'POST') {
              pedagio_fatura, pedagio_reembolso,
              total_fatura, total_pago, aliquota_aplicada, imposto, lucro,
              status, observacao, criado_por)
-             VALUES (:sid, :data, :isdom, :isferia,
+             VALUES (:sid, :os, :data, :comp, :catfolha,
+             :isdom, :isferia, :nomeferia,
              :ht, :km, :ped, :outros, :batida,
              :hext, :kext,
              :hef, :kef, :adf,
@@ -102,9 +104,13 @@ if ($method === 'POST') {
         );
         $stmt->execute([
             ':sid'    => (int) $d['servico_id'],
+            ':os'     => $d['os'] ?: null,
             ':data'   => $d['data'],
+            ':comp'   => $d['competencia'] ?: null,
+            ':catfolha' => $d['categoria_folha'] ?: null,
             ':isdom'  => (int) ($d['is_domingo'] ?? 0),
             ':isferia'=> (int) ($d['is_feriado'] ?? 0),
+            ':nomeferia' => $d['nome_feriado'] ?: null,
             ':ht'     => $d['horas_trabalhadas'] ?? 0,
             ':km'     => $d['km_rodados'] ?? 0,
             ':ped'    => $d['pedagio'] ?? 0,

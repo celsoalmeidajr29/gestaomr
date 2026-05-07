@@ -33,6 +33,7 @@ if ($method === 'PUT' || $method === 'PATCH') {
            nome_snapshot = :nome,
            cliente_id    = :cid,
            cliente_nome  = :cnome,
+           folha_grupo   = :fgrupo,
            valor         = :valor,
            observacoes   = :obs
          WHERE id = :id'
@@ -43,6 +44,7 @@ if ($method === 'PUT' || $method === 'PATCH') {
         ':nome'  => $d['nome_snapshot']  ?? $diaria['nome_snapshot'],
         ':cid'   => isset($d['cliente_id']) ? (int) $d['cliente_id'] : $diaria['cliente_id'],
         ':cnome' => $d['cliente_nome']   ?? $diaria['cliente_nome'],
+        ':fgrupo'=> $d['folha_grupo']    ?? $diaria['folha_grupo'] ?? null,
         ':valor' => (float) ($d['valor'] ?? $diaria['valor']),
         ':obs'   => $d['observacoes']    ?? $diaria['observacoes'],
         ':id'    => $id,

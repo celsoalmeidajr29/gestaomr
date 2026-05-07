@@ -115,7 +115,10 @@ function apiToLancamento(r) {
   return {
     _apiId: r.id,
     id: v13Id,
+    os: r.os || '',
     data: r.data,
+    competencia: r.competencia || '',
+    categoriaFolha: r.categoria_folha || '',
     codServico: r.servico_codigo,
     descricao: r.servico_descricao,
     cliente: r.cliente_nome,
@@ -237,6 +240,7 @@ function apiToDiaria(r) {
     nome:          r.nome_snapshot,
     clienteId:     r.cliente_id,
     clienteNome:   r.cliente_nome,
+    folhaGrupo:    r.folha_grupo || '',
     valor:         Number(r.valor) || 0,
     observacoes:   r.observacoes || '',
     criadoEm:      r.criado_em,
@@ -253,6 +257,7 @@ function toApiDiaria(v) {
     nome_snapshot:  v.nome,
     cliente_id:     v.clienteId || null,
     cliente_nome:   v.clienteNome || '',
+    folha_grupo:    v.folhaGrupo || null,
     valor:          Number(v.valor) || 0,
     observacoes:    v.observacoes || null,
   }
@@ -356,9 +361,13 @@ function toApiLancamento(v, servicosByCode, funcsByNome) {
 
   return {
     servico_id: svc?._apiId ?? null,
+    os: v.os || null,
     data: v.data,
+    competencia: v.competencia || null,
+    categoria_folha: v.categoriaFolha || null,
     is_domingo: v.isDomingo ? 1 : 0,
     is_feriado: v.isFeriado ? 1 : 0,
+    nome_feriado: v.nomeFeriado || null,
     horas_trabalhadas: n(v.horasTrabalhadas),
     km_rodados: n(v.kmRodados),
     pedagio: n(v.pedagio),
@@ -446,15 +455,16 @@ function toApiDesconto(v) {
 async function loadKey(key) {
   try {
     switch (key) {
-      case 'servicos':     return (await api.get('/servicos/index.php') || []).map(apiToServico)
-      case 'funcionarios': return (await api.get('/funcionarios/index.php') || []).map(apiToFuncionario)
-      case 'lancamentos':  return (await api.get('/lancamentos/index.php') || []).map(apiToLancamento)
-      case 'fechamentos':  return (await api.get('/fechamentos/index.php') || []).map(apiToFechamento)
-      case 'despesas':     return (await api.get('/despesas/index.php') || []).map(apiToDespesa)
-      case 'descontos':    return (await api.get('/descontos/index.php') || []).map(apiToDesconto)
-      case 'folhas':       return (await api.get('/folhas/index.php') || []).map(apiToFolha)
-      case 'diarias':      return (await api.get('/diarias/index.php') || []).map(apiToDiaria)
-      default:             return null
+      case 'servicos':         return (await api.get('/servicos/index.php') || []).map(apiToServico)
+      case 'funcionarios':     return (await api.get('/funcionarios/index.php') || []).map(apiToFuncionario)
+      case 'lancamentos':      return (await api.get('/lancamentos/index.php') || []).map(apiToLancamento)
+      case 'fechamentos':      return (await api.get('/fechamentos/index.php') || []).map(apiToFechamento)
+      case 'despesas':         return (await api.get('/despesas/index.php') || []).map(apiToDespesa)
+      case 'descontos':        return (await api.get('/descontos/index.php') || []).map(apiToDesconto)
+      case 'folhas':           return (await api.get('/folhas/index.php') || []).map(apiToFolha)
+      case 'diarias':          return (await api.get('/diarias/index.php') || []).map(apiToDiaria)
+      case 'categoriasFolha':  return (await api.get('/folha_categorias/index.php') || []).map(r => ({ _apiId: r.id, id: `CF${r.id}`, nome: r.nome, cor: r.cor || 'blue' }))
+      default:                 return null
     }
   } catch (e) {
     console.error('[shim] load error', key, e.message)
@@ -635,6 +645,18 @@ async function syncDiarias(newData) {
   })
 }
 
+async function syncCategoriasFolha(newData) {
+  const toApi = v => ({ nome: (v.nome || '').toUpperCase(), cor: v.cor || null })
+  _cache['categoriasFolha'] = await diffSync({
+    key:      'categoriasFolha',
+    newData,
+    oldData:  _cache['categoriasFolha'],
+    createFn: item => api.post('/folha_categorias/index.php', toApi(item)),
+    updateFn: (apiId, item) => api.put(`/folha_categorias/item.php?id=${apiId}`, toApi(item)),
+    deleteFn: apiId => api.delete(`/folha_categorias/item.php?id=${apiId}`),
+  })
+}
+
 function syncKey(key, newData) {
   const run = () => {
     switch (key) {
@@ -644,9 +666,10 @@ function syncKey(key, newData) {
       case 'fechamentos':  return syncFechamentos(newData)
       case 'despesas':     return syncDespesas(newData)
       case 'descontos':    return syncDescontos(newData)
-      case 'folhas':       return syncFolhas(newData)
-      case 'diarias':      return syncDiarias(newData)
-      default:             return Promise.resolve(void (_cache[key] = newData))
+      case 'folhas':           return syncFolhas(newData)
+      case 'diarias':          return syncDiarias(newData)
+      case 'categoriasFolha':  return syncCategoriasFolha(newData)
+      default:                 return Promise.resolve(void (_cache[key] = newData))
     }
   }
   // Encadeia na fila — erros de um sync não bloqueiam o próximo
