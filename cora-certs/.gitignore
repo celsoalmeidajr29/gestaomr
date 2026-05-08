@@ -1,0 +1,7 @@
+# NUNCA commitar certificados ou chaves privadas — ignora todo o conteúdo desta pasta
+*
+!.gitignore
+!README.md
+!*/
+*/*
+!*/.gitkeep
