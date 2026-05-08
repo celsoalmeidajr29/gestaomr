@@ -4015,22 +4015,13 @@ export default function App({ onVoltarHub, onLogout } = {}) {
                   ];
                   // normalizar() já remove acentos + uppercase; necessário porque "MANHÃES".includes("MANHA") === false
                   const totalCartaoEmpresa = sumMoney(todasOperacionais.filter(d => ['CARTAO CORPORATIVO', 'EMPRESA'].includes(normalizar(d.origem))), d => d.valor);
-                  const totalGalop = sumMoney((resumoLimpo.adiantamentos || []).filter(a => normalizar(a.tipoVale).includes('GALOP')), v => v.valor);
-                  // Combustível da Empresa: despesas operacionais com origem GALOP (despesa direta, não vale)
-                  const totalCombEmpresa = sumMoney(todasOperacionais.filter(d => normalizar(d.origem).includes('GALOP')), d => d.valor);
-                  // Despesas Manhães/Ricardo: une despChefia + despesas operacionais com origem correspondente
-                  const ehManhaes = (origem) => normalizar(origem).includes('MANHA');
-                  const ehRicardo = (origem) => normalizar(origem) === 'RICARDO';
-                  const totalManhaes = sumMoney([
-                    ...(resumoLimpo.despesasChefia || []).filter(d => ehManhaes(d.origem)),
-                    ...todasOperacionais.filter(d => ehManhaes(d.origem)),
-                  ], d => d.valor);
-                  const totalRicardo = sumMoney([
-                    ...(resumoLimpo.despesasChefia || []).filter(d => ehRicardo(d.origem)),
-                    ...todasOperacionais.filter(d => ehRicardo(d.origem)),
-                  ], d => d.valor);
+                  // Galop: despesas avulsas com origem GALOP
+                  const totalGalop = sumMoney((resumoLimpo.despesasAvulsas || []).filter(d => normalizar(d.origem).includes('GALOP')), d => d.valor);
+                  // Despesas Manhães/Ricardo: somente do painel "Despesas da Chefia" (despChefia)
+                  const totalManhaes = sumMoney((resumoLimpo.despesasChefia || []).filter(d => normalizar(d.origem).includes('MANHA')), d => d.valor);
+                  const totalRicardo = sumMoney((resumoLimpo.despesasChefia || []).filter(d => normalizar(d.origem) === 'RICARDO'), d => d.valor);
 
-                  const totalGeral = roundMoney(folhaLiquida + totalCartaoEmpresa + totalGalop + totalCombEmpresa + totalManhaes + totalRicardo);
+                  const totalGeral = roundMoney(folhaLiquida + totalCartaoEmpresa + totalGalop + totalManhaes + totalRicardo);
 
                   return (
                     <Painel titulo="Relatório Gerencial — Despesas">
@@ -4057,10 +4048,6 @@ export default function App({ onVoltarHub, onLogout } = {}) {
                             <tr className="border-b border-slate-800">
                               <td className="py-2 px-3 text-slate-300">(+) Galop (combustível)</td>
                               <td className="text-right px-3 font-medium text-orange-300">{fmt(totalGalop)}</td>
-                            </tr>
-                            <tr className="border-b border-slate-800">
-                              <td className="py-2 px-3 text-slate-300">(+) Combustível da Empresa</td>
-                              <td className="text-right px-3 font-medium text-orange-300">{fmt(totalCombEmpresa)}</td>
                             </tr>
                             <tr className="border-b border-slate-800">
                               <td className="py-2 px-3 text-slate-300">(+) Despesas Manhães</td>
