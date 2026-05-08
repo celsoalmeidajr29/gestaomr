@@ -287,12 +287,16 @@ function toApiDiaria(v) {
 
 function apiToFolha(r) {
   _idMap.set(`FO${r.id}`, r.id)
+  // Frontend usa funcionarioId (id v13 do funcionário, formato F{n}) e periodo (alias de competencia)
+  const funcVid = `F${r.funcionario_id}`
   return {
     _apiId: r.id,
     id: `FO${r.id}`,
-    funcionario_id: r.funcionario_id,
+    funcionarioId: funcVid,        // ID v13 (string F{n})
+    funcionarioApiId: r.funcionario_id, // ID DB (int)
     funcionarioNome: r.funcionario_nome,
-    competencia: r.competencia,
+    periodo: r.competencia,         // alias usado pelo frontend
+    competencia: r.competencia,     // mantém ambos por compat
     totalLancamentos: n(r.total_lancamentos),
     salarioFixoAplicado: n(r.salario_fixo_aplicado),
     adicionais: n(r.adicionais),
@@ -717,9 +721,49 @@ async function syncDescontos(newData) {
   })
 }
 
+// Mapeia funcionario v13 id (F{n}) → DB id (int) usando o cache de funcionários
+function funcVidToDbId(vid) {
+  if (!vid) return null
+  const v = String(vid)
+  if (/^\d+$/.test(v)) return parseInt(v, 10) // já é numérico
+  if (v.startsWith('F')) {
+    const n = parseInt(v.slice(1), 10)
+    if (!isNaN(n)) return n
+  }
+  // fallback: procura no cache de funcionários
+  const cache = _cache['funcionarios'] || []
+  const f = cache.find(x => x.id === vid)
+  return f?._apiId || null
+}
+
+function toApiFolha(v) {
+  return {
+    funcionario_id:        funcVidToDbId(v.funcionarioId),
+    competencia:           v.periodo || v.competencia,
+    total_lancamentos:     v.totalLancamentos ?? v.total ?? 0,
+    salario_fixo_aplicado: v.salarioFixoAplicado ?? 0,
+    adicionais:            v.adicionais ?? 0,
+    descontos_manuais:     v.descontosManuais ?? 0,
+    total_vales:           v.totalVales ?? 0,
+    bruto:                 v.bruto ?? 0,
+    liquido:               v.liquido ?? 0,
+    ajustes:               v.ajustes ?? [],
+    status:                v.status || 'pendente',
+    data_pagamento:        v.dataPagamento || null,
+    observacoes:           v.observacoes || null,
+  }
+}
+
 async function syncFolhas(newData) {
-  // Folhas são geradas pelo backend via fechamentos — sync parcial por ora
-  _cache['folhas'] = newData
+  _cache['folhas'] = await diffSync({
+    key:      'folhas',
+    newData,
+    oldData:  _cache['folhas'],
+    createFn: item => api.post('/folhas/index.php', toApiFolha(item)),
+    updateFn: (apiId, item) => api.put(`/folhas/index.php?id=${apiId}`, toApiFolha(item)),
+    // Folhas geralmente não são deletadas — mantemos linha no DB
+    deleteFn: async () => {},
+  })
 }
 
 async function syncDiarias(newData) {
