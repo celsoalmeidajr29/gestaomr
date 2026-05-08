@@ -4018,7 +4018,8 @@ export default function App({ onVoltarHub, onLogout } = {}) {
                   // Galop: despesas avulsas com origem GALOP
                   const totalGalop = sumMoney((resumoLimpo.despesasAvulsas || []).filter(d => normalizar(d.origem).includes('GALOP')), d => d.valor);
                   // Despesas Manhães/Ricardo: somente do painel "Despesas da Chefia" (despChefia)
-                  const totalManhaes = sumMoney((resumoLimpo.despesasChefia || []).filter(d => normalizar(d.origem).includes('MANHA')), d => d.valor);
+                  // normalizar('MANHÃES') = 'MANHAES'; comparar com === após normalizar ambos os lados
+                  const totalManhaes = sumMoney((resumoLimpo.despesasChefia || []).filter(d => normalizar(d.origem) === normalizar('MANHÃES')), d => d.valor);
                   const totalRicardo = sumMoney((resumoLimpo.despesasChefia || []).filter(d => normalizar(d.origem) === 'RICARDO'), d => d.valor);
 
                   const totalGeral = roundMoney(folhaLiquida + totalCartaoEmpresa + totalGalop + totalManhaes + totalRicardo);
