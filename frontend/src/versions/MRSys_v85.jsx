@@ -4039,7 +4039,7 @@ export default function App({ onVoltarHub, onLogout } = {}) {
                               <td className="text-right px-3 font-bold text-amber-300">{fmt(folhaLiquida)}</td>
                             </tr>
                             <tr className="border-b border-slate-800">
-                              <td className="py-2 px-3 text-slate-300">(+) Cartão Corporativo + Empresa</td>
+                              <td className="py-2 px-3 text-slate-300">(+) Despesas do mês</td>
                               <td className="text-right px-3 font-medium text-orange-300">{fmt(totalCartaoEmpresa)}</td>
                             </tr>
                             <tr className="border-b border-slate-800">
