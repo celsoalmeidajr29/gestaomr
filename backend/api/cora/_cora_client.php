@@ -243,6 +243,115 @@ function cora_request(string $empresa, string $method, string $path, ?array $bod
 // Validação de assinatura HMAC do webhook
 // ----------------------------------------------------------------------------
 
+// ----------------------------------------------------------------------------
+// Mapeamento de eventos Cora → status interno
+// Aceita múltiplas convenções de nome (Cora pode usar payment.* ou transfer.*)
+// ----------------------------------------------------------------------------
+
+function cora_classificar_evento(?string $evento): string
+{
+    $e = strtolower((string) $evento);
+    if ($e === '') return 'desconhecido';
+
+    // Confirmação / liquidação
+    foreach (['confirmed', 'completed', 'settled', 'success', 'paid'] as $kw) {
+        if (str_contains($e, $kw)) return 'concluida';
+    }
+    // Falha / rejeição
+    foreach (['failed', 'rejected', 'denied', 'error'] as $kw) {
+        if (str_contains($e, $kw)) return 'rejeitada';
+    }
+    // Cancelamento
+    foreach (['cancelled', 'canceled', 'voided'] as $kw) {
+        if (str_contains($e, $kw)) return 'cancelada';
+    }
+    // Criação / agendamento (estado intermediário)
+    foreach (['created', 'scheduled', 'pending', 'awaiting'] as $kw) {
+        if (str_contains($e, $kw)) return 'aguardando_aprovacao';
+    }
+    return 'desconhecido';
+}
+
+/**
+ * Processa um evento de webhook Cora — atualiza transferencias_cora e folhas.
+ *
+ * Idempotente: se o cora_transfer_id já está no status alvo, retorna sem
+ * gravar de novo. Webhooks reentregues não causam efeito duplo.
+ *
+ * Retorna ['processado' => bool, 'motivo' => string, 'transferencia_id' => ?int]
+ */
+function cora_processar_evento(string $coraTransferId, string $statusAlvo, array $payload): array
+{
+    if ($coraTransferId === '' || $statusAlvo === 'desconhecido') {
+        return ['processado' => false, 'motivo' => 'evento sem cora_transfer_id ou tipo desconhecido', 'transferencia_id' => null];
+    }
+
+    $pdo = db();
+    $stmt = $pdo->prepare(
+        'SELECT id, folha_id, funcionario_id, competencia, status
+         FROM transferencias_cora
+         WHERE cora_transfer_id = :cid
+         LIMIT 1'
+    );
+    $stmt->execute([':cid' => $coraTransferId]);
+    $tr = $stmt->fetch();
+
+    if (!$tr) {
+        return ['processado' => false, 'motivo' => 'transferência não encontrada para cora_transfer_id', 'transferencia_id' => null];
+    }
+    if ($tr['status'] === $statusAlvo) {
+        return ['processado' => false, 'motivo' => 'já está no status alvo (idempotência)', 'transferencia_id' => (int) $tr['id']];
+    }
+
+    $pdo->beginTransaction();
+    try {
+        // Atualiza transferencias_cora
+        $pdo->prepare(
+            'UPDATE transferencias_cora
+             SET status = :st, response_payload = :pl
+             WHERE id = :id'
+        )->execute([
+            ':st' => $statusAlvo,
+            ':pl' => json_encode($payload, JSON_UNESCAPED_UNICODE),
+            ':id' => $tr['id'],
+        ]);
+
+        // Atualiza folhas conforme status alvo
+        $folhaStatus = match ($statusAlvo) {
+            'concluida'            => 'pago',
+            'rejeitada'            => 'pendente', // volta pra pendente para nova tentativa
+            'cancelada'            => 'cancelada',
+            'aguardando_aprovacao' => 'transferido',
+            default                => null,
+        };
+
+        if ($folhaStatus !== null && (int) $tr['funcionario_id'] > 0 && $tr['competencia']) {
+            $dataPag = $folhaStatus === 'pago' ? "CURDATE()" : 'NULL';
+            $pdo->prepare(
+                "INSERT INTO folhas (funcionario_id, competencia, status, data_pagamento)
+                 VALUES (:fid, :comp, :st, {$dataPag})
+                 ON DUPLICATE KEY UPDATE
+                   status = VALUES(status),
+                   data_pagamento = " . ($folhaStatus === 'pago' ? 'CURDATE()' : 'NULL')
+            )->execute([
+                ':fid'  => (int) $tr['funcionario_id'],
+                ':comp' => $tr['competencia'],
+                ':st'   => $folhaStatus,
+            ]);
+        }
+
+        $pdo->commit();
+        return ['processado' => true, 'motivo' => "status atualizado para {$statusAlvo}", 'transferencia_id' => (int) $tr['id']];
+    } catch (Throwable $e) {
+        $pdo->rollBack();
+        return ['processado' => false, 'motivo' => 'erro DB: ' . $e->getMessage(), 'transferencia_id' => (int) $tr['id']];
+    }
+}
+
+// ----------------------------------------------------------------------------
+// Validação de assinatura HMAC do webhook
+// ----------------------------------------------------------------------------
+
 function cora_validate_webhook_signature(string $empresa, string $rawBody, string $signatureHeader): bool
 {
     $cfg = cora_empresa_config($empresa);

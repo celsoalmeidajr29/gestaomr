@@ -4,27 +4,26 @@
  *
  * Endpoint público de recebimento de webhooks da Cora.
  *
- * F1 (este arquivo): apenas RECEBE, valida assinatura HMAC e loga em
- * cora_webhook_logs. NÃO atualiza status de transferência ainda.
+ * F3: além de logar (F1), agora também:
+ *   - Cruza cora_transfer_id com transferencias_cora
+ *   - Atualiza status (concluida / rejeitada / cancelada / aguardando_aprovacao)
+ *   - Faz upsert em folhas (transferido/pago/pendente/cancelada) por funcionario_id+competencia
+ *   - Marca processado=1 no log
  *
- * F3: este endpoint vai cruzar `cora_transfer_id` com `transferencias_cora`,
- * atualizar status da folha (transferido → pago / cancelada) e marcar
- * processado=1 no log.
+ * Idempotente: webhook reentregue não duplica efeito (cora_processar_evento checa)
  *
- * Headers esperados (segundo doc Cora):
+ * Headers tentados (variam por API):
  *   X-Cora-Signature: sha256=<hmac>      ← assinatura HMAC do body
- *   X-Cora-Empresa:   MR_ASSESSORIA       ← opcional, usado para identificar empresa
+ *   X-Cora-Empresa:   MR_ASSESSORIA       ← opcional, identifica empresa
+ *   ?empresa=...                          ← fallback via querystring
  *
- * Como a Cora identifica a empresa pode variar (path, header, payload).
- * Aqui tentamos identificar por: header → query string → payload (clientId).
- *
- * Sempre retorna 200 rápido, mesmo se inválido — Cora reentregue se demorar
- * ou se status >= 400. O log fica registrado para debug.
+ * SEMPRE retorna 200 (mesmo se inválido) — Cora reentrega em status >= 400.
+ * Log fica registrado para debug em qualquer caso.
  */
 
 declare(strict_types=1);
 
-// IMPORTANTE: webhooks são públicos (sem sessão). NÃO chamar require_permission.
+// IMPORTANTE: webhooks são públicos. NÃO chamar require_permission.
 require_once __DIR__ . '/../../_bootstrap.php';
 require_once __DIR__ . '/_cora_client.php';
 
@@ -55,7 +54,6 @@ foreach ($candidatos as $c) {
     }
 }
 if ($empresa === null && is_array($payload)) {
-    // tenta inferir pelo client_id no payload
     $clientIdPayload = $payload['client_id'] ?? $payload['clientId'] ?? null;
     if ($clientIdPayload === env('CORA_MR_CLIENT_ID')) $empresa = 'MR_ASSESSORIA';
     elseif ($clientIdPayload === env('CORA_UP_CLIENT_ID')) $empresa = 'UP_VIGILANCIA';
@@ -75,14 +73,24 @@ if ($empresa) {
     $erroProc = 'Empresa não identificada no webhook';
 }
 
-$evento          = $payload['event'] ?? $payload['type'] ?? $payload['eventType'] ?? null;
-$coraTransferId  = $payload['transfer_id'] ?? $payload['transferId'] ?? $payload['id'] ?? $payload['data']['id'] ?? null;
+$evento         = $payload['event'] ?? $payload['type'] ?? $payload['eventType'] ?? null;
+$coraTransferId = $payload['transfer_id'] ?? $payload['transferId'] ?? $payload['id'] ?? $payload['data']['id'] ?? null;
 
+// F3: processar evento (só se assinatura válida)
+$processamento = ['processado' => false, 'motivo' => null, 'transferencia_id' => null];
+if ($sigValid && $coraTransferId) {
+    $statusAlvo = cora_classificar_evento(is_string($evento) ? $evento : null);
+    $processamento = cora_processar_evento((string) $coraTransferId, $statusAlvo, is_array($payload) ? $payload : []);
+} elseif (!$sigValid && $empresa) {
+    $erroProc = $erroProc ?: 'Assinatura HMAC inválida';
+}
+
+// Sempre logar (mesmo se inválido)
 try {
     $stmt = db()->prepare(
         'INSERT INTO cora_webhook_logs
          (evento, empresa, cora_transfer_id, payload, signature_header, signature_valid, processado, erro_processamento, ip_origem)
-         VALUES (:evento, :empresa, :cora_transfer_id, :payload, :sig_header, :sig_valid, 0, :erro, :ip)'
+         VALUES (:evento, :empresa, :cora_transfer_id, :payload, :sig_header, :sig_valid, :processado, :erro, :ip)'
     );
     $stmt->execute([
         ':evento'           => $evento ? substr((string) $evento, 0, 80) : null,
@@ -91,15 +99,14 @@ try {
         ':payload'          => $rawBody,
         ':sig_header'       => $signatureHeader ? substr($signatureHeader, 0, 255) : null,
         ':sig_valid'        => $sigValid ? 1 : 0,
-        ':erro'             => $erroProc,
+        ':processado'       => $processamento['processado'] ? 1 : 0,
+        ':erro'             => $erroProc ?? $processamento['motivo'],
         ':ip'               => $ipOrigem ? substr($ipOrigem, 0, 45) : null,
     ]);
 } catch (Throwable $e) {
-    // Não deixa erro de DB derrubar a resposta — Cora reentregaria desnecessariamente
     error_log('[cora.webhook] Falha ao gravar log: ' . $e->getMessage());
 }
 
-// Resposta 200 mesmo se inválido — log é o que importa em F1
 header('Content-Type: application/json');
 echo json_encode([
     'ok'              => true,
@@ -107,5 +114,7 @@ echo json_encode([
     'empresa'         => $empresa,
     'evento'          => $evento,
     'signature_valid' => $sigValid,
-    'phase'           => 'F1-log-only',
+    'processado'      => $processamento['processado'],
+    'motivo'          => $processamento['motivo'],
+    'phase'           => 'F3-processing',
 ]);
