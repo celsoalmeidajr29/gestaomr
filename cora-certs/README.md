@@ -23,7 +23,9 @@ cora-certs/
 
 ## Produção (Hostinger)
 
-**NÃO use esta pasta em produção.** Os certificados ficam fora do `public_html`, em diretório com `chmod 600`:
+**⚠ CRÍTICO — NÃO subir certificados para dentro de `public_html/`.** Tudo lá é servido pelo Apache; sua chave privada ficaria pública em `https://celso.cloud/cora-certs/private-key.key`.
+
+Os certificados devem ficar **acima** de `public_html/`, em diretório protegido com `chmod 600`:
 
 ```
 /home/SEU-USUARIO/cora-certs/
@@ -55,3 +57,25 @@ chmod 600 cora-certs/up-vigilancia/*
 ```
 
 No Windows, basta o `.gitignore` impedir commit acidental — o sistema de arquivos local não precisa de chmod.
+
+## Caminhos no `.env` precisam ser ABSOLUTOS
+
+Os caminhos sempre começam com `/`. Exemplos válidos:
+- ✅ `/home/u833a3654853f41ce/cora-certs/mr-assessoria/certificate.pem`
+- ❌ `833a3654853f41ce/files/public_html/cora-certs/...` (faltando `/` no início)
+- ❌ `cora-certs/mr-assessoria/certificate.pem` (caminho relativo)
+
+Para descobrir o caminho absoluto no Hostinger:
+1. Crie um arquivo temporário `public_html/whereami.php` com:
+   ```php
+   <?php echo realpath(__DIR__ . '/../cora-certs/mr-assessoria/certificate.pem');
+   ```
+2. Acesse `https://celso.cloud/whereami.php`
+3. Copie o caminho exibido para o `.env`
+4. **Apague o `whereami.php`** depois
+
+## Fallback de segurança — `.htaccess`
+
+Se por algum motivo os certificados precisarem ficar dentro de `public_html/`, copie o `.htaccess` desta pasta junto com eles. Ele bloqueia HTTP em qualquer arquivo dentro da pasta.
+
+Mesmo com o `.htaccess`, **o ideal continua sendo manter fora de `public_html/`**.
