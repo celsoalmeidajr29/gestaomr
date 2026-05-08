@@ -1,0 +1,19 @@
+# BLOQUEIO DE ACESSO HTTP — defense-in-depth
+#
+# Este arquivo deve ser COPIADO para a pasta cora-certs/ no servidor caso
+# os certificados estejam dentro de public_html (NÃO recomendado).
+#
+# O ideal é manter os certificados FORA do public_html, em /home/USER/cora-certs/.
+# Mas se por alguma limitação ficarem em public_html, este .htaccess garante
+# que o Apache rejeite qualquer requisição HTTP às chaves/certs.
+
+# Bloqueia tudo nesta pasta e subpastas
+Require all denied
+
+# Bloqueia explicitamente extensões de credenciais (redundante, mas defesa em profundidade)
+<FilesMatch "\.(pem|key|crt|p12|pfx|env)$">
+  Require all denied
+</FilesMatch>
+
+# Sem listagem
+Options -Indexes
