@@ -152,6 +152,9 @@ foreach ($d['folhas'] as $i => $f) {
          ON DUPLICATE KEY UPDATE
            status = VALUES(status),
            request_payload = VALUES(request_payload),
+           response_payload = NULL,
+           erro_mensagem = NULL,
+           cora_transfer_id = NULL,
            atualizado_em = CURRENT_TIMESTAMP';
     $pdo->prepare($insertSql)->execute([
         ':folha_id' => $folhaId,
