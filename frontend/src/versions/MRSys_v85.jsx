@@ -4013,13 +4013,14 @@ export default function App({ onVoltarHub, onLogout } = {}) {
                     ...(resumoLimpo.despesasAvulsas || []),
                     ...(resumoLimpo.parcelamentos || []),
                   ];
-                  const totalCartaoEmpresa = sumMoney(todasOperacionais.filter(d => ['CARTÃO CORPORATIVO', 'EMPRESA'].includes((d.origem || '').toUpperCase())), d => d.valor);
-                  const totalGalop = sumMoney((resumoLimpo.adiantamentos || []).filter(a => (a.tipoVale || '').toUpperCase().includes('GALOP')), v => v.valor);
+                  // normalizar() já remove acentos + uppercase; necessário porque "MANHÃES".includes("MANHA") === false
+                  const totalCartaoEmpresa = sumMoney(todasOperacionais.filter(d => ['CARTAO CORPORATIVO', 'EMPRESA'].includes(normalizar(d.origem))), d => d.valor);
+                  const totalGalop = sumMoney((resumoLimpo.adiantamentos || []).filter(a => normalizar(a.tipoVale).includes('GALOP')), v => v.valor);
                   // Combustível da Empresa: despesas operacionais com origem GALOP (despesa direta, não vale)
-                  const totalCombEmpresa = sumMoney(todasOperacionais.filter(d => (d.origem || '').toUpperCase().includes('GALOP')), d => d.valor);
+                  const totalCombEmpresa = sumMoney(todasOperacionais.filter(d => normalizar(d.origem).includes('GALOP')), d => d.valor);
                   // Despesas Manhães/Ricardo: une despChefia + despesas operacionais com origem correspondente
-                  const ehManhaes = (origem) => (origem || '').toUpperCase().includes('MANHA');
-                  const ehRicardo = (origem) => (origem || '').toUpperCase() === 'RICARDO';
+                  const ehManhaes = (origem) => normalizar(origem).includes('MANHA');
+                  const ehRicardo = (origem) => normalizar(origem) === 'RICARDO';
                   const totalManhaes = sumMoney([
                     ...(resumoLimpo.despesasChefia || []).filter(d => ehManhaes(d.origem)),
                     ...todasOperacionais.filter(d => ehManhaes(d.origem)),
