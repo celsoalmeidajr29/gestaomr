@@ -4015,8 +4015,17 @@ export default function App({ onVoltarHub, onLogout } = {}) {
                   ];
                   const totalCartaoEmpresa = sumMoney(todasOperacionais.filter(d => ['CARTÃO CORPORATIVO', 'EMPRESA'].includes((d.origem || '').toUpperCase())), d => d.valor);
                   const totalGalop = sumMoney((resumoLimpo.adiantamentos || []).filter(a => (a.tipoVale || '').toUpperCase().includes('GALOP')), v => v.valor);
-                  const totalManhaes = sumMoney((resumoLimpo.despesasChefia || []).filter(d => (d.origem || '').toUpperCase().includes('MANHA')), d => d.valor);
-                  const totalRicardo = sumMoney((resumoLimpo.despesasChefia || []).filter(d => (d.origem || '').toUpperCase() === 'RICARDO'), d => d.valor);
+                  // Despesas Manhães/Ricardo: une despChefia + despesas operacionais com origem correspondente
+                  const ehManhaes = (origem) => (origem || '').toUpperCase().includes('MANHA');
+                  const ehRicardo = (origem) => (origem || '').toUpperCase() === 'RICARDO';
+                  const totalManhaes = sumMoney([
+                    ...(resumoLimpo.despesasChefia || []).filter(d => ehManhaes(d.origem)),
+                    ...todasOperacionais.filter(d => ehManhaes(d.origem)),
+                  ], d => d.valor);
+                  const totalRicardo = sumMoney([
+                    ...(resumoLimpo.despesasChefia || []).filter(d => ehRicardo(d.origem)),
+                    ...todasOperacionais.filter(d => ehRicardo(d.origem)),
+                  ], d => d.valor);
 
                   const totalGeral = roundMoney(folhaLiquida + totalCartaoEmpresa + totalGalop + totalManhaes + totalRicardo);
 
