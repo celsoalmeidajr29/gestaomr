@@ -4015,6 +4015,8 @@ export default function App({ onVoltarHub, onLogout } = {}) {
                   ];
                   const totalCartaoEmpresa = sumMoney(todasOperacionais.filter(d => ['CARTÃO CORPORATIVO', 'EMPRESA'].includes((d.origem || '').toUpperCase())), d => d.valor);
                   const totalGalop = sumMoney((resumoLimpo.adiantamentos || []).filter(a => (a.tipoVale || '').toUpperCase().includes('GALOP')), v => v.valor);
+                  // Combustível da Empresa: despesas operacionais com origem GALOP (despesa direta, não vale)
+                  const totalCombEmpresa = sumMoney(todasOperacionais.filter(d => (d.origem || '').toUpperCase().includes('GALOP')), d => d.valor);
                   // Despesas Manhães/Ricardo: une despChefia + despesas operacionais com origem correspondente
                   const ehManhaes = (origem) => (origem || '').toUpperCase().includes('MANHA');
                   const ehRicardo = (origem) => (origem || '').toUpperCase() === 'RICARDO';
@@ -4027,7 +4029,7 @@ export default function App({ onVoltarHub, onLogout } = {}) {
                     ...todasOperacionais.filter(d => ehRicardo(d.origem)),
                   ], d => d.valor);
 
-                  const totalGeral = roundMoney(folhaLiquida + totalCartaoEmpresa + totalGalop + totalManhaes + totalRicardo);
+                  const totalGeral = roundMoney(folhaLiquida + totalCartaoEmpresa + totalGalop + totalCombEmpresa + totalManhaes + totalRicardo);
 
                   return (
                     <Painel titulo="Relatório Gerencial — Despesas">
@@ -4054,6 +4056,10 @@ export default function App({ onVoltarHub, onLogout } = {}) {
                             <tr className="border-b border-slate-800">
                               <td className="py-2 px-3 text-slate-300">(+) Galop (combustível)</td>
                               <td className="text-right px-3 font-medium text-orange-300">{fmt(totalGalop)}</td>
+                            </tr>
+                            <tr className="border-b border-slate-800">
+                              <td className="py-2 px-3 text-slate-300">(+) Combustível da Empresa</td>
+                              <td className="text-right px-3 font-medium text-orange-300">{fmt(totalCombEmpresa)}</td>
                             </tr>
                             <tr className="border-b border-slate-800">
                               <td className="py-2 px-3 text-slate-300">(+) Despesas Manhães</td>
