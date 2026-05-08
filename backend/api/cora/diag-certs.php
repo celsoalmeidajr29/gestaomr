@@ -50,7 +50,10 @@ $prefixos = [
     "{$home}",
     "{$home}/files",
     "{$home}/public_html",
+    "{$home}/domains",
+    "{$home}/domains/celso.cloud",
     "{$home}/domains/celso.cloud/public_html",
+    "{$home}/domains/celso.cloud/private",
     dirname(__DIR__, 4),                                     // sobe 4 níveis a partir desta pasta
     dirname(__DIR__, 4) . '/cora-certs',
     dirname(__DIR__, 3),
@@ -78,6 +81,11 @@ $pastasListar = [
     "{$home}/cora-certs",
     "{$home}/files",
     "{$home}/public_html",
+    "{$home}/domains",
+    "{$home}/domains/celso.cloud",
+    "{$home}/domains/celso.cloud/cora-certs",
+    "{$home}/domains/celso.cloud/private",
+    "{$home}/domains/celso.cloud/public_html",
 ];
 foreach ($pastasListar as $p) {
     echo "\n[{$p}]\n";
@@ -97,6 +105,36 @@ foreach ($pastasListar as $p) {
     }
 }
 
+echo "\n=== BUSCA RECURSIVA POR .pem E .key NO HOME ===\n";
+echo "(limita 50 resultados, ignora cache/git/node_modules)\n\n";
+
+$encontrados = 0;
+$ignorar = ['.cagefs', '.cl.selector', '.filebrowser', '.logs', 'cache', 'node_modules', '.git', 'tmp'];
+try {
+    $iter = new RecursiveIteratorIterator(
+        new RecursiveCallbackFilterIterator(
+            new RecursiveDirectoryIterator($home, RecursiveDirectoryIterator::SKIP_DOTS | FilesystemIterator::FOLLOW_SYMLINKS),
+            function ($curr) use ($ignorar) {
+                $base = $curr->getBasename();
+                if (in_array($base, $ignorar, true)) return false;
+                return true;
+            }
+        ),
+        RecursiveIteratorIterator::LEAVES_ONLY
+    );
+    foreach ($iter as $f) {
+        if ($encontrados >= 50) { echo "  ... (limite de 50 atingido)\n"; break; }
+        $name = $f->getBasename();
+        if (preg_match('/\.(pem|key|crt|p12|pfx)$/i', $name)) {
+            echo "  - " . $f->getPathname() . " (" . $f->getSize() . " bytes)\n";
+            $encontrados++;
+        }
+    }
+    if ($encontrados === 0) echo "  Nenhum arquivo .pem/.key/.crt/.p12/.pfx encontrado em todo o home.\n";
+} catch (Throwable $e) {
+    echo "  Erro durante busca: " . $e->getMessage() . "\n";
+}
+
 echo "\n=== FIM ===\n";
 echo "Apague este arquivo após o diagnóstico:\n";
-echo "  backend/api/cora/diag-certs.php\n";
+echo "  api/cora/diag-certs.php\n";
