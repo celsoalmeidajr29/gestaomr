@@ -1,12 +1,12 @@
 import React from 'react'
 
 // Versão atual do sistema MRSys (atualizada a cada release)
-export const MRSYS_VERSION = 'v93'
+export const MRSYS_VERSION = 'v94'
 
 const SISTEMAS = [
   {
     id: 'mrsys',
-    nome: 'MRSys - ERP do Grupo MR',
+    nome: 'MRSys - Sistema de Gestão',
     descricao: 'Fechamento financeiro, folha, faturas e medições',
     icone: 'MR',
     cor: 'from-indigo-500 to-blue-600',
