@@ -6,7 +6,25 @@
       "Bash(git add *)",
       "Bash(git commit -m ' *)",
       "Bash(git ls-tree *)",
-      "Bash(git stash *)"
+      "Bash(git stash *)",
+      "Bash(npm run *)",
+      "Bash(git commit *)",
+      "Bash(gh run *)",
+      "Read(//c/Program Files/**)",
+      "Read(//c/Program Files \\(x86\\)/**)",
+      "Bash(export PATH=\"$PATH:/usr/local/bin:/usr/bin\")",
+      "Read(//usr/local/bin/**)",
+      "Read(//c/Users/Anderson Manhães/.nvm/versions/**)",
+      "Read(//c/Users/Anderson Manhães/scoop/shims/**)",
+      "Read(//c/Users/Anderson Manhães/scoop/apps/nodejs-lts/current/**)",
+      "Read(//c/Users/Anderson Manhães/AppData/Local/**)",
+      "Read(//c/Users/Anderson Manhães/AppData/Roaming/**)",
+      "Bash(PowerShell -Command ' *)",
+      "Bash(php -l backend/api/cora/_cora_client.php)",
+      "Bash(php -l backend/api/cora/test_auth.php)",
+      "Bash(php -l backend/api/cora/webhook.php)",
+      "Bash(git fetch *)",
+      "Bash(git status *)"
     ]
   }
 }

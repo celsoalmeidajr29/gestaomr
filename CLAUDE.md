@@ -37,11 +37,15 @@ Gestor/usuário principal: **Celso Almeida** (`celso.almeida@grupomr.seg.br`)
 
 ### Versão ativa do monolito
 
-**`MRSys_v93.jsx`** — `frontend/src/App.jsx` é wrapper que repassa props para o monolito:
+**`MRSys_v95.jsx`** — `frontend/src/App.jsx` é wrapper que repassa props para o monolito:
 ```jsx
-import MRSysApp from './versions/MRSys_v93.jsx'
+import MRSysApp from './versions/MRSys_v95.jsx'
 export default function App(props) { return <MRSysApp {...props} /> }
 ```
+
+Novidades v94–v95 (identidade + responsividade mobile):
+- **v95** — Responsividade mobile impecável: action bars com `flex-wrap` em todas as abas, botões `w-full sm:w-auto` e `min-h-[36px]` (área de toque Material Design), ícones com `flex-shrink-0`, tipografia responsiva (`text-lg sm:text-xl`, `text-[11px] sm:text-xs`). Tabs do header com `text-[11px]`, `py-2.5`, `min-h-[40px]`. Card/Painel/Stat com `min-w-0 + truncate` para evitar overflow no celular
+- **v94** — Identidade "MRSys - Sistema de Gestão": h1 do header alterado de "Fechamento Financeiro"; ícone `DollarSign` substituído por letras "MR" no mesmo gradient indigo→purple do card do Hub; `useEffect` seta `document.title` ao montar e restaura ao desmontar; `SistemasHub` renomeia card MRSys e bumpa `MRSYS_VERSION = 'v94'` (PR #4 trouxe v94+v95)
 
 Novidades v92–v93 (folha + Cora UI):
 - **v93** — Folha: filtro por status na tela (todos / pendente / transferido / pago / cancelada)
@@ -335,7 +339,7 @@ Se eu (Celso) der uma instrução que conflita com algo nas Decisões já tomada
 
 ---
 
-*Última atualização: 2026-05-09. Sistema em produção na v93 em `https://celso.cloud`. Trabalho atual: iterações e melhorias no monolito + integração Cora (PIX em massa para folha). Pendentes:*
+*Última atualização: 2026-05-09. Sistema em produção na v95 em `https://celso.cloud`. Trabalho atual: iterações e melhorias no monolito + integração Cora (PIX em massa para folha). Pendentes:*
 - *Confirmar que migrations 008/009/010 estão aplicadas em produção (`database/migrations/`).*
 - *Limpar probes de diagnóstico Cora (`backend/api/cora/probe-*.php`, `test_auth.php`, `diag-certs.php`) quando a auth estiver estável em prod.*
 - *Validar end-to-end o fluxo Cora em produção (transferência → webhook → status na folha).*
