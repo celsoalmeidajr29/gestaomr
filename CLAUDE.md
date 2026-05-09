@@ -37,11 +37,53 @@ Gestor/usuário principal: **Celso Almeida** (`celso.almeida@grupomr.seg.br`)
 
 ### Versão ativa do monolito
 
-**`MRSys_v69.jsx`** — `frontend/src/App.jsx` é wrapper que repassa props para o monolito:
+**`MRSys_v93.jsx`** — `frontend/src/App.jsx` é wrapper que repassa props para o monolito:
 ```jsx
-import MRSysApp from './versions/MRSys_v69.jsx'
+import MRSysApp from './versions/MRSys_v93.jsx'
 export default function App(props) { return <MRSysApp {...props} /> }
 ```
+
+Novidades v92–v93 (folha + Cora UI):
+- **v93** — Folha: filtro por status na tela (todos / pendente / transferido / pago / cancelada)
+- **v92** — Folha: marcar status manualmente (ação em massa + individual)
+- **v91** — Cora UI deixa explícito "Valor líquido" no botão Transferir (comportamento já estava correto)
+- **Hotfix shim** — `syncFolhas` no storage-shim agora persiste no DB (era só cache em memória)
+
+Novidades v87–v88 (preparação para Cora):
+- **v88** — indicadores "Sem PIX" (Funcionários + Folha) + status `pendente/transferido/pago/cancelada` no fluxo da folha + estrutura `cora-certs/` (pastas `mr-assessoria/` e `up-vigilancia/`)
+- **v87** — PDF do resumo + dashboard com filtro de mês + folha status `pendente/paga/cancelada` (precursor do v88) + faturas XML com lançamento sintético
+
+Integração Cora (PIX em massa para folha) — F1 a F4:
+- **F1** — migration `009_transferencias_cora.sql` (tabelas `transferencias_cora` + `cora_webhook_logs`) + cliente PHP com auth JWT+mTLS (`backend/api/cora/_cora_client.php`) + receiver de webhooks
+- **F2** — botão "Transferir" na aba Folha + endpoint PIX em massa (`POST /api/cora/transferir.php`)
+- **F3** — processamento de webhooks Cora + listagem de logs (`/api/cora/webhook.php`, `/api/cora/logs.php`)
+- **F4** — histórico de transferências com retry + auditoria de webhooks (`/api/cora/listar.php`)
+- Migration `010_folhas_status_cora.sql` — estende ENUM de `folhas.status` para `pendente/transferido/pago/cancelada`
+- Probes/diagnóstico ainda no repo: `backend/api/cora/probe-aud.php`, `probe-auth-method.php`, `probe-token-url.php`, `test_auth.php`, `diag-certs.php` — usados pra resolver `invalid_client` no stage da Cora. **Token endpoint correto:** `matls-clients.api.stage.cora.com.br`. Limpar quando integração estiver estável em prod.
+
+Novidades v83–v86 (relatório + UX lançamentos):
+- **v86** — salvamento de resumos (snapshot persistente) + Relatório Gerencial no export XLSX
+- **v85** — Relatório Gerencial - Despesas no Resumo (folha líquida + cartão/empresa + galop + chefia). Linha "Combustível da Empresa" (despesas operacionais com origem GALOP); Manhães/Ricardo unificam `despChefia` + despesas operacionais com mesma origem (comparação via `normalizar()` para tirar acento)
+- **v84** — ação em massa para atribuir prestador em lançamentos selecionados
+- **v83** — filtro "Sem prestador" na aba Lançamentos + banner de alerta
+
+Novidades v76–v82 (folha por categoria — fonte única):
+- **v82** — resumo folha categoriza direto por `l.categoriaFolha` + `d.folhaGrupo` (alinha com Dashboard); diagnóstico de ATIVOs sem folha
+- **v81** — folha bruta = lançamentos + avulsos (sem adicionais); líquido = bruto + adic - desc
+- **v80** — folha por categoria com atribuição por lançamento, avulsos e adicionais (fonte única `folhasPorFunc`)
+- **v79** — resumo folha por categoria usa `folhasPorFunc` (elimina divergência com aba Folha)
+- **v78** — bruto na folha inclui avulsos + export XLSX por categoria/funcionário
+- **v77** — export resumo XLSX Aba 2 alinhada com painel Folha por Categoria
+- **v76** — bruto da folha inclui lançamentos avulsos nos PDFs
+
+Novidades v70–v75 (XML NF-e iterações + edição de fatura):
+- **v75** — fatura M ROCHA não desaparece mais (`template null → ''` aceito)
+- **v74** — `fecharFatura` preserva custom/XML; `updateFn` aguarda PUT
+- **v73** — faturas não somem mais com status `NF-emitida`/`Aprovada` vencidas
+- **v72** — editar cliente da fatura (lápis no card + persistência no banco)
+- **v71** — XML NF-e usa `ValorServicos` (sem retenções) + editar competência de fatura pelo lápis
+- **v70** — medição não-Natura com KM e horas detalhados no PDF e XLSX
+- Hotfixes: `syncClientes` ausente no storage-shim (clientes não persistiam); faturas importadas via XML não persistiam (`nfNumero` no payload + permitir fatura custom sem lançamentos)
 
 Novidades v69:
 - **Importar XML NF-e**: botão "Importar XML NF-e" na aba Faturas. Lê arquivo XML padrão SEFAZ (DOMParser), extrai nNF, data, emitente/destinatário (matching automático de cliente por CNPJ), valor, competência. Campos editáveis antes de confirmar. Gera fatura com status "NF-emitida" diretamente
@@ -118,15 +160,18 @@ Estas decisões foram debatidas e aprovadas. Trate como invariantes:
 
 ## 4. Modelo de dados (resumo)
 
-17 tabelas no MySQL agrupadas em 5 áreas:
+20 tabelas no MySQL agrupadas em 6 áreas:
 
 - **Auth (3):** `perfis`, `usuarios`, `sessoes`
 - **Cadastros (3):** `clientes` (5 iniciais — migration 004 adicionou `razao_social`, `aliquota`, `numero`, `complemento`, `bairro`, `cargo_contato`), `servicos` (17 iniciais), `funcionarios` (migration 003 adicionou `folha_grupo`)
-- **Operação (5):** `lancamentos`, `lancamento_funcionarios` (M:N), `lancamento_extras`, `despesas`, `descontos`
-- **Fechamento (4):** `fechamentos`, `fechamento_lancamentos`, `fechamento_status_log`, `folhas`
+- **Operação (6):** `lancamentos`, `lancamento_funcionarios` (M:N), `lancamento_extras`, `despesas`, `descontos`, `despesas_chefia` (migration 008)
+- **Fechamento (4):** `fechamentos` (com `numero_nf`, `data_nf`), `fechamento_lancamentos`, `fechamento_status_log`, `folhas` (migration 010 estende ENUM de `status` para `pendente/transferido/pago/cancelada`)
+- **Integração Cora (2):** `transferencias_cora`, `cora_webhook_logs` (migration 009)
 - **Auxiliares (2):** `arquivos` (foto+docs com path em disco), `auditoria` (log automático)
 
-Mais 3 views (`vw_lancamentos_completo`, `vw_fechamentos_completo`, `vw_resumo_competencia`) e triggers de auditoria automática.
+Mais 3 views (`vw_lancamentos_completo`, `vw_fechamentos_completo`, `vw_resumo_competencia`), uma tabela auxiliar `folha_categorias` (migration 007) e triggers de auditoria automática.
+
+Migrations aplicadas até o momento: 001 a 010 (`database/migrations/`).
 
 Schema completo em `database/schema.sql`. **NÃO altere o schema sem antes documentar a mudança em `database/migrations/`.**
 
@@ -247,6 +292,15 @@ Estes detalhes não são óbvios e foram consolidados ao longo do desenvolviment
 - **Folha por Categoria considera todos os lançamentos da competência (v59+):** itera lançamentos diretamente (qualquer status), não só os fechados. Lista categorias cadastradas mesmo com R$0.
 - **Persistência DB de folhaGrupo + auto-criação no Cat. Folha (v60+):** `funcionarios.folha_grupo` agora persiste no MySQL via storage-shim. Categorias novas usadas em imports/edições são criadas automaticamente no Cat. Folha via helper `garantirCategoriasFolha`.
 - **Lançamentos Avulsos (v61+):** aba renomeada de "Diárias Avulsas". Modelo de import: `data, Colaborador, Valor, Grupo Folha`. Aceita XLSX e texto colado em um único modal com tabs. Salário fixo do funcionário removido do cadastro — agora 100% via lançamentos avulsos.
+- **Folha por Categoria — fonte única `folhasPorFunc` (v79–v82):** a aba Folha, o painel "Folha por Categoria" no Resumo e o export XLSX usam a MESMA estrutura. Categorização vem direto de `l.categoriaFolha` no lançamento (com fallback `d.folhaGrupo` no funcionário). Bruto = lançamentos + avulsos (sem adicionais); líquido = bruto + adic - desc. Não dividir essa lógica em outro lugar — qualquer divergência entre Dashboard/Folha/Resumo indica regressão.
+- **Lançamentos sem prestador (v83–v84):** filtro "Sem prestador" + banner de alerta na aba Lançamentos. Ação em massa para atribuir prestador em múltiplos lançamentos selecionados.
+- **Relatório Gerencial no Resumo (v85–v86):** painel + linha no export XLSX. Linhas: Folha líquida, Despesas do mês, Combustível da Empresa (origem GALOP em despesas operacionais), Manhães e Ricardo (unificam `despChefia` + despesas operacionais com mesma origem). **Comparação de origem usa `normalizar()` para tirar acento** — `"MANHÃES".includes("MANHA")` falha sem isso. v86 também adiciona snapshot persistente de resumos.
+- **Status da folha (v87+):** ENUM evoluiu de `aberta/processada/paga` (legado) para `pendente/transferido/pago/cancelada` (novo). Frontend mapeia legados para exibição: `aberta/processada → pendente`, `paga → pago`. Migration 010 estendeu o ENUM no DB. v92 permite mudar status manualmente (em massa ou individual); v93 adiciona filtro por status na aba Folha.
+- **Indicadores "Sem PIX" (v88+):** badges nas abas Funcionários e Folha sinalizam funcionários sem chave PIX cadastrada — bloqueio implícito para a transferência via Cora.
+- **Integração Cora (PIX em massa) — F1 a F4:** botão "Transferir" na aba Folha dispara `POST /api/cora/transferir.php` que envia PIX em lote. Cliente PHP (`backend/api/cora/_cora_client.php`) faz auth com **JWT (client_assertion) + mTLS** (certs em `cora-certs/{mr-assessoria,up-vigilancia}/`, fora do webroot, com `.htaccess` defense-in-depth). Cada folha vira UMA linha em `transferencias_cora` com `idempotency_key` única. Webhooks da Cora chegam em `/api/cora/webhook.php` (todos auditados em `cora_webhook_logs`, mesmo inválidos). Listagem de transferências em `/api/cora/listar.php`. **Token endpoint correto:** `matls-clients.api.stage.cora.com.br`. **Valor sempre líquido** (v91 deixa explícito na UI).
+- **Importar XML NF-e (v69+, ajustado em v71/v74/v75):** XML SEFAZ → fatura com status `NF-emitida` direto. Usa `<ValorServicos>` (sem retenções). Faturas custom (sem lançamentos) são permitidas; `template = ''` (não null) é aceito. `fecharFatura` preserva custom/XML.
+- **Editar competência e cliente da fatura (v71/v72):** ícone de lápis no card de fatura abre modal pra trocar competência ou cliente. Persiste no banco via PUT.
+- **Faturas vencidas não somem (v73):** status `NF-emitida` e `Aprovada` permanecem visíveis mesmo após vencimento.
 - **Salário fixo desconsiderado (v62+):** removidos todos os cálculos e visualizações de salário fixo (folha bruto/líquido, Stat na Folha, badge "+R$" no row, Card no detalhe, linhas nos PDFs, contribuição em Resumo Folha por Categoria). Folha agora vem só de lançamentos + lançamentos avulsos + ajustes manuais. Campo `salarioFixo` mantido em 0 (não destrói dados existentes).
 - **Resumo consolidado em 6 painéis (v54+):** painéis "2. Folha de Pagamento" (template) e "4. Salários Fixos" removidos. Item 2 agora é "Folha por Categoria" (Categoria | Valor + bruto). Painéis 3-6 são Adiantamentos/Despesas Fixas/Avulsas/Parcelamentos.
 - **Card "Total Pago" nos lançamentos (v53+):** substituiu o card "Lucro" no topo. Coluna Lucro removida da tabela (redundante com PAGO Total).
@@ -281,4 +335,7 @@ Se eu (Celso) der uma instrução que conflita com algo nas Decisões já tomada
 
 ---
 
-*Última atualização: 2026-05-07. Sistema em produção na v69 em `https://celso.cloud`. Trabalho atual: iterações e melhorias no monolito. Pendente: rodar migration 008 no phpMyAdmin (`database/migrations/008_despesas_chefia.sql`).*
+*Última atualização: 2026-05-09. Sistema em produção na v93 em `https://celso.cloud`. Trabalho atual: iterações e melhorias no monolito + integração Cora (PIX em massa para folha). Pendentes:*
+- *Confirmar que migrations 008/009/010 estão aplicadas em produção (`database/migrations/`).*
+- *Limpar probes de diagnóstico Cora (`backend/api/cora/probe-*.php`, `test_auth.php`, `diag-certs.php`) quando a auth estiver estável em prod.*
+- *Validar end-to-end o fluxo Cora em produção (transferência → webhook → status na folha).*
