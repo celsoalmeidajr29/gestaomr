@@ -37,11 +37,18 @@ Gestor/usuário principal: **Celso Almeida** (`celso.almeida@grupomr.seg.br`)
 
 ### Versão ativa do monolito
 
-**`MRSys_v97.jsx`** — `frontend/src/App.jsx` é wrapper que repassa props para o monolito:
+**`MRSys_v98.jsx`** — `frontend/src/App.jsx` é wrapper que repassa props para o monolito:
 ```jsx
-import MRSysApp from './versions/MRSys_v97.jsx'
+import MRSysApp from './versions/MRSys_v98.jsx'
 export default function App(props) { return <MRSysApp {...props} /> }
 ```
+
+Novidade v98 (Propostas: campos operacionais ESCOLTA):
+- **Migration 013** (`013_proposta_itens_operacionais.sql`) adiciona em `proposta_itens` 6 campos: `franquia_horas`, `franquia_km`, `hora_extra_fatura`, `km_extra_fatura`, `adicional_domingos_fatura`, `aliquota`
+- **`ModalProposta`** (na aba Propostas): em itens de propostas ESCOLTA, novo `<details>` expandível "Valores operacionais" com os 6 campos. Default 0; quando o item é populado pelo botão "Pop. do catálogo", os 6 valores são copiados automaticamente do `servicos`. Em FACILITIES não aparece (não se aplica)
+- **`ModalCriarServicosDeProposta`** ganha 5 inputs novos (franquia h/km, h/km extra fatura, adic. dom. fatura) com default = valor já capturado no `proposta_itens`. Cliente pode override antes de criar o serviço
+- **`/api/propostas/criar_servicos.php`** atualizado: ao gerar a entrada em `servicos`, usa os valores do `proposta_itens` (override no payload tem precedência) em vez dos zeros antigos. Resultado: serviços criados a partir de propostas já saem com franquia, valores extras e alíquota corretos
+- **POST `/api/propostas/`** e **PUT `/api/propostas/item.php`** aceitam os 6 campos novos no array de itens
 
 Novidade v97 (módulo de Propostas — Fase 2 UI interna):
 - **Nova aba "Propostas"** no sidebar (entre Lançamentos e Faturas) e tabs mobile. Ícone `FileSignature`
@@ -393,7 +400,8 @@ Se eu (Celso) der uma instrução que conflita com algo nas Decisões já tomada
 
 ---
 
-*Última atualização: 2026-05-10. Sistema em produção na v97 em `https://celso.cloud`. Trabalho atual: módulo de Propostas Fase 2 (UI interna v97) — última pendência é Fase 4 (PDF overlay). Parcelamentos v96 também em produção. Pendentes:*
+*Última atualização: 2026-05-10. Sistema em produção na v98 em `https://celso.cloud`. Trabalho atual: módulo de Propostas com itens ESCOLTA enriquecidos (v98). Parcelamentos v96 também em produção. Pendente: Fase 4 (PDF overlay). Pendentes:*
+- *Rodar migration 013 (`database/migrations/013_proposta_itens_operacionais.sql`) no phpMyAdmin antes de testar v98.*
 - *Rodar migration 012 (`database/migrations/012_parcelas.sql`) no phpMyAdmin antes de testar v96/v97.*
 - *Após rodar migration 012, **rodar uma vez** o botão "Migrar parcelas" em cada uma das 3 abas (Despesas, Desp. Chefia, Vales) para inferir os grupos existentes e criar as parcelas faltantes. Conferir relatório no console + alert. Apagar o botão depois (linhas 3317, 3413, 3481 no v96 + helper `migrarParcelasExistentes`).*
 - *Rodar migration 011 (`database/migrations/011_propostas.sql`) no phpMyAdmin + conceder permissão `propostas` aos perfis não-admin.*

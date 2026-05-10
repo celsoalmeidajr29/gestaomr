@@ -69,11 +69,11 @@ try {
           aliquota, status)
          VALUES
          (:cod, :cid, :tpl, :desc, :cat,
-          0, 0,
+          :fh, :fk,
           :vf, 0,
-          0, 0,
-          0, 0,
-          0, 0,
+          :hef, 0,
+          :kef, 0,
+          :ad, 0,
           :aliq, "ATIVO")'
     );
 
@@ -112,7 +112,13 @@ try {
         $descricao = (string) ($req['descricao']         ?? $item['descricao']);
         $categoria = strtoupper((string) ($req['categoria_servico'] ?? $item['categoria_servico'] ?? 'FACILITIES'));
         $valor     = (float)  ($req['valor_fatura']      ?? $item['valor_unitario'] ?? 0);
-        $aliquota  = (float)  ($req['aliquota']          ?? 0);
+        // Aceita override no payload; senão usa o valor capturado no item (proposta_itens)
+        $aliquota  = (float)  ($req['aliquota']                   ?? $item['aliquota']                  ?? 0);
+        $franquiaH = (float)  ($req['franquia_horas']             ?? $item['franquia_horas']            ?? 0);
+        $franquiaK = (float)  ($req['franquia_km']                ?? $item['franquia_km']               ?? 0);
+        $heFatura  = (float)  ($req['hora_extra_fatura']          ?? $item['hora_extra_fatura']         ?? 0);
+        $kmFatura  = (float)  ($req['km_extra_fatura']            ?? $item['km_extra_fatura']           ?? 0);
+        $adFatura  = (float)  ($req['adicional_domingos_fatura']  ?? $item['adicional_domingos_fatura'] ?? 0);
 
         try {
             $insSvc->execute([
@@ -123,6 +129,11 @@ try {
                 ':cat'  => $categoria,
                 ':vf'   => $valor,
                 ':aliq' => $aliquota,
+                ':fh'   => $franquiaH,
+                ':fk'   => $franquiaK,
+                ':hef'  => $heFatura,
+                ':kef'  => $kmFatura,
+                ':ad'   => $adFatura,
             ]);
             $svcId = (int) db()->lastInsertId();
             $updItem->execute([':svc' => $svcId, ':id' => $itemId]);

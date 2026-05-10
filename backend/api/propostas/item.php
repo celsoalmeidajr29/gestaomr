@@ -154,10 +154,13 @@ if ($method === 'PUT') {
                 'INSERT INTO proposta_itens
                  (proposta_id, ordem, descricao, quantidade, valor_unitario, valor_total,
                   efetivo, escala, servico_origem_id, template, categoria_servico,
+                  franquia_horas, franquia_km, hora_extra_fatura, km_extra_fatura,
+                  adicional_domingos_fatura, aliquota,
                   servico_id, convertido_em)
                  VALUES
                  (:pid, :ordem, :desc, :qtd, :vu, :vt,
                   :ef, :esc, :sid, :tpl, :catsvc,
+                  :fh, :fk, :hef, :kef, :ad, :aliq,
                   :svcid, :conv)'
             );
             foreach ($itens as $i => $it) {
@@ -176,6 +179,12 @@ if ($method === 'PUT') {
                     ':sid'    => !empty($it['servico_origem_id']) ? (int) $it['servico_origem_id'] : null,
                     ':tpl'    => $it['template']          ?? null,
                     ':catsvc' => $it['categoria_servico'] ?? null,
+                    ':fh'     => (float) ($it['franquia_horas']            ?? 0),
+                    ':fk'     => (float) ($it['franquia_km']               ?? 0),
+                    ':hef'    => (float) ($it['hora_extra_fatura']         ?? 0),
+                    ':kef'    => (float) ($it['km_extra_fatura']           ?? 0),
+                    ':ad'     => (float) ($it['adicional_domingos_fatura'] ?? 0),
+                    ':aliq'   => (float) ($it['aliquota']                  ?? 0),
                     ':svcid'  => $svcId,
                     ':conv'   => $svcEm,
                 ]);
