@@ -37,11 +37,21 @@ Gestor/usuário principal: **Celso Almeida** (`celso.almeida@grupomr.seg.br`)
 
 ### Versão ativa do monolito
 
-**`MRSys_v95.jsx`** — `frontend/src/App.jsx` é wrapper que repassa props para o monolito:
+**`MRSys_v96.jsx`** — `frontend/src/App.jsx` é wrapper que repassa props para o monolito:
 ```jsx
-import MRSysApp from './versions/MRSys_v95.jsx'
+import MRSysApp from './versions/MRSys_v96.jsx'
 export default function App(props) { return <MRSysApp {...props} /> }
 ```
+
+Novidade v96 (parcelamentos):
+- **Modais Despesa / Despesa Chefia / Vale ganharam checkbox "Parcelado"** — quando marcado, esconde o select de Tipo, mostra input "Total de parcelas" (>=2) + preview "Cria N parcelas de R$ X a partir de YYYY-MM, total R$ Z". Botão de salvar muda pra roxo "Criar N parcelas"
+- **Endpoint único** `POST /api/parcelas/criar.php` (parametrizado por `entidade=despesas|despesas_chefia|descontos`) gera UUID v4 e cria as N linhas em transação, espalhadas em meses consecutivos a partir da competência inicial
+- **Linhas das tabelas** mostram `3/12` no badge quando o registro é uma parcela (em vez de só "PARCELA")
+- **Botão one-shot "Migrar parcelas"** no header de cada uma das 3 abas — chama `/api/parcelas/migrar.php` (admin only) que infere os grupos existentes via heurística (descrição + valor + parcela_total + origem/alvo_nome) e cria as parcelas faltantes nos meses futuros. Retorna `grupos_processados`, `parcelas_criadas`, `anomalias`. Botão é temporário — apagar após rodar
+- **Migration 012** adiciona `grupo_parcela_id CHAR(36)` em despesas/despesas_chefia + adiciona em descontos: `tipo ENUM('AVULSO','PARCELA')`, `parcela_atual`, `parcela_total`, `status ENUM('pendente','pago','cancelado')`, `grupo_parcela_id`
+- **Totais derivados em runtime**: `valor_total / valor_pago / valor_pendente / parcelas_pagas` calculados via `SUM/COUNT` agrupado por `grupo_parcela_id` no endpoint `GET /api/parcelas/grupo.php?entidade=X&grupo_id=UUID` — não armazenados (zero risco de drift se uma parcela for editada/cancelada)
+- Storage-shim mapeia `grupo_parcela_id` → `grupoParcelaId` em despesas/chefia e adiciona `tipo/parcelaAtual/parcelaTotal/status` em descontos
+- Status `Aceita` é imutável em propostas, mas parcelas podem ser editadas/canceladas individualmente (cancelar **não reduz** parcela_total — registro do que foi acordado originalmente fica preservado)
 
 Novidades v94–v95 (identidade + responsividade mobile):
 - **v95** — Responsividade mobile impecável: action bars com `flex-wrap` em todas as abas, botões `w-full sm:w-auto` e `min-h-[36px]` (área de toque Material Design), ícones com `flex-shrink-0`, tipografia responsiva (`text-lg sm:text-xl`, `text-[11px] sm:text-xs`). Tabs do header com `text-[11px]`, `py-2.5`, `min-h-[40px]`. Card/Painel/Stat com `min-w-0 + truncate` para evitar overflow no celular
@@ -363,7 +373,9 @@ Se eu (Celso) der uma instrução que conflita com algo nas Decisões já tomada
 
 ---
 
-*Última atualização: 2026-05-10. Sistema em produção na v95 em `https://celso.cloud`. Trabalho atual: módulo de Propostas Comerciais (Fase 1+3 commitadas no `0d1c21a`, Fase 2+4 pendentes para v96) + iterações Cora. Pendentes:*
+*Última atualização: 2026-05-10. Sistema em produção na v96 em `https://celso.cloud`. Trabalho atual: módulo de Parcelamentos (v96 — backend + UI + migração one-shot) + módulo de Propostas (Fase 1+3 já em produção; Fase 2 UI interna e Fase 4 PDF pendentes) + iterações Cora. Pendentes:*
+- *Rodar migration 012 (`database/migrations/012_parcelas.sql`) no phpMyAdmin antes de testar v96.*
+- *Após rodar migration 012, **rodar uma vez** o botão "Migrar parcelas" em cada uma das 3 abas (Despesas, Desp. Chefia, Vales) para inferir os grupos existentes e criar as parcelas faltantes. Conferir relatório no console + alert. Apagar o botão depois (linhas 3317, 3413, 3481 no v96 + helper `migrarParcelasExistentes`).*
 - *Rodar migration 011 (`database/migrations/011_propostas.sql`) no phpMyAdmin + conceder permissão `propostas` aos perfis não-admin.*
 - *Confirmar que migrations 008/009/010 estão aplicadas em produção (`database/migrations/`).*
 - *Limpar probes de diagnóstico Cora (`backend/api/cora/probe-*.php`, `test_auth.php`, `diag-certs.php`) quando a auth estiver estável em prod.*

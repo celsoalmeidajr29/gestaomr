@@ -35,7 +35,9 @@
       "Read(//c/laragon/bin/**)",
       "Bash(where npm *)",
       "Bash(ls -la frontend/public/proposta/)",
-      "Bash(ls -la frontend/public/)"
+      "Bash(ls -la frontend/public/)",
+      "Bash(cp frontend/src/versions/MRSys_v95.jsx frontend/src/versions/MRSys_v96.jsx)",
+      "Read(//c/c/Users/Anderson Manhães/Documents/GitHub/gestaomr/frontend/src/versions/**)"
     ]
   }
 }
