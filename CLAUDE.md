@@ -47,6 +47,30 @@ Novidades v94–v95 (identidade + responsividade mobile):
 - **v95** — Responsividade mobile impecável: action bars com `flex-wrap` em todas as abas, botões `w-full sm:w-auto` e `min-h-[36px]` (área de toque Material Design), ícones com `flex-shrink-0`, tipografia responsiva (`text-lg sm:text-xl`, `text-[11px] sm:text-xs`). Tabs do header com `text-[11px]`, `py-2.5`, `min-h-[40px]`. Card/Painel/Stat com `min-w-0 + truncate` para evitar overflow no celular
 - **v94** — Identidade "MRSys - Sistema de Gestão": h1 do header alterado de "Fechamento Financeiro"; ícone `DollarSign` substituído por letras "MR" no mesmo gradient indigo→purple do card do Hub; `useEffect` seta `document.title` ao montar e restaura ao desmontar; `SistemasHub` renomeia card MRSys e bumpa `MRSYS_VERSION = 'v94'` (PR #4 trouxe v94+v95)
 
+### Módulo de Propostas Comerciais (em desenvolvimento — 2026-05-10)
+
+**Fase 1 (backend) + Fase 3 (aceite público) concluídas no commit `0d1c21a`.**
+
+Stack:
+- **Migration 011** (`database/migrations/011_propostas.sql`): tabelas `propostas`, `proposta_itens`, `proposta_aceites_log`. Numeração `P-NNNN` via `INT UNIQUE` (mesmo padrão de `fechamentos`). Aceite virtual via combo D (e-mail com link + token UUID v4 + CNPJ digitado em página pública). Snapshot JSON imutável após aceite.
+- **Endpoints internos** (`backend/api/propostas/`, permissão `propostas`): `index.php` (listar/criar), `item.php` (GET/PUT/PATCH/DELETE — PUT preserva conversões pelo `ordem`; PATCH gera token na 1ª ida pra Enviada com 30d expiração; aceita interna/presencial só por admin), `criar_servicos.php` (converte itens marcados em entradas no catálogo, idempotente, 207 multi-status).
+- **Endpoints públicos** (sem auth): `publica.php` (mascara CNPJ retornado, valida expiração, loga tentativas), `aceitar.php` (valida match de CNPJ por dígitos, marca Aceita, snapshot+IP+UA).
+- **E-mail de envio** (`backend/api/email/enviar_proposta.php`): HTML multipart/alternative com botão pro link público; gera token se não existe e marca status=`Enviada`.
+- **Página pública** (`frontend/src/PropostaPublica.jsx`): rota `/proposta/:UUID` no `main.jsx` bypassa login/Hub. Header com identidade MR, card cabeçalho, tabela de itens (FACILITIES mostra Efetivo/Escala), form de aceite com máscara CNPJ + 14 dígitos.
+
+Pendências antes de o módulo entrar em produção:
+1. **Rodar migration 011** no phpMyAdmin.
+2. **Conceder permissão `propostas`** aos perfis não-admin (admin passa direto via `require_permission`).
+3. **Fase 2 — UI interna no monolito (v96)**: aba Propostas com lista + filtros, modal criar/editar (ESCOLTA via catálogo + FACILITIES manual), botões Enviar/Reenviar/Aceitar manualmente/Rejeitar/Excluir, modal "Criar serviços" (checkbox por item) → `criar_servicos.php`. Storage-shim ganha chave `propostas`.
+4. **Fase 4 — PDF da proposta**: template `proposta.pdf` em `public_html/proposta/proposta.pdf` (página 6 em branco, eu desenho do zero); usar `pdf-lib` em runtime via fetch de `/proposta/proposta.pdf`. Botão "Gerar PDF" em cada proposta no v96.
+
+Decisões de spec relevantes (registradas no memory `project_propostas_modulo`):
+- **Status:** `Criada → Enviada → Em análise → Aceita | Rejeitada` (Rejeitada arquiva, não some)
+- **Categorias:** `ESCOLTA` (catálogo) + `FACILITIES` (manual: cliente, descrição, efetivo, escala, valor unitário/total)
+- **Token:** UUID v4 com expiração de 30d. `publica.php` retorna 410 se expirado, 404 se inválido (não vaza informação).
+- **Aceite imutável:** PUT/PATCH bloqueiam mudanças em propostas com `status='Aceita'`. `snapshot_aceito` (JSON) é a fonte de verdade.
+- **Conversão pro catálogo:** modal de seleção (checkbox por item) → 1 entrada por item marcado. Itens já convertidos ficam flagados (`servico_id IS NOT NULL`) pra evitar duplicata.
+
 Novidades v92–v93 (folha + Cora UI):
 - **v93** — Folha: filtro por status na tela (todos / pendente / transferido / pago / cancelada)
 - **v92** — Folha: marcar status manualmente (ação em massa + individual)
@@ -339,7 +363,8 @@ Se eu (Celso) der uma instrução que conflita com algo nas Decisões já tomada
 
 ---
 
-*Última atualização: 2026-05-09. Sistema em produção na v95 em `https://celso.cloud`. Trabalho atual: iterações e melhorias no monolito + integração Cora (PIX em massa para folha). Pendentes:*
+*Última atualização: 2026-05-10. Sistema em produção na v95 em `https://celso.cloud`. Trabalho atual: módulo de Propostas Comerciais (Fase 1+3 commitadas no `0d1c21a`, Fase 2+4 pendentes para v96) + iterações Cora. Pendentes:*
+- *Rodar migration 011 (`database/migrations/011_propostas.sql`) no phpMyAdmin + conceder permissão `propostas` aos perfis não-admin.*
 - *Confirmar que migrations 008/009/010 estão aplicadas em produção (`database/migrations/`).*
 - *Limpar probes de diagnóstico Cora (`backend/api/cora/probe-*.php`, `test_auth.php`, `diag-certs.php`) quando a auth estiver estável em prod.*
 - *Validar end-to-end o fluxo Cora em produção (transferência → webhook → status na folha).*
