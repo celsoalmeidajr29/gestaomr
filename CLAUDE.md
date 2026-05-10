@@ -37,11 +37,31 @@ Gestor/usuário principal: **Celso Almeida** (`celso.almeida@grupomr.seg.br`)
 
 ### Versão ativa do monolito
 
-**`MRSys_v96.jsx`** — `frontend/src/App.jsx` é wrapper que repassa props para o monolito:
+**`MRSys_v97.jsx`** — `frontend/src/App.jsx` é wrapper que repassa props para o monolito:
 ```jsx
-import MRSysApp from './versions/MRSys_v96.jsx'
+import MRSysApp from './versions/MRSys_v97.jsx'
 export default function App(props) { return <MRSysApp {...props} /> }
 ```
+
+Novidade v97 (módulo de Propostas — Fase 2 UI interna):
+- **Nova aba "Propostas"** no sidebar (entre Lançamentos e Faturas) e tabs mobile. Ícone `FileSignature`
+- **Listagem** com filtros (status `Criada/Enviada/Em análise/Aceita/Rejeitada/todos`, categoria `ESCOLTA/FACILITIES`, busca por número/cliente/CNPJ). Mostra número formatado `P-NNNN`, badge de status colorido, valor total, qtd de itens
+- **Ações por linha** (botões compactos):
+  - **Editar** (Edit2) — abre `ModalProposta` em modo edição. Em propostas Aceitas/Rejeitadas, abre em modo somente-leitura
+  - **Enviar** (Send azul) — chama `enviar_proposta.php` (gera token UUID se ainda não existe, marca status=Enviada, manda e-mail HTML pro cliente_email)
+  - **Aceitar manualmente** (CheckCircle verde) — admin only. Marca como Aceita sem aceite virtual (presencial)
+  - **Rejeitar** (XCircle vermelho) — pede motivo e marca como Rejeitada
+  - **Criar serviços** (Package indigo) — só em propostas Aceitas. Abre `ModalCriarServicosDeProposta` com checkbox por item
+  - **Excluir** (Trash2) — exclusão lógica (DELETE → marca como Rejeitada arquivada)
+- **`ModalProposta`** — cabeçalho (cliente do catálogo OU avulso, CNPJ obrigatório, e-mail, categoria, condições/prazos/vencimento/observações) + lista de itens dinâmica:
+  - **ESCOLTA**: select pra popular do catálogo de serviços (cod, descrição, valorFatura puxa direto)
+  - **FACILITIES**: campos extras Efetivo + Escala
+  - Recálculo automático de valor_total ao mudar quantidade ou valor unitário
+  - Soma do total da proposta no rodapé
+  - Itens já convertidos pro catálogo (com `servico_id`) ficam destacados em verde
+- **`ModalCriarServicosDeProposta`** — checkbox por item, form com campos do catálogo de serviços (codigo único, cliente, template, categoria, valor, alíquota). Itens já convertidos ficam ocultos. Idempotente — chama `/api/propostas/criar_servicos.php` (resposta 207 multi-status mostra resumo)
+- **Comunicação direta com `/api/propostas/*`** via `fetch` (sem storage-shim — propostas é módulo isolado, não tem cross-deps com lançamentos/folha/etc)
+- **Lazy-load**: lista carregada só quando o usuário abre a aba (não impacta tempo de boot do app)
 
 Novidade v96 (parcelamentos):
 - **Modais Despesa / Despesa Chefia / Vale ganharam checkbox "Parcelado"** — quando marcado, esconde o select de Tipo, mostra input "Total de parcelas" (>=2) + preview "Cria N parcelas de R$ X a partir de YYYY-MM, total R$ Z". Botão de salvar muda pra roxo "Criar N parcelas"
@@ -373,8 +393,8 @@ Se eu (Celso) der uma instrução que conflita com algo nas Decisões já tomada
 
 ---
 
-*Última atualização: 2026-05-10. Sistema em produção na v96 em `https://celso.cloud`. Trabalho atual: módulo de Parcelamentos (v96 — backend + UI + migração one-shot) + módulo de Propostas (Fase 1+3 já em produção; Fase 2 UI interna e Fase 4 PDF pendentes) + iterações Cora. Pendentes:*
-- *Rodar migration 012 (`database/migrations/012_parcelas.sql`) no phpMyAdmin antes de testar v96.*
+*Última atualização: 2026-05-10. Sistema em produção na v97 em `https://celso.cloud`. Trabalho atual: módulo de Propostas Fase 2 (UI interna v97) — última pendência é Fase 4 (PDF overlay). Parcelamentos v96 também em produção. Pendentes:*
+- *Rodar migration 012 (`database/migrations/012_parcelas.sql`) no phpMyAdmin antes de testar v96/v97.*
 - *Após rodar migration 012, **rodar uma vez** o botão "Migrar parcelas" em cada uma das 3 abas (Despesas, Desp. Chefia, Vales) para inferir os grupos existentes e criar as parcelas faltantes. Conferir relatório no console + alert. Apagar o botão depois (linhas 3317, 3413, 3481 no v96 + helper `migrarParcelasExistentes`).*
 - *Rodar migration 011 (`database/migrations/011_propostas.sql`) no phpMyAdmin + conceder permissão `propostas` aos perfis não-admin.*
 - *Confirmar que migrations 008/009/010 estão aplicadas em produção (`database/migrations/`).*
