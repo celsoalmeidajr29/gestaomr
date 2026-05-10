@@ -24,7 +24,18 @@
       "Bash(php -l backend/api/cora/test_auth.php)",
       "Bash(php -l backend/api/cora/webhook.php)",
       "Bash(git fetch *)",
-      "Bash(git status *)"
+      "Bash(git status *)",
+      "Bash(php -l backend/api/propostas/index.php)",
+      "Bash(php -l backend/api/propostas/item.php)",
+      "Bash(php -l backend/api/propostas/publica.php)",
+      "Bash(php -l backend/api/propostas/aceitar.php)",
+      "Bash(php -l backend/api/propostas/criar_servicos.php)",
+      "Read(//c/xampp/php/**)",
+      "Bash(ls \"/c/wamp\"*/bin/php/*/php.exe)",
+      "Read(//c/laragon/bin/**)",
+      "Bash(where npm *)",
+      "Bash(ls -la frontend/public/proposta/)",
+      "Bash(ls -la frontend/public/)"
     ]
   }
 }
