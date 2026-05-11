@@ -1,6 +1,11 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react'
 import { ArrowLeft, LogOut, Upload, Users, BarChart3, AlertTriangle, Clock, Plus, Edit2, Trash2, Download, FileText, RefreshCw, X, Check, Search } from 'lucide-react'
 import * as XLSX from 'xlsx'
+import {
+  AreaChart, Area, BarChart, Bar, LineChart, Line,
+  PieChart, Pie, Cell,
+  XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
+} from 'recharts'
 
 const API = '/api/pareceto'
 
@@ -233,6 +238,75 @@ function analyzeVendas(records) {
   })
   const rankingTrechos = Object.entries(porTrechoMap).map(([trecho, d]) => ({ trecho, ...d })).sort((a, b) => b.count - a.count)
 
+  // ---- Fase 3: agrupamentos temporais e adicionais ----
+  // Série diária
+  const porDataMap = {}
+  records.forEach(r => {
+    if (!r.dtReg) return
+    const dk = r.dtReg.toISOString().slice(0, 10)
+    if (!porDataMap[dk]) porDataMap[dk] = { date: dk, label: dk.slice(8)+'/'+dk.slice(5,7), count: 0, valor: 0 }
+    porDataMap[dk].count++; porDataMap[dk].valor += r.valor
+  })
+  const serieDiaria = Object.values(porDataMap).sort((a, b) => a.date.localeCompare(b.date))
+
+  // Por hora do dia (0–23)
+  const porHora = Array.from({ length: 24 }, (_, h) => ({ hora: h, label: `${String(h).padStart(2,'0')}h`, count: 0, valor: 0 }))
+  records.forEach(r => {
+    if (!r.dtReg) return
+    const h = r.dtReg.getHours()
+    porHora[h].count++; porHora[h].valor += r.valor
+  })
+
+  // Por faixa de hora
+  const porFaixa = [
+    { faixa: 'Manhã', label: '06–12h', count: 0, valor: 0 },
+    { faixa: 'Tarde', label: '12–18h', count: 0, valor: 0 },
+    { faixa: 'Noite', label: '18–24h', count: 0, valor: 0 },
+    { faixa: 'Madrugada', label: '00–06h', count: 0, valor: 0 },
+  ]
+  porHora.forEach(({ hora, count, valor }) => {
+    const idx = hora < 6 ? 3 : hora < 12 ? 0 : hora < 18 ? 1 : 2
+    porFaixa[idx].count += count; porFaixa[idx].valor += valor
+  })
+
+  // Por dia da semana
+  const _DIAS = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb']
+  const _dswRaw = Array.from({ length: 7 }, (_, i) => ({ dia: i, label: _DIAS[i], count: 0, valor: 0, _dates: new Set() }))
+  records.forEach(r => {
+    if (!r.dtReg) return
+    const d = r.dtReg.getDay()
+    _dswRaw[d].count++; _dswRaw[d].valor += r.valor; _dswRaw[d]._dates.add(r.dtReg.toISOString().slice(0,10))
+  })
+  const porDiaSemana = _dswRaw.map(({ _dates, ...d }) => ({
+    ...d,
+    diasDistintos: _dates.size,
+    mediaCount: _dates.size > 0 ? Math.round(d.count / _dates.size * 10) / 10 : 0,
+    mediaValor:  _dates.size > 0 ? d.valor / _dates.size : 0,
+  }))
+
+  // Por mês
+  const porMesMap = {}
+  records.forEach(r => {
+    if (!r.dtReg) return
+    const mk = r.dtReg.toISOString().slice(0, 7)
+    if (!porMesMap[mk]) porMesMap[mk] = { mes: mk, label: mk.slice(5)+'/'+mk.slice(2,4), count: 0, valor: 0 }
+    porMesMap[mk].count++; porMesMap[mk].valor += r.valor
+  })
+  const porMes = Object.values(porMesMap).sort((a, b) => a.mes.localeCompare(b.mes))
+
+  // Por forma de pagamento
+  const porFormaPagMap = {}
+  records.forEach(r => {
+    const fp = (r.formaPagamento || 'Não informado').trim() || 'Não informado'
+    if (!porFormaPagMap[fp]) porFormaPagMap[fp] = { name: fp, count: 0, valor: 0 }
+    porFormaPagMap[fp].count++; porFormaPagMap[fp].valor += r.valor
+  })
+  const porFormaPag = Object.values(porFormaPagMap).sort((a, b) => b.count - a.count)
+
+  const diasOperados = serieDiaria.length
+  const receitaPorDia = diasOperados > 0 ? totalValor / diasOperados : 0
+  const transPorDiaMedia = diasOperados > 0 ? totalTrans / diasOperados : 0
+
   const datas = records.filter(r => r.dtReg).map(r => r.dtReg)
   return {
     totalTrans, totalValor, ticketMedio: totalValor / totalTrans,
@@ -240,6 +314,9 @@ function analyzeVendas(records) {
     comIrreg: records.filter(r => r.irregular).length,
     dataMin: datas.length ? new Date(Math.min(...datas)) : null,
     dataMax: datas.length ? new Date(Math.max(...datas)) : null,
+    // Fase 3
+    serieDiaria, porHora, porFaixa, porDiaSemana, porMes, porFormaPag,
+    diasOperados, receitaPorDia, transPorDiaMedia,
   }
 }
 
@@ -839,10 +916,12 @@ function AbaVendas({ funcionarios, dados, premissas, analise, jornada, subAba, s
           <strong className="text-slate-300">Premissas:</strong> {premissas.join(' · ')}
         </div>
       )}
-      <SubTabs tabs={[['kpis','KPIs'],['agentes','Agentes'],['trechos','Trechos'],['jornada','Jornada']]} aba={subAba} setAba={setSubAba} />
+      <SubTabs tabs={[['kpis','KPIs'],['temporal','Temporal'],['agentes','Agentes'],['trechos','Trechos'],['pagamentos','Pagamentos'],['jornada','Jornada']]} aba={subAba} setAba={setSubAba} />
       {analise && subAba === 'kpis' && <VendasKPIs a={analise} />}
-      {analise && subAba === 'agentes' && <VendasAgentes a={analise} />}
-      {analise && subAba === 'trechos' && <VendasTrechos a={analise} />}
+      {analise && subAba === 'temporal' && <VendasTemporal a={analise} />}
+      {analise && subAba === 'agentes' && <VendasAgentesChart a={analise} />}
+      {analise && subAba === 'trechos' && <VendasTrechosChart a={analise} />}
+      {analise && subAba === 'pagamentos' && <VendasPagamentos a={analise} />}
       {subAba === 'jornada' && <VendasJornada jornada={jornada} />}
     </div>
   )
@@ -874,6 +953,11 @@ function VendasKPIs({ a }) {
         <StatCard label="Valor total" value={fmtBRL(a.totalValor)} />
         <StatCard label="Ticket médio" value={fmtBRL(a.ticketMedio)} />
         <StatCard label="Com irregularidade" value={a.comIrreg} sub={`${fmtNum(a.comIrreg/a.totalTrans*100)}%`} />
+      </div>
+      <div className="grid grid-cols-3 gap-3">
+        <StatCard label="Dias operados" value={a.diasOperados} />
+        <StatCard label="Receita / dia" value={fmtBRL(a.receitaPorDia)} />
+        <StatCard label="Trans. / dia" value={fmtNum(a.transPorDiaMedia, 0)} />
       </div>
       <div className="grid sm:grid-cols-2 gap-4">
         <div className="bg-slate-800/40 rounded-xl border border-slate-700/50 p-4">
@@ -978,6 +1062,286 @@ function VendasJornada({ jornada }) {
           ))}
         </tbody>
       </table>
+    </div>
+  )
+}
+
+// ---- RECHARTS HELPERS ----
+const C_COLORS = ['#10b981','#14b8a6','#06b6d4','#0ea5e9','#8b5cf6','#f59e0b','#ef4444','#f97316','#ec4899','#84cc16']
+const ttStyle = {
+  contentStyle: { background:'#0f172a', border:'1px solid #334155', borderRadius:8, color:'#f1f5f9', fontSize:12 },
+  labelStyle: { color:'#94a3b8' },
+  itemStyle: { color:'#e2e8f0' },
+}
+const axisStyle = { tick:{ fill:'#64748b', fontSize:11 }, axisLine:{ stroke:'#334155' }, tickLine:false }
+const gridStyle = { strokeDasharray:'3 3', stroke:'#1e293b' }
+const fmtK = v => v >= 1000 ? `R$${(v/1000).toFixed(1)}k` : `R$${v.toFixed(0)}`
+
+function ChartCard({ title, children, height = 240 }) {
+  return (
+    <div className="bg-slate-800/60 border border-slate-700/50 rounded-xl p-4">
+      {title && <div className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-3">{title}</div>}
+      <div style={{ height }}>{children}</div>
+    </div>
+  )
+}
+
+function FaixaCards({ porFaixa, totalTrans }) {
+  const icons = ['☀️','🌇','🌙','🌃']
+  return (
+    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      {porFaixa.map((f, i) => (
+        <div key={f.faixa} className="bg-slate-800/60 border border-slate-700/50 rounded-xl p-3 text-center">
+          <div className="text-lg mb-1">{icons[i]}</div>
+          <div className="text-xs text-slate-400">{f.faixa}</div>
+          <div className="text-sm text-slate-500 mb-1">{f.label}</div>
+          <div className="text-base font-bold text-emerald-400">{f.count.toLocaleString('pt-BR')}</div>
+          <div className="text-xs text-slate-400">{fmtBRL(f.valor)}</div>
+          <div className="text-xs text-slate-600">{totalTrans > 0 ? fmtNum(f.count/totalTrans*100) : 0}%</div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function VendasTemporal({ a }) {
+  const interval = Math.max(0, Math.ceil(a.serieDiaria.length / 12) - 1)
+  return (
+    <div className="space-y-4">
+      <div className="grid grid-cols-3 gap-3">
+        <StatCard label="Dias operados" value={a.diasOperados} />
+        <StatCard label="Receita/dia (média)" value={fmtBRL(a.receitaPorDia)} />
+        <StatCard label="Trans./dia (média)" value={fmtNum(a.transPorDiaMedia, 0)} />
+      </div>
+
+      {a.serieDiaria.length > 1 && (
+        <ChartCard title="Receita diária" height={220}>
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart data={a.serieDiaria} margin={{ top:4, right:8, bottom:0, left:4 }}>
+              <defs>
+                <linearGradient id="gValor" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#10b981" stopOpacity={0.35}/>
+                  <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                </linearGradient>
+              </defs>
+              <CartesianGrid {...gridStyle}/>
+              <XAxis dataKey="label" {...axisStyle} interval={interval}/>
+              <YAxis {...axisStyle} tickFormatter={fmtK} width={52}/>
+              <Tooltip {...ttStyle} formatter={v => [fmtBRL(v),'Valor']}/>
+              <Area type="monotone" dataKey="valor" stroke="#10b981" fill="url(#gValor)" strokeWidth={2} dot={false}/>
+            </AreaChart>
+          </ResponsiveContainer>
+        </ChartCard>
+      )}
+
+      {a.serieDiaria.length > 1 && (
+        <ChartCard title="Transações por dia" height={180}>
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={a.serieDiaria} margin={{ top:4, right:8, bottom:0, left:4 }}>
+              <CartesianGrid {...gridStyle}/>
+              <XAxis dataKey="label" {...axisStyle} interval={interval}/>
+              <YAxis {...axisStyle} width={36}/>
+              <Tooltip {...ttStyle} formatter={v => [v.toLocaleString('pt-BR'),'Trans.']}/>
+              <Bar dataKey="count" fill="#14b8a6" radius={[2,2,0,0]}/>
+            </BarChart>
+          </ResponsiveContainer>
+        </ChartCard>
+      )}
+
+      <div className="grid sm:grid-cols-2 gap-4">
+        <ChartCard title="Por hora do dia" height={220}>
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={a.porHora} margin={{ top:4, right:8, bottom:0, left:4 }}>
+              <CartesianGrid {...gridStyle}/>
+              <XAxis dataKey="label" {...axisStyle} interval={3}/>
+              <YAxis {...axisStyle} width={32}/>
+              <Tooltip {...ttStyle} formatter={v => [v.toLocaleString('pt-BR'),'Trans.']}/>
+              <Bar dataKey="count" radius={[2,2,0,0]}>
+                {a.porHora.map((h, i) => {
+                  const pico = a.porHora.reduce((mx, x) => x.count > mx.count ? x : mx, a.porHora[0])
+                  return <Cell key={i} fill={h.hora === pico.hora ? '#f59e0b' : '#06b6d4'}/>
+                })}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </ChartCard>
+
+        <ChartCard title="Por dia da semana (média)" height={220}>
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={a.porDiaSemana} margin={{ top:4, right:8, bottom:0, left:4 }}>
+              <CartesianGrid {...gridStyle}/>
+              <XAxis dataKey="label" {...axisStyle}/>
+              <YAxis {...axisStyle} width={32}/>
+              <Tooltip {...ttStyle} formatter={(v, n) => [v.toLocaleString('pt-BR'), n === 'mediaCount' ? 'Média trans.' : n]}/>
+              <Bar dataKey="mediaCount" fill="#8b5cf6" radius={[2,2,0,0]}/>
+            </BarChart>
+          </ResponsiveContainer>
+        </ChartCard>
+      </div>
+
+      <FaixaCards porFaixa={a.porFaixa} totalTrans={a.totalTrans}/>
+
+      {a.porMes.length > 1 && (
+        <ChartCard title="Evolução mensal" height={200}>
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={a.porMes} margin={{ top:4, right:8, bottom:0, left:4 }}>
+              <CartesianGrid {...gridStyle}/>
+              <XAxis dataKey="label" {...axisStyle}/>
+              <YAxis {...axisStyle} tickFormatter={fmtK} width={52}/>
+              <Tooltip {...ttStyle} formatter={(v, n) => n === 'valor' ? [fmtBRL(v),'Valor'] : [v.toLocaleString('pt-BR'),'Trans.']}/>
+              <Bar dataKey="valor" fill="#10b981" radius={[2,2,0,0]} name="valor"/>
+            </BarChart>
+          </ResponsiveContainer>
+        </ChartCard>
+      )}
+    </div>
+  )
+}
+
+function VendasPagamentos({ a }) {
+  const total = a.porFormaPag.reduce((s, x) => s + x.count, 0)
+  const tipoArr = Object.entries(a.porTipo).map(([name, d]) => ({ name, ...d })).sort((x, y) => y.count - x.count)
+  return (
+    <div className="space-y-4">
+      <div className="grid sm:grid-cols-2 gap-4">
+        <ChartCard title="Forma de pagamento" height={260}>
+          <ResponsiveContainer width="100%" height="100%">
+            <PieChart>
+              <Pie data={a.porFormaPag} cx="50%" cy="45%" outerRadius={80} innerRadius={36} dataKey="count" paddingAngle={2}>
+                {a.porFormaPag.map((_, i) => <Cell key={i} fill={C_COLORS[i % C_COLORS.length]}/>)}
+              </Pie>
+              <Tooltip {...ttStyle} formatter={(v, n, p) => [`${v.toLocaleString('pt-BR')} (${fmtNum(v/total*100)}%)`, p.payload.name]}/>
+              <Legend formatter={v => <span style={{color:'#94a3b8',fontSize:11}}>{v}</span>}/>
+            </PieChart>
+          </ResponsiveContainer>
+        </ChartCard>
+
+        <ChartCard title="Tipo de transação" height={260}>
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart layout="vertical" data={tipoArr} margin={{ top:4, right:8, bottom:0, left:110 }}>
+              <CartesianGrid {...gridStyle} horizontal={false}/>
+              <XAxis type="number" {...axisStyle}/>
+              <YAxis type="category" dataKey="name" {...axisStyle} width={110}/>
+              <Tooltip {...ttStyle} formatter={v => [v.toLocaleString('pt-BR'),'Trans.']}/>
+              <Bar dataKey="count" radius={[0,4,4,0]}>
+                {tipoArr.map((t, i) => <Cell key={i} fill={t.name.includes('ALERTA') ? '#ef4444' : C_COLORS[i % C_COLORS.length]}/>)}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </ChartCard>
+      </div>
+
+      <div className="bg-slate-800/40 border border-slate-700/50 rounded-xl overflow-hidden">
+        <table className="w-full text-sm">
+          <thead className="bg-slate-800/60">
+            <tr className="text-left text-xs text-slate-400 uppercase tracking-wide">
+              <th className="px-4 py-3">Forma de pagamento</th>
+              <th className="px-4 py-3 text-right">Trans.</th>
+              <th className="px-4 py-3 text-right">%</th>
+              <th className="px-4 py-3 text-right">Valor</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-800">
+            {a.porFormaPag.map((fp, i) => (
+              <tr key={fp.name} className="hover:bg-slate-800/30">
+                <td className="px-4 py-2.5 flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{background:C_COLORS[i%C_COLORS.length]}}/>
+                  {fp.name}
+                </td>
+                <td className="px-4 py-2.5 text-right">{fp.count.toLocaleString('pt-BR')}</td>
+                <td className="px-4 py-2.5 text-right text-slate-400">{fmtNum(fp.count/total*100)}%</td>
+                <td className="px-4 py-2.5 text-right text-emerald-400">{fmtBRL(fp.valor)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
+}
+
+function VendasAgentesChart({ a }) {
+  const top10 = a.rankingAgentes.slice(0, 10).map(ag => ({ nome: ag.nome.split(' ')[0], count: ag.count, valor: ag.valor }))
+  return (
+    <div className="space-y-4">
+      <ChartCard title={`Top ${top10.length} agentes — transações`} height={top10.length * 30 + 40}>
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart layout="vertical" data={top10} margin={{ top:4, right:40, bottom:0, left:70 }}>
+            <CartesianGrid {...gridStyle} horizontal={false}/>
+            <XAxis type="number" {...axisStyle}/>
+            <YAxis type="category" dataKey="nome" {...axisStyle} width={70}/>
+            <Tooltip {...ttStyle} formatter={v => [v.toLocaleString('pt-BR'),'Trans.']}/>
+            <Bar dataKey="count" radius={[0,4,4,0]}>
+              {top10.map((_, i) => <Cell key={i} fill={i === 0 ? '#f59e0b' : i < 3 ? '#10b981' : '#14b8a6'}/>)}
+            </Bar>
+          </BarChart>
+        </ResponsiveContainer>
+      </ChartCard>
+      <div className="overflow-x-auto rounded-xl border border-slate-800">
+        <table className="w-full text-sm">
+          <thead className="bg-slate-800/60">
+            <tr className="text-left text-xs text-slate-400 uppercase tracking-wide">
+              <th className="px-4 py-3">#</th><th className="px-4 py-3">Agente</th><th className="px-4 py-3">Cargo</th>
+              <th className="px-4 py-3 text-right">Trans.</th><th className="px-4 py-3 text-right">Valor</th>
+              <th className="px-4 py-3 text-right">Ticket</th><th className="px-4 py-3 text-right">R$/h</th><th className="px-4 py-3 text-right">Trans/h</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-800">
+            {a.rankingAgentes.map((ag, i) => (
+              <tr key={ag.nome} className={`hover:bg-slate-800/30 ${ag.cargo === 'Não cadastrado' ? 'text-amber-400/80' : ''}`}>
+                <td className="px-4 py-2.5 text-slate-500 text-xs">{i+1}</td>
+                <td className="px-4 py-2.5 font-medium">{ag.nome}</td>
+                <td className="px-4 py-2.5"><CargoBadge cargo={ag.cargo}/></td>
+                <td className="px-4 py-2.5 text-right">{ag.count.toLocaleString('pt-BR')}</td>
+                <td className="px-4 py-2.5 text-right text-emerald-400">{fmtBRL(ag.valor)}</td>
+                <td className="px-4 py-2.5 text-right">{fmtBRL(ag.valor / ag.count)}</td>
+                <td className="px-4 py-2.5 text-right">{ag.rPorHora > 0 ? fmtBRL(ag.rPorHora) : '—'}</td>
+                <td className="px-4 py-2.5 text-right">{ag.transPorHora > 0 ? fmtNum(ag.transPorHora) : '—'}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
+}
+
+function VendasTrechosChart({ a }) {
+  const top12 = a.rankingTrechos.slice(0, 12).map(t => ({ nome: t.trecho.length > 18 ? t.trecho.slice(0,18)+'…' : t.trecho, count: t.count, valor: t.valor, trecho: t.trecho }))
+  return (
+    <div className="space-y-4">
+      <ChartCard title={`Top ${top12.length} trechos — transações`} height={top12.length * 28 + 40}>
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart layout="vertical" data={top12} margin={{ top:4, right:40, bottom:0, left:130 }}>
+            <CartesianGrid {...gridStyle} horizontal={false}/>
+            <XAxis type="number" {...axisStyle}/>
+            <YAxis type="category" dataKey="nome" {...axisStyle} width={130}/>
+            <Tooltip {...ttStyle} formatter={v => [v.toLocaleString('pt-BR'),'Trans.']} labelFormatter={(_, payload) => payload?.[0]?.payload?.trecho || ''}/>
+            <Bar dataKey="count" fill="#0ea5e9" radius={[0,4,4,0]}/>
+          </BarChart>
+        </ResponsiveContainer>
+      </ChartCard>
+      <div className="overflow-x-auto rounded-xl border border-slate-800">
+        <table className="w-full text-sm">
+          <thead className="bg-slate-800/60">
+            <tr className="text-left text-xs text-slate-400 uppercase tracking-wide">
+              <th className="px-4 py-3">#</th><th className="px-4 py-3">Trecho</th>
+              <th className="px-4 py-3 text-right">Trans.</th><th className="px-4 py-3 text-right">Valor</th><th className="px-4 py-3 text-right">% total</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-800">
+            {a.rankingTrechos.map((t, i) => (
+              <tr key={t.trecho} className="hover:bg-slate-800/30">
+                <td className="px-4 py-2.5 text-slate-500 text-xs">{i+1}</td>
+                <td className="px-4 py-2.5 font-medium">{t.trecho}</td>
+                <td className="px-4 py-2.5 text-right">{t.count.toLocaleString('pt-BR')}</td>
+                <td className="px-4 py-2.5 text-right text-emerald-400">{fmtBRL(t.valor)}</td>
+                <td className="px-4 py-2.5 text-right"><ConvBar pct={t.count/a.totalTrans*100}/></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   )
 }
