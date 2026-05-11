@@ -4,6 +4,7 @@ import * as XLSX from 'xlsx'
 import {
   AreaChart, Area, BarChart, Bar, LineChart, Line,
   PieChart, Pie, Cell,
+  RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis,
   XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
 } from 'recharts'
 
@@ -882,7 +883,227 @@ function ActionBar({ titulo, sub, sub2, onNovoArquivo, onExportTXT, onExportXLSX
   )
 }
 
+// ---- ANÁLISE INDIVIDUAL ----
+function computeAgenteAnalise(meus, nome, analise) {
+  if (!meus.length) return null
+  const totalTrans = meus.length
+  const totalValor = meus.reduce((s, r) => s + r.valor, 0)
+  const ticketMedio = totalValor / totalTrans
+  const ranking = (analise.rankingAgentes.findIndex(a => a.nome === nome) + 1) || analise.rankingAgentes.length
+  const totalAgentes = analise.rankingAgentes.length
+
+  const porDataMap = {}
+  meus.forEach(r => {
+    if (!r.dtReg) return
+    const dk = r.dtReg.toISOString().slice(0,10)
+    if (!porDataMap[dk]) porDataMap[dk] = { date:dk, label:dk.slice(8)+'/'+dk.slice(5,7), count:0, valor:0 }
+    porDataMap[dk].count++; porDataMap[dk].valor += r.valor
+  })
+  const serieDiaria = Object.values(porDataMap).sort((a,b) => a.date.localeCompare(b.date))
+  const diasTrabalhados = serieDiaria.length
+  const melhorDia = serieDiaria.reduce((best,d) => d.valor>(best?.valor||0)?d:best, null)
+
+  const porHora = Array.from({length:24},(_,h) => ({hora:h,label:`${String(h).padStart(2,'0')}h`,count:0,valor:0}))
+  meus.forEach(r => { if (r.dtReg) { porHora[r.dtReg.getHours()].count++; porHora[r.dtReg.getHours()].valor+=r.valor } })
+  const melhorHora = porHora.reduce((best,h) => h.count>best.count?h:best, porHora[0])
+
+  const _DIAS=['Dom','Seg','Ter','Qua','Qui','Sex','Sáb']
+  const _dsw = Array.from({length:7},(_,i)=>({dia:i,label:_DIAS[i],count:0,valor:0,_dates:new Set()}))
+  meus.forEach(r=>{ if(r.dtReg){const d=r.dtReg.getDay();_dsw[d].count++;_dsw[d].valor+=r.valor;_dsw[d]._dates.add(r.dtReg.toISOString().slice(0,10))} })
+  const porDiaSemana = _dsw.map(({_dates,...d})=>({...d,diasDistintos:_dates.size,mediaCount:_dates.size>0?Math.round(d.count/_dates.size*10)/10:0}))
+
+  const porMesMap = {}
+  meus.forEach(r => {
+    if (!r.dtReg) return
+    const mk = r.dtReg.toISOString().slice(0,7)
+    if (!porMesMap[mk]) porMesMap[mk]={mes:mk,label:mk.slice(5)+'/'+mk.slice(2,4),count:0,valor:0}
+    porMesMap[mk].count++; porMesMap[mk].valor+=r.valor
+  })
+  const porMes = Object.values(porMesMap).sort((a,b)=>a.mes.localeCompare(b.mes))
+
+  const porSemanaMap = {}
+  meus.forEach(r => {
+    if (!r.dtReg) return
+    const dt=new Date(r.dtReg); const jan4=new Date(dt.getFullYear(),0,4)
+    const sw=new Date(jan4); sw.setDate(jan4.getDate()-((jan4.getDay()||7)-1))
+    const wn=Math.floor((dt-sw)/604800000)+1
+    const wk=`${dt.getFullYear()}-W${String(wn).padStart(2,'0')}`
+    if(!porSemanaMap[wk]) porSemanaMap[wk]={semana:wk,label:`S${wn}`,count:0,valor:0}
+    porSemanaMap[wk].count++; porSemanaMap[wk].valor+=r.valor
+  })
+  const porSemana = Object.values(porSemanaMap).sort((a,b)=>a.semana.localeCompare(b.semana))
+
+  const valDiarios = serieDiaria.map(d=>d.valor)
+  const mediaDiaria = valDiarios.reduce((s,v)=>s+v,0)/(valDiarios.length||1)
+  const stdDev = Math.sqrt(valDiarios.reduce((s,v)=>s+Math.pow(v-mediaDiaria,2),0)/(valDiarios.length||1))
+  const coefVar = mediaDiaria>0?(stdDev/mediaDiaria)*100:0
+
+  const ags = analise.rankingAgentes
+  const maxTrans  = Math.max(...ags.map(a=>a.count),1)
+  const maxValor  = Math.max(...ags.map(a=>a.valor),1)
+  const maxTicket = Math.max(...ags.map(a=>a.valor/a.count),1)
+  const hAgentes  = ags.filter(a=>a.rPorHora>0)
+  const maxProdH  = Math.max(...hAgentes.map(a=>a.rPorHora),1)
+  const maxDias   = Math.max(...ags.map(a=>a.diasTrabalhados),1)
+  const mediaTpct = (analise.totalTrans/ags.length)/maxTrans*100
+  const mediaVpct = (analise.totalValor/ags.length)/maxValor*100
+  const mediaTkpct= analise.ticketMedio/maxTicket*100
+  const mediaPhpct= hAgentes.length>0?(hAgentes.reduce((s,a)=>s+a.rPorHora,0)/hAgentes.length)/maxProdH*100:0
+  const mediaDpct = (ags.reduce((s,a)=>s+a.diasTrabalhados,0)/ags.length)/maxDias*100
+  const meAg = ags.find(a=>a.nome===nome)
+
+  const radar = [
+    {metric:'Transações', eu:Math.round(totalTrans/maxTrans*100),    media:Math.round(mediaTpct),    fullMark:100},
+    {metric:'Valor',      eu:Math.round(totalValor/maxValor*100),     media:Math.round(mediaVpct),    fullMark:100},
+    {metric:'Ticket',     eu:Math.round(ticketMedio/maxTicket*100),   media:Math.round(mediaTkpct),   fullMark:100},
+    {metric:'R$/hora',    eu:meAg?.rPorHora>0?Math.round(meAg.rPorHora/maxProdH*100):0, media:Math.round(mediaPhpct), fullMark:100},
+    {metric:'Dias trab.', eu:Math.round(diasTrabalhados/maxDias*100), media:Math.round(mediaDpct),    fullMark:100},
+    {metric:'Consistência',eu:Math.round(Math.max(0,100-coefVar)),    media:65,                       fullMark:100},
+  ]
+
+  const datas=meus.filter(r=>r.dtReg).map(r=>r.dtReg)
+  return {
+    totalTrans, totalValor, ticketMedio, ranking, totalAgentes, diasTrabalhados,
+    melhorDia, melhorHora, coefVar, stdDev,
+    serieDiaria, porHora, porDiaSemana, porMes, porSemana, radar,
+    dataMin: datas.length?new Date(Math.min(...datas)):null,
+    dataMax: datas.length?new Date(Math.max(...datas)):null,
+    prodPorHora: meAg?.transPorHora||0,
+    rPorHora: meAg?.rPorHora||0,
+  }
+}
+
+function VendasFuncionarioDetalhe({ nome, cargo, records, analise, onVoltar }) {
+  const meus = useMemo(()=>records.filter(r=>r.usuario===nome),[records,nome])
+  const a = useMemo(()=>computeAgenteAnalise(meus,nome,analise),[meus,nome,analise])
+  const interval = Math.max(0, Math.ceil((a?.serieDiaria?.length||0)/12)-1)
+
+  if (!a) return (
+    <div className="space-y-4">
+      <button onClick={onVoltar} className="flex items-center gap-1.5 text-sm text-slate-400 hover:text-emerald-400 transition-colors"><ArrowLeft className="w-4 h-4"/>Voltar</button>
+      <div className="text-center py-12 text-slate-500">Nenhum registro para {nome}.</div>
+    </div>
+  )
+
+  const consistLabel = a.coefVar < 30 ? 'Regular' : a.coefVar < 60 ? 'Variável' : 'Irregular'
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center gap-3 pb-2 border-b border-slate-700/50">
+        <button onClick={onVoltar} className="p-1.5 rounded-lg hover:bg-slate-700/60 text-slate-400 hover:text-emerald-400 transition-colors flex-shrink-0"><ArrowLeft className="w-4 h-4"/></button>
+        <div className="min-w-0">
+          <div className="font-semibold text-lg text-white truncate">{nome}</div>
+          <div className="flex items-center gap-2 text-xs text-slate-400"><CargoBadge cargo={cargo||'Operador'}/><span>{fmtDate(a.dataMin)} – {fmtDate(a.dataMax)}</span></div>
+        </div>
+        <div className="ml-auto text-right flex-shrink-0">
+          <div className="text-2xl font-bold text-emerald-400">#{a.ranking}</div>
+          <div className="text-xs text-slate-500">de {a.totalAgentes} agentes</div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <StatCard label="Transações" value={a.totalTrans.toLocaleString('pt-BR')}/>
+        <StatCard label="Valor total" value={fmtBRL(a.totalValor)}/>
+        <StatCard label="Ticket médio" value={fmtBRL(a.ticketMedio)} sub={`equipe: ${fmtBRL(analise.ticketMedio)}`}/>
+        <StatCard label="Dias trabalhados" value={a.diasTrabalhados}/>
+      </div>
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <StatCard label="Trans./hora" value={a.prodPorHora>0?fmtNum(a.prodPorHora):'—'}/>
+        <StatCard label="R$/hora" value={a.rPorHora>0?fmtBRL(a.rPorHora):'—'}/>
+        <StatCard label="Pico do dia" value={a.melhorHora.count>0?a.melhorHora.label:'—'} sub={a.melhorHora.count>0?`${a.melhorHora.count} trans.`:''}/>
+        <StatCard label="Consistência" value={`${Math.round(Math.max(0,100-a.coefVar))}%`} sub={consistLabel}/>
+      </div>
+
+      {a.serieDiaria.length>1 && (
+        <ChartCard title="Receita diária" height={200}>
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart data={a.serieDiaria} margin={{top:4,right:8,bottom:0,left:4}}>
+              <defs><linearGradient id="gAg2" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#10b981" stopOpacity={0.35}/><stop offset="95%" stopColor="#10b981" stopOpacity={0}/></linearGradient></defs>
+              <CartesianGrid {...gridStyle}/><XAxis dataKey="label" {...axisStyle} interval={interval}/><YAxis {...axisStyle} tickFormatter={fmtK} width={52}/>
+              <Tooltip {...ttStyle} formatter={v=>[fmtBRL(v),'Valor']}/>
+              <Area type="monotone" dataKey="valor" stroke="#10b981" fill="url(#gAg2)" strokeWidth={2} dot={false}/>
+            </AreaChart>
+          </ResponsiveContainer>
+        </ChartCard>
+      )}
+
+      <div className="grid sm:grid-cols-2 gap-4">
+        <ChartCard title="Transações por hora" height={200}>
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={a.porHora} margin={{top:4,right:8,bottom:0,left:4}}>
+              <CartesianGrid {...gridStyle}/><XAxis dataKey="label" {...axisStyle} interval={3}/><YAxis {...axisStyle} width={32}/>
+              <Tooltip {...ttStyle} formatter={v=>[v.toLocaleString('pt-BR'),'Trans.']}/>
+              <Bar dataKey="count" radius={[2,2,0,0]}>{a.porHora.map((h,i)=><Cell key={i} fill={h.hora===a.melhorHora.hora&&h.count>0?'#f59e0b':'#06b6d4'}/>)}</Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </ChartCard>
+
+        <ChartCard title="Média por dia da semana" height={200}>
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={a.porDiaSemana} margin={{top:4,right:8,bottom:0,left:4}}>
+              <CartesianGrid {...gridStyle}/><XAxis dataKey="label" {...axisStyle}/><YAxis {...axisStyle} width={32}/>
+              <Tooltip {...ttStyle} formatter={v=>[v.toLocaleString('pt-BR'),'Média']}/>
+              <Bar dataKey="mediaCount" fill="#8b5cf6" radius={[2,2,0,0]}/>
+            </BarChart>
+          </ResponsiveContainer>
+        </ChartCard>
+      </div>
+
+      <div className="grid sm:grid-cols-2 gap-4">
+        {analise.rankingAgentes.length>1 && (
+          <ChartCard title="Comparativo com a equipe" height={260}>
+            <ResponsiveContainer width="100%" height="100%">
+              <RadarChart data={a.radar} margin={{top:4,right:24,bottom:4,left:24}}>
+                <PolarGrid stroke="#334155"/>
+                <PolarAngleAxis dataKey="metric" tick={{fill:'#94a3b8',fontSize:11}}/>
+                <PolarRadiusAxis angle={30} domain={[0,100]} tick={{fill:'#475569',fontSize:9}}/>
+                <Radar name={nome.split(' ')[0]} dataKey="eu" stroke="#10b981" fill="#10b981" fillOpacity={0.3} strokeWidth={2}/>
+                <Radar name="Média equipe" dataKey="media" stroke="#64748b" fill="#64748b" fillOpacity={0.1} strokeWidth={1} strokeDasharray="4 4"/>
+                <Legend formatter={v=><span style={{color:'#94a3b8',fontSize:11}}>{v}</span>}/>
+                <Tooltip {...ttStyle} formatter={v=>[`${v}/100`]}/>
+              </RadarChart>
+            </ResponsiveContainer>
+          </ChartCard>
+        )}
+
+        {a.porMes.length>=1 && (
+          <ChartCard title="Valor por mês" height={260}>
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={a.porMes} margin={{top:4,right:8,bottom:0,left:4}}>
+                <CartesianGrid {...gridStyle}/><XAxis dataKey="label" {...axisStyle}/><YAxis {...axisStyle} tickFormatter={fmtK} width={52}/>
+                <Tooltip {...ttStyle} formatter={v=>[fmtBRL(v),'Valor']}/>
+                <Bar dataKey="valor" fill="#14b8a6" radius={[2,2,0,0]}/>
+              </BarChart>
+            </ResponsiveContainer>
+          </ChartCard>
+        )}
+      </div>
+
+      {a.porSemana.length>2 && (
+        <ChartCard title="Evolução semanal (transações)" height={180}>
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={a.porSemana} margin={{top:4,right:8,bottom:0,left:4}}>
+              <CartesianGrid {...gridStyle}/><XAxis dataKey="label" {...axisStyle} interval={Math.max(0,Math.ceil(a.porSemana.length/10)-1)}/><YAxis {...axisStyle} width={32}/>
+              <Tooltip {...ttStyle} formatter={v=>[v.toLocaleString('pt-BR'),'Trans.']}/>
+              <Line type="monotone" dataKey="count" stroke="#0ea5e9" strokeWidth={2} dot={false}/>
+            </LineChart>
+          </ResponsiveContainer>
+        </ChartCard>
+      )}
+
+      {a.melhorDia && (
+        <div className="bg-slate-800/40 border border-slate-700/50 rounded-xl p-4 text-sm text-slate-400">
+          <span className="text-slate-300 font-medium">Melhor dia: </span>
+          {a.melhorDia.date} — {a.melhorDia.count.toLocaleString('pt-BR')} trans. · {fmtBRL(a.melhorDia.valor)}
+        </div>
+      )}
+    </div>
+  )
+}
+
 function AbaVendas({ funcionarios, dados, premissas, analise, jornada, subAba, setSubAba, onUpload, onSalvar, salvando }) {
+  const [selectedAgente, setSelectedAgente] = useState(null)
+
   if (!dados) {
     return (
       <div>
@@ -900,11 +1121,25 @@ function AbaVendas({ funcionarios, dados, premissas, analise, jornada, subAba, s
     )
   }
 
+  // Drill-down individual
+  if (selectedAgente && analise && dados) {
+    const ag = analise.rankingAgentes.find(a => a.nome === selectedAgente)
+    return (
+      <VendasFuncionarioDetalhe
+        nome={selectedAgente}
+        cargo={ag?.cargo}
+        records={dados.records}
+        analise={analise}
+        onVoltar={() => setSelectedAgente(null)}
+      />
+    )
+  }
+
   return (
     <div>
       <ActionBar
         titulo="Análise de Vendas"
-        sub={`${dados.nomeArquivo} · ${dados.records.length} transações`}
+        sub={`${dados.nomeArquivo} · ${dados.records.length.toLocaleString('pt-BR')} transações`}
         sub2={analise ? `${fmtDate(analise.dataMin)} a ${fmtDate(analise.dataMax)}` : ''}
         onNovoArquivo={onUpload}
         onExportTXT={analise ? () => gerarTXTVendas(analise, jornada, premissas) : null}
@@ -919,7 +1154,7 @@ function AbaVendas({ funcionarios, dados, premissas, analise, jornada, subAba, s
       <SubTabs tabs={[['kpis','KPIs'],['temporal','Temporal'],['agentes','Agentes'],['trechos','Trechos'],['pagamentos','Pagamentos'],['jornada','Jornada']]} aba={subAba} setAba={setSubAba} />
       {analise && subAba === 'kpis' && <VendasKPIs a={analise} />}
       {analise && subAba === 'temporal' && <VendasTemporal a={analise} />}
-      {analise && subAba === 'agentes' && <VendasAgentesChart a={analise} />}
+      {analise && subAba === 'agentes' && <VendasAgentesChart a={analise} onSelectAgente={setSelectedAgente} />}
       {analise && subAba === 'trechos' && <VendasTrechosChart a={analise} />}
       {analise && subAba === 'pagamentos' && <VendasPagamentos a={analise} />}
       {subAba === 'jornada' && <VendasJornada jornada={jornada} />}
@@ -1260,7 +1495,7 @@ function VendasPagamentos({ a }) {
   )
 }
 
-function VendasAgentesChart({ a }) {
+function VendasAgentesChart({ a, onSelectAgente }) {
   const top10 = a.rankingAgentes.slice(0, 10).map(ag => ({ nome: ag.nome.split(' ')[0], count: ag.count, valor: ag.valor }))
   return (
     <div className="space-y-4">
@@ -1277,6 +1512,9 @@ function VendasAgentesChart({ a }) {
           </BarChart>
         </ResponsiveContainer>
       </ChartCard>
+      {onSelectAgente && (
+        <p className="text-xs text-slate-500 text-center -mt-2">Clique em um agente para ver análise individual</p>
+      )}
       <div className="overflow-x-auto rounded-xl border border-slate-800">
         <table className="w-full text-sm">
           <thead className="bg-slate-800/60">
@@ -1284,11 +1522,16 @@ function VendasAgentesChart({ a }) {
               <th className="px-4 py-3">#</th><th className="px-4 py-3">Agente</th><th className="px-4 py-3">Cargo</th>
               <th className="px-4 py-3 text-right">Trans.</th><th className="px-4 py-3 text-right">Valor</th>
               <th className="px-4 py-3 text-right">Ticket</th><th className="px-4 py-3 text-right">R$/h</th><th className="px-4 py-3 text-right">Trans/h</th>
+              {onSelectAgente && <th className="px-4 py-3"/>}
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-800">
             {a.rankingAgentes.map((ag, i) => (
-              <tr key={ag.nome} className={`hover:bg-slate-800/30 ${ag.cargo === 'Não cadastrado' ? 'text-amber-400/80' : ''}`}>
+              <tr
+                key={ag.nome}
+                className={`transition-colors hover:bg-slate-800/50 ${onSelectAgente ? 'cursor-pointer' : ''} ${ag.cargo === 'Não cadastrado' ? 'text-amber-400/80' : ''}`}
+                onClick={() => onSelectAgente && onSelectAgente(ag.nome)}
+              >
                 <td className="px-4 py-2.5 text-slate-500 text-xs">{i+1}</td>
                 <td className="px-4 py-2.5 font-medium">{ag.nome}</td>
                 <td className="px-4 py-2.5"><CargoBadge cargo={ag.cargo}/></td>
@@ -1297,6 +1540,7 @@ function VendasAgentesChart({ a }) {
                 <td className="px-4 py-2.5 text-right">{fmtBRL(ag.valor / ag.count)}</td>
                 <td className="px-4 py-2.5 text-right">{ag.rPorHora > 0 ? fmtBRL(ag.rPorHora) : '—'}</td>
                 <td className="px-4 py-2.5 text-right">{ag.transPorHora > 0 ? fmtNum(ag.transPorHora) : '—'}</td>
+                {onSelectAgente && <td className="px-3 py-2.5 text-slate-600 text-xs">›</td>}
               </tr>
             ))}
           </tbody>
