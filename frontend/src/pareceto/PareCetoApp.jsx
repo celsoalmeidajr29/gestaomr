@@ -14,7 +14,8 @@ async function apiFetch(path, opts = {}) {
     const e = await r.json().catch(() => ({}))
     throw new Error(e.error || `HTTP ${r.status}`)
   }
-  return r.json()
+  const payload = await r.json()
+  return payload?.data ?? payload
 }
 
 // ---- UTILS ----
