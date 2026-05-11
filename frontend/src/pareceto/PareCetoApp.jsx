@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react'
-import { ArrowLeft, LogOut, Upload, Users, BarChart3, AlertTriangle, Clock, Plus, Edit2, Trash2, Download, FileText, RefreshCw, X, Check, Search, Settings, Bell, Shield, Target, ChevronDown, ChevronUp } from 'lucide-react'
+import { ArrowLeft, LogOut, Upload, Users, BarChart3, AlertTriangle, Clock, Plus, Edit2, Trash2, Download, FileText, RefreshCw, X, Check, Search, Settings, Bell, Shield, Target, ChevronDown, ChevronUp, Activity, TrendingUp, TrendingDown, Minus } from 'lucide-react'
 import * as XLSX from 'xlsx'
 import {
   AreaChart, Area, BarChart, Bar, LineChart, Line,
@@ -2887,6 +2887,277 @@ function AbaHistorico({ historico, loading, onExcluir, onRecarregar }) {
   )
 }
 
+// ---- DASHBOARD EXECUTIVO ----
+function InsightBadge({ text, tipo }) {
+  const styles = {
+    ok:     'bg-emerald-500/15 border-emerald-500/30 text-emerald-300',
+    alerta: 'bg-amber-500/15 border-amber-500/30 text-amber-300',
+    critico:'bg-red-500/15 border-red-500/30 text-red-300',
+    info:   'bg-blue-500/15 border-blue-500/30 text-blue-300',
+  }
+  const Icon = tipo === 'ok' ? TrendingUp : tipo === 'critico' ? TrendingDown : tipo === 'alerta' ? Bell : Activity
+  return (
+    <div className={`flex items-start gap-2 px-3 py-2.5 rounded-lg border text-xs ${styles[tipo] || styles.info}`}>
+      <Icon className="w-3.5 h-3.5 mt-0.5 flex-shrink-0"/>
+      <span>{text}</span>
+    </div>
+  )
+}
+
+function DashKpi({ label, value, sub, cor, icon: Icon }) {
+  const corText = cor === 'emerald' ? 'text-emerald-300' : cor === 'red' ? 'text-red-300' : cor === 'amber' ? 'text-amber-300' : cor === 'blue' ? 'text-blue-300' : cor === 'purple' ? 'text-purple-300' : 'text-slate-100'
+  return (
+    <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-4 flex flex-col gap-1 min-w-0">
+      <div className="flex items-center justify-between gap-2">
+        <span className="text-xs text-slate-400 truncate">{label}</span>
+        {Icon && <Icon className={`w-4 h-4 flex-shrink-0 ${corText} opacity-60`}/>}
+      </div>
+      <div className={`text-2xl font-bold leading-tight truncate ${corText}`}>{value}</div>
+      {sub && <div className="text-xs text-slate-500 truncate">{sub}</div>}
+    </div>
+  )
+}
+
+function AbaDashboard({ analiseVendas, analiseIrreg, dadosVendas, dadosIrreg, scorePlacas, scoreConfig }) {
+  const temV = !!analiseVendas
+  const temI = !!analiseIrreg
+
+  const inadimplencia = useMemo(
+    () => dadosIrreg?.records?.length ? computeInadimplencia(dadosIrreg.records) : null,
+    [dadosIrreg]
+  )
+
+  const scoreResumo = useMemo(() => {
+    if (!scorePlacas) return { critico:0, alto:0, medio:0, baixo:0, reincidentes:0, total:0 }
+    const all = Object.values(scorePlacas)
+    return {
+      critico:     all.filter(p => p.nivel === 'critico').length,
+      alto:        all.filter(p => p.nivel === 'alto').length,
+      medio:       all.filter(p => p.nivel === 'medio').length,
+      baixo:       all.filter(p => p.nivel === 'baixo').length,
+      reincidentes:all.filter(p => p.reincidente).length,
+      total:       all.length,
+    }
+  }, [scorePlacas])
+
+  // Trechos cruzados
+  const trechosConsolidados = useMemo(() => {
+    if (!temV || !temI) return []
+    const mapV = Object.fromEntries(analiseVendas.rankingTrechos.map(t => [t.trecho, t]))
+    const mapI = Object.fromEntries(analiseIrreg.rankingTrechos.map(t => [t.trecho, t]))
+    const all = new Set([...Object.keys(mapV), ...Object.keys(mapI)])
+    return Array.from(all).map(t => ({
+      name: t.length > 20 ? t.slice(0,20)+'…' : t, trecho: t,
+      receita:  mapV[t]?.valor   || 0,
+      trans:    mapV[t]?.count   || 0,
+      irreg:    mapI[t]?.total   || 0,
+      pendente: (mapI[t]?.total  || 0) - (mapI[t]?.paga || 0),
+    })).sort((a,b) => b.receita - a.receita).slice(0, 8)
+  }, [analiseVendas, analiseIrreg, temV, temI])
+
+  // Smart insights
+  const insights = useMemo(() => {
+    const list = []
+    if (temV) {
+      const top = analiseVendas.rankingAgentes[0]
+      if (top) list.push({ text: `Agente mais produtivo: ${top.nome} — ${top.count.toLocaleString('pt-BR')} trans. · ${fmtBRL(top.valor)}`, tipo: 'info' })
+      const topT = analiseVendas.rankingTrechos[0]
+      if (topT) list.push({ text: `Trecho com maior receita: ${topT.trecho} — ${fmtBRL(topT.valor)}`, tipo: 'info' })
+    }
+    if (temI) {
+      const conv = analiseIrreg.pctConversao
+      list.push({ text: `Taxa de conversão: ${fmtNum(conv)}% ${conv>=50?'— acima de 50%':conv>=30?'— moderada':'— atenção: abaixo de 30%'}`, tipo: conv >= 50 ? 'ok' : conv >= 30 ? 'alerta' : 'critico' })
+      if (inadimplencia) {
+        const topT = inadimplencia.porTrecho[0]
+        if (topT) list.push({ text: `Maior pendência por trecho: ${topT.trecho} — ${fmtBRL(topT.valor)} em ${topT.count} irregulações`, tipo: 'alerta' })
+      }
+    }
+    if (scoreResumo.critico > 0) list.push({ text: `${scoreResumo.critico} placa${scoreResumo.critico>1?'s':''} em nível crítico de risco — ação recomendada`, tipo: 'critico' })
+    if (scoreResumo.reincidentes > 0) list.push({ text: `${scoreResumo.reincidentes} placa${scoreResumo.reincidentes>1?'s reincidentes':' reincidente'} (3+ ocorrências em 90 dias)`, tipo: 'alerta' })
+    return list
+  }, [temV, temI, analiseVendas, analiseIrreg, scoreResumo, inadimplencia])
+
+  if (!temV && !temI) {
+    return (
+      <div className="text-center py-20 text-slate-500">
+        <Activity className="w-10 h-10 mx-auto mb-3 opacity-30"/>
+        <p className="text-sm">Nenhum dado carregado.</p>
+        <p className="text-xs mt-1">Importe um CSV em <strong className="text-slate-400">Vendas</strong> ou <strong className="text-slate-400">Irregularidades</strong> para ver o painel.</p>
+      </div>
+    )
+  }
+
+  const serieVendas = analiseVendas?.porMes?.slice(-12) || []
+  const serieIrreg  = analiseIrreg?.porSemana?.slice(-12) || []
+  const riscoPie = scorePlacas ? [
+    { name:'Crítico', value: scoreResumo.critico,  fill:'#ef4444' },
+    { name:'Alto',    value: scoreResumo.alto,     fill:'#f97316' },
+    { name:'Médio',   value: scoreResumo.medio,    fill:'#eab308' },
+    { name:'Baixo',   value: scoreResumo.baixo,    fill:'#10b981' },
+  ].filter(d => d.value > 0) : []
+
+  return (
+    <div className="space-y-6">
+      {/* Status */}
+      <div className="flex flex-wrap gap-2 items-center">
+        <span className="text-sm font-semibold text-slate-300">Dados carregados:</span>
+        <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${temV ? 'bg-emerald-500/20 text-emerald-300' : 'bg-slate-700 text-slate-500'}`}>
+          {temV ? `✓ Vendas — ${analiseVendas.totalTrans.toLocaleString('pt-BR')} trans.` : '— Vendas não carregado'}
+        </span>
+        <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${temI ? 'bg-blue-500/20 text-blue-300' : 'bg-slate-700 text-slate-500'}`}>
+          {temI ? `✓ Irregularidades — ${analiseIrreg.total.toLocaleString('pt-BR')} notif.` : '— Irregularidades não carregado'}
+        </span>
+        {scorePlacas && <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-purple-500/20 text-purple-300">✓ Score — {scoreResumo.total} placas</span>}
+      </div>
+
+      {/* KPIs */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+        <DashKpi label="Transações"    value={temV ? analiseVendas.totalTrans.toLocaleString('pt-BR') : '—'} sub={temV ? `${fmtBRL(analiseVendas.receitaPorDia)}/dia` : 'Sem dados'} cor="emerald" icon={BarChart3}/>
+        <DashKpi label="Receita total" value={temV ? fmtBRL(analiseVendas.totalValor) : '—'}              sub={temV ? `Ticket médio ${fmtBRL(analiseVendas.ticketMedio)}` : 'Sem dados'} cor="emerald" icon={TrendingUp}/>
+        <DashKpi label="Notificações"  value={temI ? analiseIrreg.total.toLocaleString('pt-BR') : '—'}     sub={temI ? `${analiseIrreg.totalIrregular} irregulares` : 'Sem dados'} cor="blue" icon={AlertTriangle}/>
+        <DashKpi label="% Conversão"   value={temI ? fmtNum(analiseIrreg.pctConversao)+'%' : '—'}          sub={temI ? `${analiseIrreg.totalPaga} pagas` : 'Sem dados'} cor={temI && analiseIrreg.pctConversao >= 50 ? 'emerald' : temI ? 'amber' : undefined} icon={Check}/>
+        <DashKpi label="Pendente"      value={inadimplencia ? fmtBRL(inadimplencia.valorTotal) : '—'}       sub={inadimplencia ? `${inadimplencia.totalPlacas} placas` : 'Sem dados'} cor="amber" icon={TrendingDown}/>
+        <DashKpi label="Placas críticas" value={scorePlacas ? scoreResumo.critico.toString() : '—'}          sub={scorePlacas ? `+${scoreResumo.reincidentes} reincidentes` : 'Sem dados'} cor={scoreResumo.critico > 0 ? 'red' : 'emerald'} icon={Bell}/>
+      </div>
+
+      {/* Insights */}
+      {insights.length > 0 && (
+        <div className="grid sm:grid-cols-2 gap-2">
+          {insights.map((ins, i) => <InsightBadge key={i} text={ins.text} tipo={ins.tipo}/>)}
+        </div>
+      )}
+
+      {/* Charts row */}
+      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {/* Receita mensal */}
+        {temV && serieVendas.length >= 2 && (
+          <ChartCard title="Receita mensal" height={200}>
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={serieVendas} margin={{top:4,right:8,bottom:0,left:4}}>
+                <CartesianGrid {...gridStyle}/><XAxis dataKey="label" {...axisStyle}/><YAxis {...axisStyle} tickFormatter={fmtK} width={48}/>
+                <Tooltip {...ttStyle} formatter={v=>[fmtBRL(v),'Receita']}/>
+                <Bar dataKey="valor" fill="#10b981" radius={[3,3,0,0]}/>
+              </BarChart>
+            </ResponsiveContainer>
+          </ChartCard>
+        )}
+
+        {/* Irregularidades por semana */}
+        {temI && serieIrreg.length >= 2 && (
+          <ChartCard title="Notificações semanais" height={200}>
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={serieIrreg} margin={{top:4,right:8,bottom:0,left:4}}>
+                <defs><linearGradient id="gIrrDash" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#3b82f6" stopOpacity={0.35}/><stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/></linearGradient></defs>
+                <CartesianGrid {...gridStyle}/><XAxis dataKey="label" {...axisStyle} interval={Math.max(0,Math.ceil(serieIrreg.length/6)-1)}/><YAxis {...axisStyle} width={36}/>
+                <Tooltip {...ttStyle} formatter={(v,n)=>[v.toLocaleString('pt-BR'),n==='total'?'Total':'Pagas']}/>
+                <Area type="monotone" dataKey="total" stroke="#3b82f6" fill="url(#gIrrDash)" strokeWidth={2}/>
+                <Area type="monotone" dataKey="paga" stroke="#10b981" fill="none" strokeWidth={1.5} strokeDasharray="4 2"/>
+              </AreaChart>
+            </ResponsiveContainer>
+          </ChartCard>
+        )}
+
+        {/* Distribuição de risco */}
+        {riscoPie.length > 0 && (
+          <ChartCard title="Distribuição de risco" height={200}>
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie data={riscoPie} cx="50%" cy="50%" outerRadius={72} innerRadius={36} dataKey="value" paddingAngle={2}>
+                  {riscoPie.map((d,i) => <Cell key={i} fill={d.fill}/>)}
+                </Pie>
+                <Tooltip {...ttStyle} formatter={(v,n)=>[`${v} placas (${fmtNum(v/scoreResumo.total*100)}%)`,n]}/>
+                <Legend formatter={v=><span style={{color:'#94a3b8',fontSize:11}}>{v}</span>}/>
+              </PieChart>
+            </ResponsiveContainer>
+          </ChartCard>
+        )}
+      </div>
+
+      {/* Rankings */}
+      <div className="grid sm:grid-cols-2 gap-4">
+        {temV && (
+          <div className="bg-slate-800/40 border border-slate-700/50 rounded-xl overflow-hidden">
+            <div className="px-4 py-3 border-b border-slate-700 text-xs font-semibold text-slate-400 uppercase tracking-wide">Top 5 agentes</div>
+            <table className="w-full text-sm">
+              <tbody className="divide-y divide-slate-800">
+                {analiseVendas.rankingAgentes.slice(0,5).map((ag,i) => (
+                  <tr key={ag.nome} className="hover:bg-slate-800/30">
+                    <td className="px-4 py-2.5 text-slate-500 text-xs">{i+1}</td>
+                    <td className="px-4 py-2.5 font-medium truncate">{ag.nome}</td>
+                    <td className="px-4 py-2.5 text-right text-slate-300">{ag.count.toLocaleString('pt-BR')}</td>
+                    <td className="px-4 py-2.5 text-right text-emerald-400">{fmtBRL(ag.valor)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {temI && (
+          <div className="bg-slate-800/40 border border-slate-700/50 rounded-xl overflow-hidden">
+            <div className="px-4 py-3 border-b border-slate-700 text-xs font-semibold text-slate-400 uppercase tracking-wide">Top 5 trechos — irregulações</div>
+            <table className="w-full text-sm">
+              <tbody className="divide-y divide-slate-800">
+                {analiseIrreg.rankingTrechos.slice(0,5).map((t,i) => (
+                  <tr key={t.trecho} className="hover:bg-slate-800/30">
+                    <td className="px-4 py-2.5 text-slate-500 text-xs">{i+1}</td>
+                    <td className="px-4 py-2.5 font-medium truncate">{t.trecho}</td>
+                    <td className="px-4 py-2.5 text-right text-amber-400">{t.total.toLocaleString('pt-BR')}</td>
+                    <td className="px-4 py-2.5 text-right"><ConvBar pct={t.total>0?t.paga/t.total*100:0}/></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
+      {/* Cross-analysis: Vendas × Irregularidades por trecho */}
+      {trechosConsolidados.length > 0 && (
+        <div className="space-y-2">
+          <div className="text-xs font-semibold text-slate-400 uppercase tracking-wide">Trechos cruzados — Receita vs Irregulações pendentes</div>
+          <ChartCard title="" height={Math.max(240, trechosConsolidados.length * 36 + 60)}>
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart layout="vertical" data={trechosConsolidados} margin={{top:4,right:60,bottom:0,left:140}}>
+                <CartesianGrid {...gridStyle} horizontal={false}/>
+                <XAxis type="number" {...axisStyle} tickFormatter={fmtK}/>
+                <YAxis type="category" dataKey="name" {...axisStyle} width={140}/>
+                <Tooltip {...ttStyle} formatter={(v,n)=>[fmtBRL(v), n==='receita'?'Receita':'Pendente']} labelFormatter={(_,pl)=>pl?.[0]?.payload?.trecho||''}/>
+                <Legend formatter={v=><span style={{color:'#94a3b8',fontSize:11}}>{v==='receita'?'Receita (Vendas)':'Pendente (Irreg.)'}</span>}/>
+                <Bar dataKey="receita" name="receita" fill="#10b981" radius={[0,3,3,0]}/>
+                <Bar dataKey="pendente" name="pendente" fill="#ef4444" radius={[0,3,3,0]}/>
+              </BarChart>
+            </ResponsiveContainer>
+          </ChartCard>
+        </div>
+      )}
+
+      {/* Aging resumo */}
+      {inadimplencia && (
+        <div className="bg-slate-800/40 border border-slate-700/50 rounded-xl p-4">
+          <div className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-3">Envelhecimento das pendências</div>
+          <div className="flex gap-2 items-end">
+            {AGING_BANDS.map(b => {
+              const n = inadimplencia.agingCount[b.key]
+              const pct = inadimplencia.totalPlacas > 0 ? n / inadimplencia.totalPlacas * 100 : 0
+              return (
+                <div key={b.key} className="flex-1 text-center">
+                  <div className={`text-lg font-bold ${b.cor.text}`}>{n}</div>
+                  <div className="h-16 bg-slate-700/50 rounded-t flex items-end overflow-hidden mt-1">
+                    <div className={`w-full ${b.cor.bar} rounded-t transition-all`} style={{height:`${Math.max(4,pct)}%`}}/>
+                  </div>
+                  <div className="text-xs text-slate-400 mt-1">{b.label}</div>
+                  <div className="text-xs text-slate-600">{b.desc}</div>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
 // ---- ABA CONFIGURAÇÕES ----
 function AbaConfiguracoes({ scoreConfig, onSaveScore, metas, onSaveMeta, onDeleteMeta, funcionarios }) {
   const [subAba, setSubAba] = useState('score')
@@ -3156,7 +3427,7 @@ export default function PareCetoApp({ usuario, onVoltarHub, onLogout }) {
     return () => { document.title = t }
   }, [])
 
-  const [aba, setAba] = useState('funcionarios')
+  const [aba, setAba] = useState('dashboard')
   const [toast, setToast] = useState(null)
 
   // Funcionários
@@ -3420,6 +3691,7 @@ export default function PareCetoApp({ usuario, onVoltarHub, onLogout }) {
   }
 
   const TABS = [
+    { id: 'dashboard', label: 'Dashboard', Icon: Activity },
     { id: 'vendas', label: 'Vendas', Icon: BarChart3 },
     { id: 'irregularidades', label: 'Irregularidades', Icon: AlertTriangle, badge: qtdCriticas },
     { id: 'funcionarios', label: 'Funcionários', Icon: Users },
@@ -3477,6 +3749,13 @@ export default function PareCetoApp({ usuario, onVoltarHub, onLogout }) {
             onEditar={f => setModalFunc({ mode: 'editar', data: { ...f } })}
             onInativar={inativarFuncionario}
             onExportXLSX={() => exportFuncionariosXLSX(funcsFiltrados)}
+          />
+        )}
+        {aba === 'dashboard' && (
+          <AbaDashboard
+            analiseVendas={analiseVendas} analiseIrreg={analiseIrreg}
+            dadosVendas={dadosVendas} dadosIrreg={dadosIrreg}
+            scorePlacas={scorePlacas} scoreConfig={scoreConfig}
           />
         )}
         {aba === 'vendas' && (
