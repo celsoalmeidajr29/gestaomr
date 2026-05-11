@@ -377,6 +377,7 @@ Estes detalhes não são óbvios e foram consolidados ao longo do desenvolviment
 - **Resumo consolidado em 6 painéis (v54+):** painéis "2. Folha de Pagamento" (template) e "4. Salários Fixos" removidos. Item 2 agora é "Folha por Categoria" (Categoria | Valor + bruto). Painéis 3-6 são Adiantamentos/Despesas Fixas/Avulsas/Parcelamentos.
 - **Card "Total Pago" nos lançamentos (v53+):** substituiu o card "Lucro" no topo. Coluna Lucro removida da tabela (redundante com PAGO Total).
 - **Hub de Sistemas (v49+):** após login, mostra `SistemasHub.jsx` com 1 card MRSys ativo + 5 placeholders. Para adicionar sistema novo, editar array `SISTEMAS`.
+- **Pare Certo - Análises (v0.1, 2026-05-11):** segundo sistema no Hub. Card emerald→teal, permissão `pareceto` (admin bypass). Frontend em `frontend/src/pareceto/PareCetoApp.jsx` (monolito isolado — sem comunicação com MRSys). Backend em `backend/api/pareceto/` (usa mesmo MySQL com tabelas `pc_*`). Módulos: 1 Vendas (CSV TAB, dedup placa, canal/zona/tipo/agente/jornada), 2 Irregularidades (CSV semicolon, semana ISO, rankings, Top 20 placas), 3 Funcionários (CRUD, vínculo de login com CSVs), Histórico. Exports XLSX + TXT em todos os módulos. Migration 014 cria as tabelas.
 - **Consolidação Faturas+Fechamentos (v51+):** aba "Faturas" removida. Aba "Fechamentos" agora tem faturas abertas (badge amarelo, botões Ver/Fechar) + fechadas (Status/Vencimento/Enviar/Reabrir).
 - **Envio de medição por email (v51+):** botão "Enviar" no fechamento. Modal com destinatários (chip), assunto pré-preenchido `MEDIÇÃO DE SERVIÇOS - {CLIENTE} {COMPETENCIA}`. Anexa PDF (jsPDF) + XLSX. Backend: `backend/api/email/enviar_medicao.php`.
 
@@ -407,7 +408,7 @@ Se eu (Celso) der uma instrução que conflita com algo nas Decisões já tomada
 
 ---
 
-*Última atualização: 2026-05-11. Sistema em produção na v99 em `https://celso.cloud`. Trabalho atual: PDF de medição limpo (sem impostos), conversão de despesas/vales em parcelamento via edição, e Resumo/Export XLSX com painel consolidado de parcelamentos das 3 origens (v99). Módulo de Propostas (v97/v98) e Parcelamentos (v96) em produção. Pendente: Fase 4 (PDF overlay) do módulo de Propostas. Pendentes:*
+*Última atualização: 2026-05-11. MRSys em produção na v99. Pare Certo v0.1 deployado — Hub liberado com card 'Pare Certo - Análises' (permissão `pareceto`). Módulos 1 (Vendas), 2 (Irregularidades), 3 (Funcionários) e Histórico funcionais. Migration 014 pendente de execução no phpMyAdmin. Pendentes MRSys:*
 - *Rodar migration 013 (`database/migrations/013_proposta_itens_operacionais.sql`) no phpMyAdmin antes de testar v98.*
 - *Rodar migration 012 (`database/migrations/012_parcelas.sql`) no phpMyAdmin antes de testar v96/v97.*
 - *Após rodar migration 012, **rodar uma vez** o botão "Migrar parcelas" em cada uma das 3 abas (Despesas, Desp. Chefia, Vales) para inferir os grupos existentes e criar as parcelas faltantes. Conferir relatório no console + alert. Apagar o botão depois (linhas 3317, 3413, 3481 no v96 + helper `migrarParcelasExistentes`).*
@@ -415,3 +416,5 @@ Se eu (Celso) der uma instrução que conflita com algo nas Decisões já tomada
 - *Confirmar que migrations 008/009/010 estão aplicadas em produção (`database/migrations/`).*
 - *Limpar probes de diagnóstico Cora (`backend/api/cora/probe-*.php`, `test_auth.php`, `diag-certs.php`) quando a auth estiver estável em prod.*
 - *Validar end-to-end o fluxo Cora em produção (transferência → webhook → status na folha).*
+- *Rodar migration 014 (`database/migrations/014_pareceto.sql`) no phpMyAdmin para ativar o Pare Certo (cria `pc_funcionarios` e `pc_relatorios_historico`).*
+- *Conceder permissão `pareceto` aos perfis não-admin que precisam acessar o Pare Certo.*
