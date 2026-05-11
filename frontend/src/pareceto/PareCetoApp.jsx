@@ -1319,21 +1319,38 @@ export default function PareCetoApp({ usuario, onVoltarHub, onLogout }) {
   }
 
   async function salvarRelatorioVendas() {
-    if (!analiseVendas) return
+    if (!analiseVendas || !dadosVendas?.records?.length) return
     setSalvandoVendas(true)
     try {
+      const payload = dadosVendas.records.map(r => ({
+        placa:        r.placa,
+        dt_registro:  r.dtReg   ? r.dtReg.toISOString().slice(0,19).replace('T',' ')   : null,
+        dt_inicial:   r.dtInicial ? r.dtInicial.toISOString().slice(0,19).replace('T',' ') : null,
+        periodo:      r.periodo   || null,
+        usuario:      r.usuario   || null,
+        cargo:        r.cargo     || null,
+        origem:       r.origem    || null,
+        trecho:       r.trecho    || null,
+        forma_pag:    r.formaPagamento || null,
+        valor:        r.valor,
+        irregular:    r.irregular ? 1 : 0,
+        canal:        r.canal  || null,
+        zona:         r.zona   || null,
+        tipo:         r.tipo   || null,
+      }))
+      const res = await apiFetch('/vendas/index.php', { method: 'POST', body: JSON.stringify(payload) })
       await apiFetch('/relatorios/index.php', {
         method: 'POST',
         body: JSON.stringify({
           modulo: 'vendas',
           periodo_inicio: analiseVendas.dataMin?.toISOString().slice(0,10) || new Date().toISOString().slice(0,10),
-          periodo_fim: analiseVendas.dataMax?.toISOString().slice(0,10) || new Date().toISOString().slice(0,10),
+          periodo_fim:    analiseVendas.dataMax?.toISOString().slice(0,10) || new Date().toISOString().slice(0,10),
           total_registros: analiseVendas.totalTrans,
           resumo_json: JSON.stringify({ totalTrans: analiseVendas.totalTrans, totalValor: analiseVendas.totalValor, topAgentes: analiseVendas.rankingAgentes.slice(0,10), premissas: premissasVendas }),
           nome_arquivo: dadosVendas?.nomeArquivo || '',
         }),
       })
-      showToast('Relatório salvo no histórico')
+      showToast(`Salvo: ${res.inseridos} novos, ${res.atualizados} atualizados`)
     } catch (e) { showToast('Erro ao salvar: ' + e.message, 'erro') }
     finally { setSalvandoVendas(false) }
   }
@@ -1352,21 +1369,34 @@ export default function PareCetoApp({ usuario, onVoltarHub, onLogout }) {
   }
 
   async function salvarRelatorioIrreg() {
-    if (!analiseIrreg) return
+    if (!analiseIrreg || !dadosIrreg?.records?.length) return
     setSalvandoIrreg(true)
     try {
+      const payload = dadosIrreg.records.map(r => ({
+        id_csv:       r.id,
+        dt_emissao:   r.dtEmissao ? r.dtEmissao.toISOString().slice(0,19).replace('T',' ') : null,
+        status:       r.status    || 'Irregular',
+        emissor:      r.emissor   || null,
+        cargo:        r.cargo     || null,
+        trecho:       r.trecho    || null,
+        placa:        r.placa     || null,
+        valor:        r.valor,
+        origem_class: r.origemClass || null,
+        semana:       r.semana    || null,
+      })).filter(r => r.id_csv)
+      const res = await apiFetch('/irregularidades/index.php', { method: 'POST', body: JSON.stringify(payload) })
       await apiFetch('/relatorios/index.php', {
         method: 'POST',
         body: JSON.stringify({
           modulo: 'irregularidades',
           periodo_inicio: analiseIrreg.dataMin?.toISOString().slice(0,10) || new Date().toISOString().slice(0,10),
-          periodo_fim: analiseIrreg.dataMax?.toISOString().slice(0,10) || new Date().toISOString().slice(0,10),
+          periodo_fim:    analiseIrreg.dataMax?.toISOString().slice(0,10) || new Date().toISOString().slice(0,10),
           total_registros: analiseIrreg.total,
           resumo_json: JSON.stringify({ total: analiseIrreg.total, totalPaga: analiseIrreg.totalPaga, pctConversao: analiseIrreg.pctConversao, premissas: premissasIrreg }),
           nome_arquivo: dadosIrreg?.nomeArquivo || '',
         }),
       })
-      showToast('Relatório salvo no histórico')
+      showToast(`Salvo: ${res.inseridos} novos, ${res.atualizados} atualizados`)
     } catch (e) { showToast('Erro ao salvar: ' + e.message, 'erro') }
     finally { setSalvandoIrreg(false) }
   }
