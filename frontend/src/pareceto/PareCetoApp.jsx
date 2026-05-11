@@ -63,12 +63,11 @@ async function readFileText(file) {
     const reader = new FileReader()
     reader.onload = e => {
       const buf = new Uint8Array(e.target.result)
-      const utf8 = new TextDecoder('utf-8').decode(buf)
-      if (/Ã©|Ã£|Ã§|Ã­|Ã´|Ã¡|Ãª/.test(utf8)) {
-        resolve(new TextDecoder('windows-1252').decode(buf))
-      } else {
-        resolve(utf8)
-      }
+      // Sample first 4KB for encoding detection — avoids decoding the whole file twice
+      const sample = buf.length > 4096 ? buf.slice(0, 4096) : buf
+      const enc = /Ã©|Ã£|Ã§|Ã­|Ã´|Ã¡|Ãª/.test(new TextDecoder('utf-8').decode(sample))
+        ? 'windows-1252' : 'utf-8'
+      resolve(new TextDecoder(enc).decode(buf))
     }
     reader.onerror = reject
     reader.readAsArrayBuffer(file)
@@ -84,17 +83,30 @@ function detectDelimiter(line) {
   return ','
 }
 
-function parseCSVText(text, forcedDelim) {
-  const lines = text.split(/\r?\n/).filter(l => l.trim())
-  if (!lines.length) return { headers: [], rows: [], delim: ',' }
-  const delim = forcedDelim || detectDelimiter(lines[0])
-  const headers = lines[0].split(delim).map(h => h.replace(/^"|"$/g, '').trim())
-  const rows = lines.slice(1).map(line => {
-    const vals = line.split(delim).map(v => v.replace(/^"|"$/g, '').replace(/""/g, '"').trim())
-    const obj = {}
-    headers.forEach((h, i) => { obj[h] = vals[i] ?? '' })
-    return obj
-  }).filter(r => Object.values(r).some(v => v !== ''))
+// Async + chunked — suporta 100k+ linhas sem travar o browser.
+// Trata \r\n (Windows), \r (Mac antigo) e \n (Unix).
+async function parseCSVText(text, forcedDelim, onProgress) {
+  const lines = text.split(/\r\n|\r|\n/)
+  const filtered = []
+  for (let i = 0; i < lines.length; i++) {
+    if (lines[i].trim()) filtered.push(lines[i])
+  }
+  if (!filtered.length) return { headers: [], rows: [], delim: ',' }
+  const delim = forcedDelim || detectDelimiter(filtered[0])
+  const headers = filtered[0].split(delim).map(h => h.replace(/^"|"$/g, '').trim())
+  const rows = []
+  const CHUNK = 8000
+  for (let i = 1; i < filtered.length; i += CHUNK) {
+    const end = Math.min(i + CHUNK, filtered.length)
+    for (let j = i; j < end; j++) {
+      const vals = filtered[j].split(delim).map(v => v.replace(/^"|"$/g, '').replace(/""/g, '"').trim())
+      const obj = {}
+      headers.forEach((h, k) => { obj[h] = vals[k] ?? '' })
+      rows.push(obj)
+    }
+    onProgress && onProgress(i / filtered.length, rows.length)
+    await new Promise(r => setTimeout(r, 0))
+  }
   return { headers, rows, delim }
 }
 
@@ -1251,6 +1263,7 @@ export default function PareCetoApp({ usuario, onVoltarHub, onLogout }) {
   const [jornadaVendas, setJornadaVendas] = useState([])
   const [subAbaVendas, setSubAbaVendas] = useState('kpis')
   const [salvandoVendas, setSalvandoVendas] = useState(false)
+  const [processandoVendas, setProcessandoVendas] = useState(null)
 
   // Irregularidades
   const [dadosIrreg, setDadosIrreg] = useState(null)
@@ -1258,6 +1271,7 @@ export default function PareCetoApp({ usuario, onVoltarHub, onLogout }) {
   const [analiseIrreg, setAnaliseIrreg] = useState(null)
   const [subAbaIrreg, setSubAbaIrreg] = useState('kpis')
   const [salvandoIrreg, setSalvandoIrreg] = useState(false)
+  const [processandoIrreg, setProcessandoIrreg] = useState(null)
 
   // Histórico
   const [historico, setHistorico] = useState([])
@@ -1305,17 +1319,35 @@ export default function PareCetoApp({ usuario, onVoltarHub, onLogout }) {
   }, [funcionarios, filtroStatusFunc, filtroCargoFunc, buscaFunc])
 
   async function handleUploadVendas(file) {
+    setProcessandoVendas({ pct: 2, label: 'Lendo arquivo...' })
     try {
       const text = await readFileText(file)
-      const { rows, delim } = parseCSVText(text)
+      setProcessandoVendas({ pct: 10, label: 'Detectando estrutura...' })
+      await new Promise(r => setTimeout(r, 0))
+      let linhasLidas = 0
+      const { rows, delim } = await parseCSVText(text, null, (ratio, count) => {
+        linhasLidas = count
+        setProcessandoVendas({ pct: 10 + Math.round(ratio * 72), label: `Processando linhas... ${count.toLocaleString('pt-BR')}` })
+      })
+      linhasLidas = rows.length
+      setProcessandoVendas({ pct: 85, label: 'Classificando por placa...' })
+      await new Promise(r => setTimeout(r, 0))
       const { records, premissas } = parseVendas(rows, funcionarios)
+      setProcessandoVendas({ pct: 95, label: 'Gerando análise...' })
+      await new Promise(r => setTimeout(r, 0))
       setDadosVendas({ records, nomeArquivo: file.name })
-      setPremissasVendas([`Arquivo: ${file.name}`, `Delimitador: ${delim === '\t' ? 'TAB' : delim}`, ...premissas])
+      setPremissasVendas([
+        `Arquivo: ${file.name}`,
+        `Delimitador: ${delim === '\t' ? 'TAB' : delim}`,
+        `${linhasLidas.toLocaleString('pt-BR')} linhas no CSV · ${records.length.toLocaleString('pt-BR')} placas únicas`,
+        ...premissas,
+      ])
       setAnaliseVendas(analyzeVendas(records))
       setJornadaVendas(analyzeJornada(records))
       setSubAbaVendas('kpis')
-      showToast(`${records.length} transações carregadas`)
+      showToast(`${records.length.toLocaleString('pt-BR')} transações carregadas`)
     } catch (e) { showToast('Erro ao processar CSV: ' + e.message, 'erro') }
+    finally { setProcessandoVendas(null) }
   }
 
   async function salvarRelatorioVendas() {
@@ -1356,16 +1388,31 @@ export default function PareCetoApp({ usuario, onVoltarHub, onLogout }) {
   }
 
   async function handleUploadIrreg(file) {
+    setProcessandoIrreg({ pct: 2, label: 'Lendo arquivo...' })
     try {
       const text = await readFileText(file)
-      const { rows, delim } = parseCSVText(text, ';')
+      setProcessandoIrreg({ pct: 10, label: 'Detectando estrutura...' })
+      await new Promise(r => setTimeout(r, 0))
+      const { rows, delim } = await parseCSVText(text, ';', (ratio, count) => {
+        setProcessandoIrreg({ pct: 10 + Math.round(ratio * 72), label: `Processando linhas... ${count.toLocaleString('pt-BR')}` })
+      })
+      setProcessandoIrreg({ pct: 85, label: 'Processando irregularidades...' })
+      await new Promise(r => setTimeout(r, 0))
       const { records, premissas } = parseIrregularidades(rows, funcionarios)
+      setProcessandoIrreg({ pct: 95, label: 'Gerando análise...' })
+      await new Promise(r => setTimeout(r, 0))
       setDadosIrreg({ records, nomeArquivo: file.name })
-      setPremissasIrreg([`Arquivo: ${file.name}`, `Delimitador: ${delim === '\t' ? 'TAB' : delim}`, ...premissas])
+      setPremissasIrreg([
+        `Arquivo: ${file.name}`,
+        `Delimitador: ${delim === '\t' ? 'TAB' : delim}`,
+        `${rows.length.toLocaleString('pt-BR')} linhas no CSV · ${records.length.toLocaleString('pt-BR')} notificações`,
+        ...premissas,
+      ])
       setAnaliseIrreg(analyzeIrregularidades(records))
       setSubAbaIrreg('kpis')
-      showToast(`${records.length} notificações carregadas`)
+      showToast(`${records.length.toLocaleString('pt-BR')} notificações carregadas`)
     } catch (e) { showToast('Erro ao processar CSV: ' + e.message, 'erro') }
+    finally { setProcessandoIrreg(null) }
   }
 
   async function salvarRelatorioIrreg() {
@@ -1494,6 +1541,22 @@ export default function PareCetoApp({ usuario, onVoltarHub, onLogout }) {
       {modalFunc && (
         <ModalFuncionario data={modalFunc.data} mode={modalFunc.mode} onSalvar={salvarFuncionario} onFechar={() => setModalFunc(null)} />
       )}
+
+      {(processandoVendas || processandoIrreg) && (() => {
+        const p = processandoVendas || processandoIrreg
+        return (
+          <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center z-50">
+            <div className="bg-slate-800 border border-slate-700 rounded-2xl p-8 text-center w-80 shadow-2xl">
+              <div className="text-base font-semibold text-emerald-400 mb-1">Processando planilha</div>
+              <div className="text-sm text-slate-400 mb-4 h-5">{p.label}</div>
+              <div className="w-full bg-slate-700 rounded-full h-2">
+                <div className="bg-emerald-500 h-2 rounded-full transition-all duration-200" style={{ width: `${p.pct}%` }} />
+              </div>
+              <div className="text-xs text-slate-500 mt-2">{p.pct}%</div>
+            </div>
+          </div>
+        )
+      })()}
     </div>
   )
 }
