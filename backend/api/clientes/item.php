@@ -22,6 +22,12 @@ if ($method === 'PUT' || $method === 'PATCH') {
     if (empty($d['nome'])) {
         json_error('Campo obrigatório: nome', 422);
     }
+    $emailsCobranca = null;
+    if (array_key_exists('emails_cobranca', $d)) {
+        $emailsCobranca = is_array($d['emails_cobranca'])
+            ? json_encode($d['emails_cobranca'], JSON_UNESCAPED_UNICODE)
+            : $d['emails_cobranca'];
+    }
     $stmt = db()->prepare(
         'UPDATE clientes SET nome=:nome, razao_social=:razao_social, cnpj=:cnpj,
          inscricao_estadual=:ie, aliquota=:aliquota,
@@ -29,7 +35,8 @@ if ($method === 'PUT' || $method === 'PATCH') {
          cep=:cep, cidade=:cidade, uf=:uf,
          contato_nome=:contato_nome, cargo_contato=:cargo_contato,
          contato_email=:contato_email, contato_telefone=:contato_telefone,
-         observacoes=:observacoes, status=:status
+         observacoes=:observacoes, status=:status,
+         emails_cobranca=COALESCE(:emails_cobranca, emails_cobranca)
          WHERE id=:id'
     );
     $stmt->execute([
@@ -51,6 +58,7 @@ if ($method === 'PUT' || $method === 'PATCH') {
         ':contato_telefone' => $d['contato_telefone'] ?? null,
         ':observacoes'      => $d['observacoes'] ?? null,
         ':status'           => $d['status'] ?? 'ATIVO',
+        ':emails_cobranca'  => $emailsCobranca,
         ':id'               => $id,
     ]);
     $row = db()->query("SELECT * FROM clientes WHERE id = {$id}")->fetch();

@@ -182,6 +182,9 @@ function apiToFechamento(r) {
     lancamentos,
     statusFatura: r.status_fatura,
     nfNumero: r.numero_nf || null,
+    nfData: r.data_nf || null,
+    enviadoEm: r.enviado_em || null,
+    empresaFaturante: r.empresa_faturante || null,
     historicoStatus: (r.historico_status || []).map(h => ({
       status: h.status_novo, em: h.em, auto: !!h.automatico,
     })),
@@ -536,6 +539,7 @@ async function loadKey(key) {
         aliquota: n(r.aliquota),
         observacoes: r.observacoes || '',
         status: r.status || 'ATIVO',
+        emailsCobranca: (() => { try { return JSON.parse(r.emails_cobranca || '[]') } catch { return [] } })(),
       }))
       default:                 return null
     }
@@ -686,6 +690,8 @@ async function syncFechamentos(newData) {
         data_vencimento: item.dataVencimento || null,
         data_pagamento: item.dataPagamento || null,
         numero_nf: item.nfNumero || null,
+        data_nf: item.nfData || null,
+        empresa_faturante: item.empresaFaturante || null,
         observacoes: item.observacoes || null,
         competencia: item.periodo || null,
         cliente_id: clientesByNome.get((item.cliente || '').toUpperCase()) || null,
@@ -816,6 +822,7 @@ async function syncClientes(newData) {
     contato_telefone:   v.telefone || null,
     observacoes:        v.observacoes || null,
     status:             v.status || 'ATIVO',
+    emails_cobranca:    JSON.stringify(v.emailsCobranca || []),
   })
   _cache['clientes'] = await diffSync({
     key:      'clientes',

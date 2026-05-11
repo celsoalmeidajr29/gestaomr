@@ -29,8 +29,9 @@ $user = require_auth();
 $d = json_input();
 
 // Validação
-$cliente = trim((string)($d['cliente'] ?? ''));
-$periodo = trim((string)($d['periodo'] ?? ''));
+$cliente      = trim((string)($d['cliente']      ?? ''));
+$periodo      = trim((string)($d['periodo']      ?? ''));
+$fechamentoId = isset($d['fechamento_id']) ? (int)$d['fechamento_id'] : null;
 $destinatarios = $d['destinatarios'] ?? [];
 $assunto = trim((string)($d['assunto'] ?? ''));
 $corpo = (string)($d['corpo'] ?? '');
@@ -100,28 +101,49 @@ foreach ($destinatariosValidos as $to) {
     }
 }
 
-// Auditoria
+// Registra em email_logs + atualiza enviado_em no fechamento
 try {
-    $stmt = db()->prepare(
-        'INSERT INTO auditoria (usuario_id, acao, entidade, entidade_id, dados_depois, ip, user_agent)
-         VALUES (:uid, :acao, :ent, NULL, :dados, :ip, :ua)'
+    $statusLog = ($enviados > 0) ? 'ok' : 'erro';
+    $db = db();
+    $stmt = $db->prepare(
+        'INSERT INTO email_logs (tipo, referencia_id, assunto, destinatarios, enviado_por, status, erros)
+         VALUES (:tipo, :ref, :assunto, :dest, :uid, :status, :erros)'
     );
     $stmt->execute([
-        ':uid' => $user['id'],
+        ':tipo'   => 'medicao',
+        ':ref'    => $fechamentoId,
+        ':assunto'=> $assunto,
+        ':dest'   => json_encode($destinatariosValidos, JSON_UNESCAPED_UNICODE),
+        ':uid'    => $user['id'],
+        ':status' => $statusLog,
+        ':erros'  => count($erros) ? json_encode($erros, JSON_UNESCAPED_UNICODE) : null,
+    ]);
+
+    if ($enviados > 0 && $fechamentoId) {
+        $db->prepare('UPDATE fechamentos SET enviado_em = NOW() WHERE id = :id')
+           ->execute([':id' => $fechamentoId]);
+    }
+
+    // Auditoria legada
+    $db->prepare(
+        'INSERT INTO auditoria (usuario_id, acao, entidade, entidade_id, dados_depois, ip, user_agent)
+         VALUES (:uid, :acao, :ent, NULL, :dados, :ip, :ua)'
+    )->execute([
+        ':uid'  => $user['id'],
         ':acao' => 'EXPORT',
-        ':ent' => 'email_medicao',
-        ':dados' => json_encode([
-            'cliente' => $cliente,
-            'periodo' => $periodo,
+        ':ent'  => 'email_medicao',
+        ':dados'=> json_encode([
+            'cliente'       => $cliente,
+            'periodo'       => $periodo,
             'destinatarios' => $destinatariosValidos,
-            'enviados' => $enviados,
-            'erros' => $erros,
+            'enviados'      => $enviados,
+            'erros'         => $erros,
         ], JSON_UNESCAPED_UNICODE),
-        ':ip' => client_ip(),
-        ':ua' => client_ua(),
+        ':ip'   => client_ip(),
+        ':ua'   => client_ua(),
     ]);
 } catch (Throwable $_) {
-    // não bloqueia se auditoria falhar
+    // nao bloqueia se log falhar
 }
 
 if ($enviados === 0) {
