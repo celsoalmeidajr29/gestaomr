@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react'
-import { ArrowLeft, LogOut, Upload, Users, BarChart3, AlertTriangle, Clock, Plus, Edit2, Trash2, Download, FileText, RefreshCw, X, Check, Search } from 'lucide-react'
+import { ArrowLeft, LogOut, Upload, Users, BarChart3, AlertTriangle, Clock, Plus, Edit2, Trash2, Download, FileText, RefreshCw, X, Check, Search, Settings, Bell, Shield, Target, ChevronDown, ChevronUp } from 'lucide-react'
 import * as XLSX from 'xlsx'
 import {
   AreaChart, Area, BarChart, Bar, LineChart, Line,
@@ -469,6 +469,80 @@ function analyzeIrregularidades(records) {
   }
 }
 
+// ---- SCORE ENGINE ----
+const DEFAULT_SCORE_CONFIG = {
+  wVolume: 20, wPctIrreg: 35, wReincid: 30, wRecencia: 15,
+  limCritico: 75, limAlto: 50, limMedio: 25,
+}
+function loadScoreConfig() {
+  try { return { ...DEFAULT_SCORE_CONFIG, ...JSON.parse(localStorage.getItem('pc_score_config') || '{}') } }
+  catch { return { ...DEFAULT_SCORE_CONFIG } }
+}
+function saveScoreConfig(cfg) { localStorage.setItem('pc_score_config', JSON.stringify(cfg)) }
+
+function computeScorePlacas(records, cfg) {
+  if (!records?.length) return {}
+  const config = { ...DEFAULT_SCORE_CONFIG, ...cfg }
+  const now = new Date()
+  const porPlaca = {}
+  records.forEach(r => {
+    if (!r.placa) return
+    if (!porPlaca[r.placa]) porPlaca[r.placa] = { placa: r.placa, total: 0, irregular: 0, datas: [] }
+    const p = porPlaca[r.placa]
+    p.total++; if (r.status === 'Irregular') p.irregular++
+    if (r.dtEmissao) p.datas.push(r.dtEmissao)
+  })
+  const all = Object.values(porPlaca)
+  const maxVol = Math.max(...all.map(p => p.total), 1)
+  const scores = {}
+  all.forEach(p => {
+    const nVol = p.total / maxVol
+    const nIrreg = p.total > 0 ? p.irregular / p.total : 0
+    const cutoff90 = new Date(now.getTime() - 90 * 86400000)
+    const rec90 = p.datas.filter(d => d >= cutoff90).length
+    const nReincid = rec90 >= 3 ? 1 : rec90 === 2 ? 0.6 : rec90 === 1 ? 0.2 : 0
+    let nRecencia = 0
+    if (p.datas.length) {
+      const ultima = new Date(Math.max(...p.datas.map(d => d.getTime())))
+      nRecencia = Math.exp(-((now - ultima) / 86400000) / 30)
+    }
+    const tw = config.wVolume + config.wPctIrreg + config.wReincid + config.wRecencia
+    const raw = config.wVolume * nVol + config.wPctIrreg * nIrreg + config.wReincid * nReincid + config.wRecencia * nRecencia
+    const score = Math.min(100, Math.round((raw / tw) * 100))
+    const nivel = score >= config.limCritico ? 'critico' : score >= config.limAlto ? 'alto' : score >= config.limMedio ? 'medio' : 'baixo'
+    scores[p.placa] = { placa: p.placa, score, nivel, total: p.total, irregular: p.irregular, reincidente: rec90 >= 3, rec90 }
+  })
+  return scores
+}
+
+function getScoreColors(nivel) {
+  if (nivel === 'critico') return { bg: 'bg-red-500/20', text: 'text-red-300', border: 'border-red-500/40', bar: 'bg-red-500', label: 'Crítico' }
+  if (nivel === 'alto')    return { bg: 'bg-orange-500/20', text: 'text-orange-300', border: 'border-orange-500/40', bar: 'bg-orange-400', label: 'Alto' }
+  if (nivel === 'medio')   return { bg: 'bg-yellow-500/20', text: 'text-yellow-300', border: 'border-yellow-500/40', bar: 'bg-yellow-400', label: 'Médio' }
+  return { bg: 'bg-emerald-500/20', text: 'text-emerald-300', border: 'border-emerald-500/30', bar: 'bg-emerald-500', label: 'Baixo' }
+}
+
+function ScoreBadge({ score, nivel }) {
+  const c = getScoreColors(nivel)
+  return (
+    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold ${c.bg} ${c.text}`}>
+      {score} <span className="opacity-60 font-normal">{c.label}</span>
+    </span>
+  )
+}
+
+function MiniScoreBar({ score, nivel }) {
+  const c = getScoreColors(nivel)
+  return (
+    <div className="flex items-center gap-2">
+      <div className="flex-1 h-1.5 bg-slate-700 rounded-full overflow-hidden">
+        <div className={`h-full rounded-full ${c.bar} transition-all`} style={{ width: `${score}%` }} />
+      </div>
+      <span className={`text-xs font-bold w-6 text-right ${c.text}`}>{score}</span>
+    </div>
+  )
+}
+
 // ---- XLSX EXPORTS ----
 function exportVendasXLSX(analise, records, jornada) {
   const wb = XLSX.utils.book_new()
@@ -510,7 +584,7 @@ function exportVendasXLSX(analise, records, jornada) {
   XLSX.writeFile(wb, 'pareceto_vendas.xlsx')
 }
 
-function exportIrreguXLSX(analise, records) {
+function exportIrreguXLSX(analise, records, scorePlacas) {
   const wb = XLSX.utils.book_new()
   const a = analise
 
@@ -542,8 +616,11 @@ function exportIrreguXLSX(analise, records) {
   ]), 'Trechos')
 
   XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([
-    ['#', 'Placa', 'Total', 'Irregular', 'Paga', 'Valor (R$)', 'Trechos dist.', 'Emissores', '1ª emissão', 'Última'],
-    ...a.top20Placas.map((p, i) => [i+1, p.placa, p.total, p.irregular, p.paga, p.valor, p.trechosDist, p.emissoresDist, fmtDate(p.primeira), fmtDate(p.ultima)]),
+    ['#', 'Placa', 'Score', 'Nível', 'Total', 'Irregular', 'Paga', 'Valor (R$)', 'Reincidente', 'Trechos dist.', 'Emissores', '1ª emissão', 'Última'],
+    ...a.top20Placas.map((p, i) => {
+      const s = scorePlacas?.[p.placa]
+      return [i+1, p.placa, s?.score ?? '', s?.nivel ?? '', p.total, p.irregular, p.paga, p.valor, s?.reincidente ? 'Sim' : 'Não', p.trechosDist, p.emissoresDist, fmtDate(p.primeira), fmtDate(p.ultima)]
+    }),
   ]), 'Top 20 Placas')
 
   XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([
@@ -1591,7 +1668,7 @@ function VendasTrechosChart({ a }) {
 }
 
 // ---- ABA IRREGULARIDADES ----
-function AbaIrregularidades({ funcionarios, dados, premissas, analise, subAba, setSubAba, onUpload, onSalvar, salvando }) {
+function AbaIrregularidades({ funcionarios, dados, premissas, analise, subAba, setSubAba, onUpload, onSalvar, salvando, scorePlacas, alertaDismissed, onDismissAlerta, scoreConfig }) {
   if (!dados) {
     return (
       <div>
@@ -1616,7 +1693,7 @@ function AbaIrregularidades({ funcionarios, dados, premissas, analise, subAba, s
         sub2={analise ? `${fmtDate(analise.dataMin)} a ${fmtDate(analise.dataMax)}` : ''}
         onNovoArquivo={onUpload}
         onExportTXT={analise ? () => gerarTXTIrregularidades(analise, premissas) : null}
-        onExportXLSX={analise ? () => exportIrreguXLSX(analise, dados.records) : null}
+        onExportXLSX={analise ? () => exportIrreguXLSX(analise, dados.records, scorePlacas) : null}
         onSalvar={onSalvar} salvando={salvando}
       />
       {premissas.length > 0 && (
@@ -1624,12 +1701,14 @@ function AbaIrregularidades({ funcionarios, dados, premissas, analise, subAba, s
           <strong className="text-slate-300">Premissas:</strong> {premissas.join(' · ')}
         </div>
       )}
-      <SubTabs tabs={[['kpis','KPIs'],['semanas','Por Semana'],['emissores','Emissores'],['trechos','Trechos'],['placas','Top 20 Placas']]} aba={subAba} setAba={setSubAba} />
+      {!alertaDismissed && scorePlacas && <AlertasPanel scorePlacas={scorePlacas} onDismiss={onDismissAlerta} />}
+      <SubTabs tabs={[['kpis','KPIs'],['risco','Score / Risco'],['semanas','Por Semana'],['emissores','Emissores'],['trechos','Trechos'],['placas','Top 20 Placas']]} aba={subAba} setAba={setSubAba} />
       {analise && subAba === 'kpis' && <IrregKPIs a={analise} />}
+      {subAba === 'risco' && <IrregRisco scorePlacas={scorePlacas || {}} config={scoreConfig} />}
       {analise && subAba === 'semanas' && <IrregSemanas a={analise} />}
       {analise && subAba === 'emissores' && <IrregEmissores a={analise} />}
       {analise && subAba === 'trechos' && <IrregTrechos a={analise} />}
-      {analise && subAba === 'placas' && <IrregPlacas a={analise} />}
+      {analise && subAba === 'placas' && <IrregPlacas a={analise} scorePlacas={scorePlacas} />}
     </div>
   )
 }
@@ -1769,13 +1848,14 @@ function IrregTrechos({ a }) {
   )
 }
 
-function IrregPlacas({ a }) {
+function IrregPlacas({ a, scorePlacas }) {
   return (
     <div className="overflow-x-auto rounded-xl border border-slate-800">
       <table className="w-full text-sm">
         <thead className="bg-slate-800/60">
           <tr className="text-left text-xs text-slate-400 uppercase tracking-wide">
             <th className="px-4 py-3">#</th><th className="px-4 py-3">Placa</th>
+            {scorePlacas && <th className="px-4 py-3">Score / Risco</th>}
             <th className="px-4 py-3 text-right">Total</th><th className="px-4 py-3 text-right">Irreg.</th>
             <th className="px-4 py-3 text-right">Paga</th><th className="px-4 py-3 text-right">Valor</th>
             <th className="px-4 py-3 text-right">Trechos</th><th className="px-4 py-3 text-right">Emissores</th>
@@ -1783,22 +1863,150 @@ function IrregPlacas({ a }) {
           </tr>
         </thead>
         <tbody className="divide-y divide-slate-800">
-          {a.top20Placas.map((p, i) => (
-            <tr key={p.placa} className="hover:bg-slate-800/30">
-              <td className="px-4 py-2.5 text-slate-500 text-xs">{i+1}</td>
-              <td className="px-4 py-2.5 font-mono font-medium">{p.placa}</td>
-              <td className="px-4 py-2.5 text-right font-medium">{p.total}</td>
-              <td className="px-4 py-2.5 text-right text-amber-400">{p.irregular}</td>
-              <td className="px-4 py-2.5 text-right text-emerald-400">{p.paga}</td>
-              <td className="px-4 py-2.5 text-right">{fmtBRL(p.valor)}</td>
-              <td className="px-4 py-2.5 text-right text-slate-400">{p.trechosDist}</td>
-              <td className="px-4 py-2.5 text-right text-slate-400">{p.emissoresDist}</td>
-              <td className="px-4 py-2.5 text-xs text-slate-400">{fmtDate(p.primeira)}</td>
-              <td className="px-4 py-2.5 text-xs text-slate-400">{fmtDate(p.ultima)}</td>
-            </tr>
-          ))}
+          {a.top20Placas.map((p, i) => {
+            const s = scorePlacas?.[p.placa]
+            return (
+              <tr key={p.placa} className="hover:bg-slate-800/30">
+                <td className="px-4 py-2.5 text-slate-500 text-xs">{i+1}</td>
+                <td className="px-4 py-2.5 font-mono font-medium">{p.placa}</td>
+                {scorePlacas && (
+                  <td className="px-4 py-2.5 min-w-[140px]">
+                    {s ? <MiniScoreBar score={s.score} nivel={s.nivel} /> : <span className="text-slate-600 text-xs">—</span>}
+                  </td>
+                )}
+                <td className="px-4 py-2.5 text-right font-medium">{p.total}</td>
+                <td className="px-4 py-2.5 text-right text-amber-400">{p.irregular}</td>
+                <td className="px-4 py-2.5 text-right text-emerald-400">{p.paga}</td>
+                <td className="px-4 py-2.5 text-right">{fmtBRL(p.valor)}</td>
+                <td className="px-4 py-2.5 text-right text-slate-400">{p.trechosDist}</td>
+                <td className="px-4 py-2.5 text-right text-slate-400">{p.emissoresDist}</td>
+                <td className="px-4 py-2.5 text-xs text-slate-400">{fmtDate(p.primeira)}</td>
+                <td className="px-4 py-2.5 text-xs text-slate-400">{fmtDate(p.ultima)}</td>
+              </tr>
+            )
+          })}
         </tbody>
       </table>
+    </div>
+  )
+}
+
+function IrregRisco({ scorePlacas, config }) {
+  const [busca, setBusca] = useState('')
+  const [filtroNivel, setFiltroNivel] = useState('todos')
+
+  const sorted = useMemo(() => {
+    let list = Object.values(scorePlacas || {}).sort((a, b) => b.score - a.score)
+    if (filtroNivel !== 'todos') list = list.filter(p => p.nivel === filtroNivel)
+    if (busca) { const b = busca.toUpperCase(); list = list.filter(p => p.placa.includes(b)) }
+    return list
+  }, [scorePlacas, filtroNivel, busca])
+
+  const contadores = useMemo(() => {
+    const all = Object.values(scorePlacas || {})
+    return {
+      critico: all.filter(p => p.nivel === 'critico').length,
+      alto: all.filter(p => p.nivel === 'alto').length,
+      medio: all.filter(p => p.nivel === 'medio').length,
+      baixo: all.filter(p => p.nivel === 'baixo').length,
+    }
+  }, [scorePlacas])
+
+  return (
+    <div className="space-y-4">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        {[
+          { nivel: 'critico', label: 'Crítico', count: contadores.critico },
+          { nivel: 'alto',    label: 'Alto',    count: contadores.alto },
+          { nivel: 'medio',   label: 'Médio',   count: contadores.medio },
+          { nivel: 'baixo',   label: 'Baixo',   count: contadores.baixo },
+        ].map(({ nivel, label, count }) => {
+          const c = getScoreColors(nivel)
+          return (
+            <button key={nivel} onClick={() => setFiltroNivel(filtroNivel === nivel ? 'todos' : nivel)}
+              className={`p-3 rounded-xl border text-left transition ${filtroNivel === nivel ? `${c.bg} ${c.border} border` : 'bg-slate-800/40 border-slate-700/50 hover:bg-slate-800/70'}`}>
+              <div className={`text-2xl font-bold ${c.text}`}>{count}</div>
+              <div className="text-xs text-slate-400 mt-0.5">{label}</div>
+            </button>
+          )
+        })}
+      </div>
+
+      <div className="flex gap-2">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+          <input value={busca} onChange={e => setBusca(e.target.value)} placeholder="Filtrar placa..."
+            className="w-full bg-slate-800 border border-slate-700 rounded-lg pl-9 pr-3 py-2 text-sm focus:outline-none focus:border-emerald-500" />
+        </div>
+      </div>
+
+      <div className="overflow-x-auto rounded-xl border border-slate-800">
+        <table className="w-full text-sm">
+          <thead className="bg-slate-800/60">
+            <tr className="text-left text-xs text-slate-400 uppercase tracking-wide">
+              <th className="px-4 py-3">#</th><th className="px-4 py-3">Placa</th>
+              <th className="px-4 py-3 min-w-[160px]">Score / Risco</th>
+              <th className="px-4 py-3 text-right">Total</th><th className="px-4 py-3 text-right">Irreg.</th>
+              <th className="px-4 py-3 text-right">Reincid. 90d</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-800">
+            {sorted.map((p, i) => (
+              <tr key={p.placa} className="hover:bg-slate-800/30">
+                <td className="px-4 py-2.5 text-slate-500 text-xs">{i+1}</td>
+                <td className="px-4 py-2.5 font-mono font-medium">{p.placa}</td>
+                <td className="px-4 py-2.5 min-w-[160px]"><MiniScoreBar score={p.score} nivel={p.nivel} /></td>
+                <td className="px-4 py-2.5 text-right">{p.total}</td>
+                <td className="px-4 py-2.5 text-right text-amber-400">{p.irregular}</td>
+                <td className="px-4 py-2.5 text-right">
+                  {p.reincidente
+                    ? <span className="inline-flex items-center gap-1 text-xs text-red-400"><Bell className="w-3 h-3"/>{p.rec90}x</span>
+                    : <span className="text-slate-600 text-xs">{p.rec90 > 0 ? p.rec90+'x' : '—'}</span>}
+                </td>
+              </tr>
+            ))}
+            {sorted.length === 0 && (
+              <tr><td colSpan={6} className="px-4 py-8 text-center text-slate-500 text-sm">Nenhuma placa encontrada</td></tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
+}
+
+function AlertasPanel({ scorePlacas, onDismiss }) {
+  const reincidentes = useMemo(() =>
+    Object.values(scorePlacas || {}).filter(p => p.reincidente).sort((a, b) => b.rec90 - a.rec90),
+  [scorePlacas])
+  const criticas = Object.values(scorePlacas || {}).filter(p => p.nivel === 'critico')
+
+  if (!reincidentes.length && !criticas.length) return null
+  return (
+    <div className="mb-4 rounded-xl border border-red-500/30 bg-red-500/8 overflow-hidden">
+      <div className="flex items-center justify-between px-4 py-3 bg-red-500/10 border-b border-red-500/20">
+        <div className="flex items-center gap-2">
+          <Bell className="w-4 h-4 text-red-400 flex-shrink-0" />
+          <span className="text-sm font-semibold text-red-300">
+            {reincidentes.length > 0 && `${reincidentes.length} placa${reincidentes.length > 1 ? 's reincidentes' : ' reincidente'} (3+ em 90 dias)`}
+            {reincidentes.length > 0 && criticas.length > 0 && ' · '}
+            {criticas.length > 0 && `${criticas.length} placa${criticas.length > 1 ? 's' : ''} nível crítico`}
+          </span>
+        </div>
+        <button onClick={onDismiss} className="text-slate-500 hover:text-slate-300 p-1">
+          <X className="w-4 h-4" />
+        </button>
+      </div>
+      {reincidentes.length > 0 && (
+        <div className="px-4 py-3 flex flex-wrap gap-2">
+          {reincidentes.slice(0, 20).map(p => (
+            <span key={p.placa} className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-red-500/15 border border-red-500/25 text-xs font-mono font-medium text-red-300">
+              {p.placa} <span className="opacity-60">{p.rec90}x</span>
+            </span>
+          ))}
+          {reincidentes.length > 20 && <span className="text-xs text-slate-500 self-center">+{reincidentes.length - 20} mais</span>}
+        </div>
+      )}
     </div>
   )
 }
@@ -1859,6 +2067,268 @@ function AbaHistorico({ historico, loading, onExcluir, onRecarregar }) {
   )
 }
 
+// ---- ABA CONFIGURAÇÕES ----
+function AbaConfiguracoes({ scoreConfig, onSaveScore, metas, onSaveMeta, onDeleteMeta, funcionarios }) {
+  const [subAba, setSubAba] = useState('score')
+  const [cfg, setCfg] = useState({ ...scoreConfig })
+  const [dirty, setDirty] = useState(false)
+  const [metaForm, setMetaForm] = useState({ funcionario_nome: '', mes: new Date().toISOString().slice(0,7), meta_trans: '', meta_valor: '' })
+  const [editandoMeta, setEditandoMeta] = useState(null)
+
+  const totalPesos = cfg.wVolume + cfg.wPctIrreg + cfg.wReincid + cfg.wRecencia
+
+  function setPeso(key, val) {
+    setCfg(c => ({ ...c, [key]: Number(val) }))
+    setDirty(true)
+  }
+  function setLim(key, val) {
+    setCfg(c => ({ ...c, [key]: Number(val) }))
+    setDirty(true)
+  }
+
+  function handleSaveScore() { onSaveScore(cfg); setDirty(false) }
+
+  function handleSaveMeta(e) {
+    e.preventDefault()
+    const m = editandoMeta ? { ...editandoMeta, ...metaForm } : { ...metaForm }
+    onSaveMeta(m)
+    setMetaForm({ funcionario_nome: '', mes: new Date().toISOString().slice(0,7), meta_trans: '', meta_valor: '' })
+    setEditandoMeta(null)
+  }
+
+  const NIVEIS = [
+    { key: 'limCritico', label: 'Crítico', color: 'bg-red-500', desc: '≥ valor → vermelho' },
+    { key: 'limAlto',    label: 'Alto',    color: 'bg-orange-400', desc: '≥ valor → laranja' },
+    { key: 'limMedio',   label: 'Médio',   color: 'bg-yellow-400', desc: '≥ valor → amarelo' },
+  ]
+
+  const PESOS = [
+    { key: 'wVolume',   label: 'Volume de ocorrências', desc: 'Peso: qtd absoluta de irregularidades' },
+    { key: 'wPctIrreg', label: '% de irregulares',      desc: 'Peso: proporção de notificações irregulares' },
+    { key: 'wReincid',  label: 'Reincidência (90d)',     desc: 'Peso: 3+ ocorrências nos últimos 90 dias' },
+    { key: 'wRecencia', label: 'Recência',               desc: 'Peso: quão recente foi a última ocorrência' },
+  ]
+
+  return (
+    <div>
+      <div className="flex items-center gap-3 mb-6">
+        <div className="w-9 h-9 rounded-lg bg-slate-700/60 flex items-center justify-center flex-shrink-0">
+          <Settings className="w-5 h-5 text-slate-300" />
+        </div>
+        <div>
+          <h2 className="text-xl font-semibold">Configurações</h2>
+          <p className="text-sm text-slate-400">Score de risco, metas mensais e exportação de dados.</p>
+        </div>
+      </div>
+
+      <SubTabs tabs={[['score','Score de Risco'],['metas','Metas Mensais'],['exportar','Exportar Dados']]} aba={subAba} setAba={setSubAba} />
+
+      {subAba === 'score' && (
+        <div className="space-y-6 mt-4">
+          {/* Pesos */}
+          <div className="bg-slate-800/40 border border-slate-700/50 rounded-xl p-5">
+            <div className="flex items-center justify-between mb-1">
+              <div className="text-sm font-semibold text-slate-200 flex items-center gap-2">
+                <Shield className="w-4 h-4 text-emerald-400" /> Pesos da fórmula de score
+              </div>
+              <span className={`text-xs px-2 py-0.5 rounded-full font-mono ${totalPesos === 100 ? 'bg-emerald-500/20 text-emerald-300' : 'bg-amber-500/20 text-amber-300'}`}>
+                Soma: {totalPesos}
+              </span>
+            </div>
+            <p className="text-xs text-slate-500 mb-4">Cada peso define a importância do fator. A soma ideal é 100.</p>
+            <div className="space-y-5">
+              {PESOS.map(({ key, label, desc }) => (
+                <div key={key}>
+                  <div className="flex items-center justify-between mb-1">
+                    <div>
+                      <span className="text-sm text-slate-200">{label}</span>
+                      <span className="text-xs text-slate-500 ml-2">{desc}</span>
+                    </div>
+                    <span className="text-sm font-bold text-emerald-400 w-8 text-right">{cfg[key]}</span>
+                  </div>
+                  <input type="range" min={0} max={100} value={cfg[key]} onChange={e => setPeso(key, e.target.value)}
+                    className="w-full accent-emerald-500 h-1.5 rounded-full" />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Limiares */}
+          <div className="bg-slate-800/40 border border-slate-700/50 rounded-xl p-5">
+            <div className="text-sm font-semibold text-slate-200 mb-1 flex items-center gap-2">
+              <Bell className="w-4 h-4 text-amber-400" /> Limiares de risco
+            </div>
+            <p className="text-xs text-slate-500 mb-4">Define a faixa de score que classifica cada nível de risco (0–100).</p>
+            <div className="grid sm:grid-cols-3 gap-4">
+              {NIVEIS.map(({ key, label, color, desc }) => (
+                <div key={key}>
+                  <label className="block text-xs text-slate-400 mb-1.5">
+                    <span className={`inline-block w-2.5 h-2.5 rounded-full mr-1.5 ${color}`}></span>
+                    {label} — {desc}
+                  </label>
+                  <input type="number" min={0} max={100} value={cfg[key]} onChange={e => setLim(key, e.target.value)}
+                    className="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500" />
+                </div>
+              ))}
+            </div>
+            <div className="mt-4 flex gap-2 items-center">
+              <div className="flex-1 h-3 rounded-full overflow-hidden flex">
+                <div className="bg-emerald-500" style={{width:`${cfg.limMedio}%`}}/>
+                <div className="bg-yellow-400" style={{width:`${cfg.limAlto-cfg.limMedio}%`}}/>
+                <div className="bg-orange-400" style={{width:`${cfg.limCritico-cfg.limAlto}%`}}/>
+                <div className="bg-red-500 flex-1"/>
+              </div>
+            </div>
+            <div className="flex text-xs text-slate-500 mt-1 justify-between">
+              <span>0 — Baixo</span>
+              <span>{cfg.limMedio} — Médio</span>
+              <span>{cfg.limAlto} — Alto</span>
+              <span>{cfg.limCritico} — Crítico</span>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <button onClick={handleSaveScore} disabled={!dirty}
+              className={`px-5 py-2 rounded-lg text-sm font-medium transition ${dirty ? 'bg-emerald-600 hover:bg-emerald-500 text-white' : 'bg-slate-700 text-slate-500 cursor-not-allowed'}`}>
+              Salvar configuração
+            </button>
+            {!dirty && <span className="text-xs text-slate-500">Configuração salva no navegador</span>}
+            {dirty && <span className="text-xs text-amber-400">Alterações não salvas</span>}
+            <button onClick={() => { setCfg({ ...DEFAULT_SCORE_CONFIG }); setDirty(true) }}
+              className="ml-auto text-xs text-slate-500 hover:text-slate-300 transition">
+              Restaurar padrão
+            </button>
+          </div>
+        </div>
+      )}
+
+      {subAba === 'metas' && (
+        <div className="space-y-4 mt-4">
+          <div className="bg-slate-800/40 border border-slate-700/50 rounded-xl p-5">
+            <div className="text-sm font-semibold text-slate-200 mb-4 flex items-center gap-2">
+              <Target className="w-4 h-4 text-blue-400" /> {editandoMeta ? 'Editar meta' : 'Nova meta mensal'}
+            </div>
+            <form onSubmit={handleSaveMeta} className="grid sm:grid-cols-4 gap-3 items-end">
+              <div>
+                <label className="block text-xs text-slate-400 mb-1">Funcionário</label>
+                <input list="pc-funcs-list" value={metaForm.funcionario_nome}
+                  onChange={e => setMetaForm(m => ({ ...m, funcionario_nome: e.target.value }))}
+                  placeholder="Nome do agente" required
+                  className="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500" />
+                <datalist id="pc-funcs-list">
+                  {funcionarios.map(f => <option key={f.id} value={f.nome} />)}
+                </datalist>
+              </div>
+              <div>
+                <label className="block text-xs text-slate-400 mb-1">Mês (AAAA-MM)</label>
+                <input type="month" value={metaForm.mes} onChange={e => setMetaForm(m => ({ ...m, mes: e.target.value }))} required
+                  className="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500" />
+              </div>
+              <div>
+                <label className="block text-xs text-slate-400 mb-1">Meta de transações</label>
+                <input type="number" min={0} value={metaForm.meta_trans} onChange={e => setMetaForm(m => ({ ...m, meta_trans: e.target.value }))}
+                  placeholder="Ex: 500"
+                  className="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500" />
+              </div>
+              <div>
+                <label className="block text-xs text-slate-400 mb-1">Meta de receita (R$)</label>
+                <div className="flex gap-2">
+                  <input type="number" min={0} step="0.01" value={metaForm.meta_valor} onChange={e => setMetaForm(m => ({ ...m, meta_valor: e.target.value }))}
+                    placeholder="Ex: 5000"
+                    className="flex-1 bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500" />
+                  <button type="submit" className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-sm font-medium transition flex-shrink-0">
+                    {editandoMeta ? 'Atualizar' : 'Adicionar'}
+                  </button>
+                  {editandoMeta && (
+                    <button type="button" onClick={() => { setEditandoMeta(null); setMetaForm({ funcionario_nome:'', mes: new Date().toISOString().slice(0,7), meta_trans:'', meta_valor:'' }) }}
+                      className="px-3 py-2 bg-slate-700 hover:bg-slate-600 text-slate-300 rounded-lg text-sm transition flex-shrink-0">
+                      <X className="w-4 h-4"/>
+                    </button>
+                  )}
+                </div>
+              </div>
+            </form>
+          </div>
+
+          <div className="overflow-x-auto rounded-xl border border-slate-800">
+            <table className="w-full text-sm">
+              <thead className="bg-slate-800/60">
+                <tr className="text-left text-xs text-slate-400 uppercase tracking-wide">
+                  <th className="px-4 py-3">Funcionário</th><th className="px-4 py-3">Mês</th>
+                  <th className="px-4 py-3 text-right">Meta Trans.</th><th className="px-4 py-3 text-right">Meta Receita</th>
+                  <th className="px-4 py-3"/>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-800">
+                {metas.length === 0 && (
+                  <tr><td colSpan={5} className="px-4 py-8 text-center text-slate-500 text-sm">Nenhuma meta cadastrada.</td></tr>
+                )}
+                {metas.map(m => (
+                  <tr key={m.id || `${m.funcionario_nome}${m.mes}`} className="hover:bg-slate-800/30">
+                    <td className="px-4 py-2.5 font-medium">{m.funcionario_nome}</td>
+                    <td className="px-4 py-2.5 font-mono">{m.mes}</td>
+                    <td className="px-4 py-2.5 text-right">{m.meta_trans ? m.meta_trans.toLocaleString('pt-BR') : '—'}</td>
+                    <td className="px-4 py-2.5 text-right">{m.meta_valor > 0 ? fmtBRL(m.meta_valor) : '—'}</td>
+                    <td className="px-4 py-2.5 text-right">
+                      <div className="flex justify-end gap-1">
+                        <button onClick={() => { setEditandoMeta(m); setMetaForm({ funcionario_nome: m.funcionario_nome, mes: m.mes, meta_trans: m.meta_trans || '', meta_valor: m.meta_valor || '' }) }}
+                          className="p-1.5 rounded hover:bg-slate-700 text-slate-400 hover:text-white transition"><Edit2 className="w-3.5 h-3.5"/></button>
+                        <button onClick={() => onDeleteMeta(m.id)} className="p-1.5 rounded hover:bg-red-900/40 text-slate-400 hover:text-red-400 transition"><Trash2 className="w-3.5 h-3.5"/></button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {subAba === 'exportar' && (
+        <div className="space-y-4 mt-4">
+          <div className="bg-slate-800/40 border border-slate-700/50 rounded-xl p-5">
+            <div className="text-sm font-semibold text-slate-200 mb-1 flex items-center gap-2">
+              <Download className="w-4 h-4 text-teal-400" /> Exportar configurações
+            </div>
+            <p className="text-xs text-slate-400 mb-4">Baixa as configurações de score e metas cadastradas como JSON para backup.</p>
+            <button
+              onClick={() => {
+                const blob = new Blob([JSON.stringify({ scoreConfig: cfg, metas }, null, 2)], { type: 'application/json' })
+                const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'pareceto_config.json'; a.click()
+              }}
+              className="px-4 py-2 bg-teal-600 hover:bg-teal-500 text-white rounded-lg text-sm font-medium transition flex items-center gap-2">
+              <Download className="w-4 h-4"/> Baixar pareceto_config.json
+            </button>
+          </div>
+          <div className="bg-slate-800/40 border border-slate-700/50 rounded-xl p-5">
+            <div className="text-sm font-semibold text-slate-200 mb-1 flex items-center gap-2">
+              <Upload className="w-4 h-4 text-blue-400" /> Importar configurações
+            </div>
+            <p className="text-xs text-slate-400 mb-4">Restaura configurações a partir de um backup JSON exportado anteriormente.</p>
+            <label className="cursor-pointer px-4 py-2 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded-lg text-sm font-medium transition flex items-center gap-2 w-fit">
+              <Upload className="w-4 h-4"/> Carregar JSON
+              <input type="file" accept=".json" className="hidden" onChange={e => {
+                const file = e.target.files?.[0]; if (!file) return
+                const reader = new FileReader()
+                reader.onload = ev => {
+                  try {
+                    const data = JSON.parse(ev.target.result)
+                    if (data.scoreConfig) { setCfg({ ...DEFAULT_SCORE_CONFIG, ...data.scoreConfig }); onSaveScore({ ...DEFAULT_SCORE_CONFIG, ...data.scoreConfig }) }
+                    if (data.metas?.length) data.metas.forEach(m => onSaveMeta(m))
+                    alert('Configurações importadas com sucesso!')
+                  } catch { alert('Arquivo JSON inválido') }
+                }
+                reader.readAsText(file)
+                e.target.value = ''
+              }} />
+            </label>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
 // ---- ROOT ----
 export default function PareCetoApp({ usuario, onVoltarHub, onLogout }) {
   useEffect(() => {
@@ -1893,6 +2363,43 @@ export default function PareCetoApp({ usuario, onVoltarHub, onLogout }) {
   const [subAbaIrreg, setSubAbaIrreg] = useState('kpis')
   const [salvandoIrreg, setSalvandoIrreg] = useState(false)
   const [processandoIrreg, setProcessandoIrreg] = useState(null)
+  const [alertaDismissed, setAlertaDismissed] = useState(false)
+
+  // Score
+  const [scoreConfig, setScoreConfig] = useState(() => loadScoreConfig())
+  const scorePlacas = useMemo(
+    () => dadosIrreg?.records?.length ? computeScorePlacas(dadosIrreg.records, scoreConfig) : null,
+    [dadosIrreg, scoreConfig]
+  )
+  const qtdCriticas = useMemo(
+    () => scorePlacas ? Object.values(scorePlacas).filter(p => p.nivel === 'critico').length : 0,
+    [scorePlacas]
+  )
+
+  // Metas
+  const [metas, setMetas] = useState([])
+  async function carregarMetas() {
+    try { setMetas(await apiFetch('/metas/index.php')) } catch { /* silencioso */ }
+  }
+  useEffect(() => { carregarMetas() }, [])
+
+  async function handleSaveMeta(form) {
+    try {
+      if (form.id) {
+        await apiFetch(`/metas/index.php?id=${form.id}`, { method: 'PUT', body: JSON.stringify(form) })
+      } else {
+        await apiFetch('/metas/index.php', { method: 'POST', body: JSON.stringify(form) })
+      }
+      await carregarMetas()
+      showToast('Meta salva')
+    } catch (e) { showToast(e.message, 'erro') }
+  }
+  async function handleDeleteMeta(id) {
+    try {
+      await apiFetch(`/metas/index.php?id=${id}`, { method: 'DELETE' })
+      setMetas(m => m.filter(x => x.id !== id))
+    } catch (e) { showToast(e.message, 'erro') }
+  }
 
   // Histórico
   const [historico, setHistorico] = useState([])
@@ -2035,6 +2542,7 @@ export default function PareCetoApp({ usuario, onVoltarHub, onLogout }) {
         ...premissas,
       ])
       setAnaliseIrreg(analyzeIrregularidades(records))
+      setAlertaDismissed(false)
       setSubAbaIrreg('kpis')
       showToast(`${records.length.toLocaleString('pt-BR')} notificações carregadas`)
     } catch (e) { showToast('Erro ao processar CSV: ' + e.message, 'erro') }
@@ -2093,9 +2601,10 @@ export default function PareCetoApp({ usuario, onVoltarHub, onLogout }) {
 
   const TABS = [
     { id: 'vendas', label: 'Vendas', Icon: BarChart3 },
-    { id: 'irregularidades', label: 'Irregularidades', Icon: AlertTriangle },
+    { id: 'irregularidades', label: 'Irregularidades', Icon: AlertTriangle, badge: qtdCriticas },
     { id: 'funcionarios', label: 'Funcionários', Icon: Users },
     { id: 'historico', label: 'Histórico', Icon: Clock },
+    { id: 'configuracoes', label: 'Config.', Icon: Settings },
   ]
 
   return (
@@ -2117,10 +2626,15 @@ export default function PareCetoApp({ usuario, onVoltarHub, onLogout }) {
           </button>
         </div>
         <div className="max-w-7xl mx-auto px-4 flex gap-0 overflow-x-auto">
-          {TABS.map(({ id, label, Icon }) => (
+          {TABS.map(({ id, label, Icon, badge }) => (
             <button key={id} onClick={() => setAba(id)}
-              className={`flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium border-b-2 transition whitespace-nowrap min-h-[40px] ${aba === id ? 'border-emerald-500 text-emerald-400' : 'border-transparent text-slate-400 hover:text-slate-200'}`}>
+              className={`relative flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium border-b-2 transition whitespace-nowrap min-h-[40px] ${aba === id ? 'border-emerald-500 text-emerald-400' : 'border-transparent text-slate-400 hover:text-slate-200'}`}>
               <Icon className="w-4 h-4 flex-shrink-0" />{label}
+              {badge > 0 && (
+                <span className="absolute -top-0.5 right-1 min-w-[16px] h-4 px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center">
+                  {badge > 99 ? '99+' : badge}
+                </span>
+              )}
             </button>
           ))}
         </div>
@@ -2159,10 +2673,20 @@ export default function PareCetoApp({ usuario, onVoltarHub, onLogout }) {
             analise={analiseIrreg}
             subAba={subAbaIrreg} setSubAba={setSubAbaIrreg}
             onUpload={handleUploadIrreg} onSalvar={salvarRelatorioIrreg} salvando={salvandoIrreg}
+            scorePlacas={scorePlacas} scoreConfig={scoreConfig}
+            alertaDismissed={alertaDismissed} onDismissAlerta={() => setAlertaDismissed(true)}
           />
         )}
         {aba === 'historico' && (
           <AbaHistorico historico={historico} loading={loadingHist} onExcluir={excluirHistorico} onRecarregar={carregarHistorico} />
+        )}
+        {aba === 'configuracoes' && (
+          <AbaConfiguracoes
+            scoreConfig={scoreConfig}
+            onSaveScore={cfg => { setScoreConfig(cfg); saveScoreConfig(cfg); showToast('Configuração de score salva') }}
+            metas={metas} onSaveMeta={handleSaveMeta} onDeleteMeta={handleDeleteMeta}
+            funcionarios={funcionarios}
+          />
         )}
       </main>
 
