@@ -197,6 +197,15 @@ function parseVendas(rows, funcs) {
   return { records, premissas }
 }
 
+function isHoraExtra(dtReg) {
+  if (!dtReg) return false
+  const min = dtReg.getHours() * 60 + dtReg.getMinutes()
+  const dow = dtReg.getDay() // 0=Dom 1..5=Seg..Sex 6=Sáb
+  if (dow >= 1 && dow <= 5) return min >= 17 * 60 && min < 18 * 60  // Seg–Sex 17h–18h
+  if (dow === 6)            return min >= 13 * 60 && min < 18 * 60  // Sáb 13h–18h
+  return false
+}
+
 function analyzeVendas(records) {
   if (!records.length) return null
   const totalTrans = records.length
@@ -308,6 +317,27 @@ function analyzeVendas(records) {
   const receitaPorDia = diasOperados > 0 ? totalValor / diasOperados : 0
   const transPorDiaMedia = diasOperados > 0 ? totalTrans / diasOperados : 0
 
+  // Hora extra: Seg–Sex 17h–18h · Sáb 13h–18h
+  const heDiaMap = {}, heSemMap = {}, heMesMap = {}
+  const heRecords = records.filter(r => isHoraExtra(r.dtReg))
+  heRecords.forEach(r => {
+    const dk = r.dtReg.toISOString().slice(0,10)
+    const wk = isoWeekLabel(r.dtReg)
+    const mk = r.dtReg.toISOString().slice(0,7)
+    const inc = (obj, key, label) => { obj[key] = obj[key] || { key, label, count: 0, valor: 0 }; obj[key].count++; obj[key].valor += r.valor }
+    inc(heDiaMap, dk, dk.slice(8)+'/'+dk.slice(5,7))
+    inc(heSemMap, wk, wk)
+    inc(heMesMap, mk, mk.slice(5)+'/'+mk.slice(2,4))
+  })
+  const horaExtra = {
+    total: heRecords.length,
+    valor: heRecords.reduce((s, r) => s + r.valor, 0),
+    pct:   totalTrans > 0 ? heRecords.length / totalTrans * 100 : 0,
+    porDia:    Object.values(heDiaMap).sort((a,b) => a.key.localeCompare(b.key)),
+    porSemana: Object.values(heSemMap).sort((a,b) => a.key.localeCompare(b.key)),
+    porMes:    Object.values(heMesMap).sort((a,b) => a.key.localeCompare(b.key)),
+  }
+
   const datas = records.filter(r => r.dtReg).map(r => r.dtReg)
   return {
     totalTrans, totalValor, ticketMedio: totalValor / totalTrans,
@@ -318,6 +348,8 @@ function analyzeVendas(records) {
     // Fase 3
     serieDiaria, porHora, porFaixa, porDiaSemana, porMes, porFormaPag,
     diasOperados, receitaPorDia, transPorDiaMedia,
+    // Hora extra
+    horaExtra,
   }
 }
 
@@ -1899,6 +1931,79 @@ function computeAgenteAnalise(meus, nome, analise) {
   }
 }
 
+function VendasHoraExtra({ a }) {
+  const he = a.horaExtra
+  const [view, setView] = useState('mes')
+  const series = view === 'dia' ? he.porDia : view === 'semana' ? he.porSemana : he.porMes
+  if (!he.total) return (
+    <div className="space-y-4">
+      <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/30 text-xs text-amber-300">
+        <strong>Períodos de hora extra:</strong> Seg–Sex das 17h às 18h · Sábados das 13h às 18h
+      </div>
+      <div className="text-center py-12 text-slate-500 text-sm">Nenhuma transação nos períodos de hora extra.</div>
+    </div>
+  )
+  return (
+    <div className="space-y-5">
+      <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/30 text-xs text-amber-300">
+        <strong>Períodos de hora extra:</strong> Seg–Sex das 17h às 18h · Sábados das 13h às 18h
+      </div>
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <StatCard label="Trans. hora extra" value={`${he.total.toLocaleString('pt-BR')} / ${fmtBRL(he.valor)}`} />
+        <StatCard label="% do total de vendas" value={`${fmtNum(he.pct)}%`} />
+        <StatCard label="Ticket médio HE" value={fmtBRL(he.valor / he.total)} />
+        <StatCard label="Dias com hora extra" value={he.porDia.length.toLocaleString('pt-BR')} />
+      </div>
+      <div className="flex gap-2">
+        {[['mes','Por Mês'],['semana','Por Semana'],['dia','Por Dia']].map(([id, label]) => (
+          <button key={id} onClick={() => setView(id)}
+            className={`px-3 py-1.5 text-xs rounded font-medium transition ${view === id ? 'bg-amber-500/30 text-amber-300 border border-amber-500/40' : 'bg-slate-700 text-slate-400 hover:bg-slate-600'}`}>
+            {label}
+          </button>
+        ))}
+      </div>
+      {series.length > 0 && (
+        <ChartCard title={`Hora Extra — ${view === 'mes' ? 'por mês' : view === 'semana' ? 'por semana' : 'por dia'}`} height={260}>
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={series} margin={{top:4,right:8,bottom:0,left:4}}>
+              <CartesianGrid {...gridStyle}/>
+              <XAxis dataKey="label" {...axisStyle} interval={Math.max(0, Math.ceil(series.length/10)-1)}/>
+              <YAxis yAxisId="cnt" {...axisStyle} width={36}/>
+              <YAxis yAxisId="val" orientation="right" {...axisStyle} tickFormatter={fmtK} width={48}/>
+              <Tooltip {...ttStyle} formatter={(v,n) => n === 'Transações' ? [v.toLocaleString('pt-BR'), 'Transações'] : [fmtBRL(v), 'Receita']}/>
+              <Legend formatter={v => <span style={{color:'#94a3b8',fontSize:11}}>{v}</span>}/>
+              <Bar yAxisId="cnt" dataKey="count" name="Transações" fill="#f59e0b" radius={[3,3,0,0]}/>
+              <Bar yAxisId="val" dataKey="valor" name="Receita" fill="#10b981" radius={[3,3,0,0]}/>
+            </BarChart>
+          </ResponsiveContainer>
+        </ChartCard>
+      )}
+      <div className="overflow-x-auto rounded-xl border border-slate-800">
+        <table className="w-full text-sm">
+          <thead className="bg-slate-800/60">
+            <tr className="text-left text-xs text-slate-400 uppercase tracking-wide">
+              <th className="px-4 py-3">Período</th>
+              <th className="px-4 py-3 text-right">Transações</th>
+              <th className="px-4 py-3 text-right">Receita</th>
+              <th className="px-4 py-3 text-right">Ticket médio</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-800">
+            {series.map(row => (
+              <tr key={row.key} className="hover:bg-slate-800/30">
+                <td className="px-4 py-2.5 font-medium">{row.label}</td>
+                <td className="px-4 py-2.5 text-right">{row.count.toLocaleString('pt-BR')}</td>
+                <td className="px-4 py-2.5 text-right text-emerald-400">{fmtBRL(row.valor)}</td>
+                <td className="px-4 py-2.5 text-right text-slate-400">{fmtBRL(row.valor / row.count)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
+}
+
 function VendasFuncionarioDetalhe({ nome, cargo, records, analise, onVoltar }) {
   const meus = useMemo(()=>records.filter(r=>r.usuario===nome),[records,nome])
   const a = useMemo(()=>computeAgenteAnalise(meus,nome,analise),[meus,nome,analise])
@@ -2115,8 +2220,9 @@ function AbaVendas({ funcionarios, dados, premissas, analise, jornada, subAba, s
         filtroTrecho={filtroTrecho} setFiltroTrecho={setFiltroTrecho}
         onLimpar={limparFiltros} labelAgente="Agente"
       />
-      <SubTabs tabs={[['kpis','KPIs'],['temporal','Temporal'],['agentes','Agentes'],['trechos','Trechos'],['pagamentos','Pagamentos'],['jornada','Jornada'],['comparar','Comparar'],['trechos-comp','Comp. Trechos']]} aba={subAba} setAba={setSubAba} />
+      <SubTabs tabs={[['kpis','KPIs'],['hora-extra','Hora Extra'],['temporal','Temporal'],['agentes','Agentes'],['trechos','Trechos'],['pagamentos','Pagamentos'],['jornada','Jornada'],['comparar','Comparar'],['trechos-comp','Comp. Trechos']]} aba={subAba} setAba={setSubAba} />
       {analiseEfetiva && subAba === 'kpis' && <VendasKPIs a={analiseEfetiva} />}
+      {analiseEfetiva && subAba === 'hora-extra' && <VendasHoraExtra a={analiseEfetiva} />}
       {analiseEfetiva && subAba === 'temporal' && <VendasTemporal a={analiseEfetiva} />}
       {analiseEfetiva && subAba === 'agentes' && <VendasAgentesChart a={analiseEfetiva} onSelectAgente={setSelectedAgente} />}
       {analiseEfetiva && subAba === 'trechos' && <VendasTrechosChart a={analiseEfetiva} />}
@@ -3558,6 +3664,7 @@ export default function PareCetoApp({ usuario, onVoltarHub, onLogout }) {
   const [jornadaVendas, setJornadaVendas] = useState([])
   const [subAbaVendas, setSubAbaVendas] = useState('kpis')
   const [salvandoVendas, setSalvandoVendas] = useState(false)
+  const [naoSalvoVendas, setNaoSalvoVendas] = useState(false)
   const [processandoVendas, setProcessandoVendas] = useState(null)
 
   // Irregularidades
@@ -3566,6 +3673,7 @@ export default function PareCetoApp({ usuario, onVoltarHub, onLogout }) {
   const [analiseIrreg, setAnaliseIrreg] = useState(null)
   const [subAbaIrreg, setSubAbaIrreg] = useState('kpis')
   const [salvandoIrreg, setSalvandoIrreg] = useState(false)
+  const [naoSalvoIrreg, setNaoSalvoIrreg] = useState(false)
   const [processandoIrreg, setProcessandoIrreg] = useState(null)
   const [alertaDismissed, setAlertaDismissed] = useState(false)
 
@@ -3650,6 +3758,20 @@ export default function PareCetoApp({ usuario, onVoltarHub, onLogout }) {
     return list
   }, [funcionarios, filtroStatusFunc, filtroCargoFunc, buscaFunc])
 
+  async function autoRegistrarFuncionarios(nomes, cargo = 'Agente') {
+    const novos = nomes.filter(n => n && !funcionarios.some(f => f.nome?.toLowerCase().trim() === n.toLowerCase().trim()))
+    if (!novos.length) return 0
+    let criados = 0
+    for (const nome of novos) {
+      try {
+        const f = await apiFetch('/funcionarios/index.php', { method: 'POST', body: JSON.stringify({ nome: nome.trim(), cargo, status: 'Ativo' }) })
+        setFuncionarios(prev => [...prev, f])
+        criados++
+      } catch {}
+    }
+    return criados
+  }
+
   async function handleUploadVendas(file) {
     setProcessandoVendas({ pct: 2, label: 'Lendo arquivo...' })
     try {
@@ -3677,7 +3799,13 @@ export default function PareCetoApp({ usuario, onVoltarHub, onLogout }) {
       setAnaliseVendas(analyzeVendas(records))
       setJornadaVendas(analyzeJornada(records))
       setSubAbaVendas('kpis')
-      showToast(`${records.length.toLocaleString('pt-BR')} transações carregadas`)
+      setNaoSalvoVendas(true)
+      const nomesAgentes = [...new Set(records.map(r => r.usuario).filter(Boolean))]
+      const criados = await autoRegistrarFuncionarios(nomesAgentes)
+      const msg = criados > 0
+        ? `${records.length.toLocaleString('pt-BR')} transações · ${criados} funcionário(s) cadastrados`
+        : `${records.length.toLocaleString('pt-BR')} transações carregadas`
+      showToast(msg)
     } catch (e) { showToast('Erro ao processar CSV: ' + e.message, 'erro') }
     finally { setProcessandoVendas(null) }
   }
@@ -3708,6 +3836,7 @@ export default function PareCetoApp({ usuario, onVoltarHub, onLogout }) {
       const res = await apiFetch('/vendas/index.php', { method: 'POST', body: JSON.stringify(payload) })
       const partes = [`${res.inseridos} novas`]
       if (res.duplicatas > 0) partes.push(`${res.duplicatas} já existiam`)
+      setNaoSalvoVendas(false)
       showToast(partes.join(' · '), 'sucesso')
       await apiFetch('/relatorios/index.php', {
         method: 'POST',
@@ -3748,7 +3877,13 @@ export default function PareCetoApp({ usuario, onVoltarHub, onLogout }) {
       setAnaliseIrreg(analyzeIrregularidades(records))
       setAlertaDismissed(false)
       setSubAbaIrreg('kpis')
-      showToast(`${records.length.toLocaleString('pt-BR')} notificações carregadas`)
+      setNaoSalvoIrreg(true)
+      const nomesEmissores = [...new Set(records.map(r => r.emissor).filter(Boolean))]
+      const criados = await autoRegistrarFuncionarios(nomesEmissores)
+      const msg = criados > 0
+        ? `${records.length.toLocaleString('pt-BR')} notificações · ${criados} funcionário(s) cadastrados`
+        : `${records.length.toLocaleString('pt-BR')} notificações carregadas`
+      showToast(msg)
     } catch (e) { showToast('Erro ao processar CSV: ' + e.message, 'erro') }
     finally { setProcessandoIrreg(null) }
   }
@@ -3783,6 +3918,7 @@ export default function PareCetoApp({ usuario, onVoltarHub, onLogout }) {
       })
       const partesIr = [`${res.inseridos} novas`]
       if (res.duplicatas > 0) partesIr.push(`${res.duplicatas} já existiam`)
+      setNaoSalvoIrreg(false)
       showToast(partesIr.join(' · '), 'sucesso')
     } catch (e) { showToast('Erro ao salvar: ' + e.message, 'erro') }
     finally { setSalvandoIrreg(false) }
@@ -3826,9 +3962,21 @@ export default function PareCetoApp({ usuario, onVoltarHub, onLogout }) {
               <div className="text-xs text-slate-500 truncate">{usuario?.nome || ''}</div>
             </div>
           </div>
-          <button onClick={onLogout} className="text-sm text-slate-400 hover:text-white px-3 py-1.5 rounded hover:bg-slate-800 transition flex items-center gap-1">
-            <LogOut className="w-4 h-4" />Sair
-          </button>
+          <div className="flex items-center gap-3">
+            {(salvandoVendas || salvandoIrreg) && (
+              <span className="text-xs text-amber-400 flex items-center gap-1.5">
+                <RefreshCw className="w-3.5 h-3.5 animate-spin"/>Salvando...
+              </span>
+            )}
+            {!(salvandoVendas || salvandoIrreg) && (naoSalvoVendas || naoSalvoIrreg) && (
+              <span className="text-xs text-slate-500 flex items-center gap-1.5" title="Dados carregados mas não salvos no histórico">
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-500 inline-block"/>Não salvo
+              </span>
+            )}
+            <button onClick={onLogout} className="text-sm text-slate-400 hover:text-white px-3 py-1.5 rounded hover:bg-slate-800 transition flex items-center gap-1">
+              <LogOut className="w-4 h-4" />Sair
+            </button>
+          </div>
         </div>
         <div className="max-w-7xl mx-auto px-4 flex gap-0 overflow-x-auto">
           {TABS.map(({ id, label, Icon, badge }) => (
