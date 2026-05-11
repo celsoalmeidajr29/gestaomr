@@ -195,7 +195,7 @@ if ($method === 'POST') {
         json_response(fetch_proposta_completa($propostaId), 201);
     } catch (Throwable $e) {
         db()->rollBack();
-        throw $e;
+        json_error('[DEBUG] ' . $e->getMessage() . ' | ' . basename($e->getFile()) . ':' . $e->getLine(), 500);
     }
 }
 
