@@ -6,6 +6,7 @@ import App from './App.jsx'
 import Login from './Login.jsx'
 import SistemasHub from './SistemasHub.jsx'
 import PropostaPublica from './PropostaPublica.jsx'
+import PareCetoApp from './pareceto/PareCetoApp.jsx'
 import './index.css'
 
 /**
@@ -76,6 +77,10 @@ function Root() {
 
   if (sistemaAtivo === 'mrsys') {
     return <App onVoltarHub={handleVoltarHub} onLogout={handleLogout} />
+  }
+
+  if (sistemaAtivo === 'pareceto') {
+    return <PareCetoApp usuario={user} onVoltarHub={handleVoltarHub} onLogout={handleLogout} />
   }
 
   return null

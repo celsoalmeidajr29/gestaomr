@@ -3,6 +3,11 @@ import React from 'react'
 // Versão atual do sistema MRSys (atualizada a cada release)
 export const MRSYS_VERSION = 'v99'
 
+// Versão atual do Pare Certo (atualizada a cada release)
+export const PARECETO_VERSION = 'v0.1'
+
+// Cada sistema declara `permissaoNecessaria` (null = qualquer logado).
+// O check final usa `usuario.perfil_codigo === 'admin'` como bypass.
 const SISTEMAS = [
   {
     id: 'mrsys',
@@ -12,15 +17,39 @@ const SISTEMAS = [
     cor: 'from-indigo-500 to-blue-600',
     ativo: true,
     versao: MRSYS_VERSION,
+    permissaoNecessaria: null,
   },
-  { id: 'placeholder1', placeholder: true },
+  {
+    id: 'pareceto',
+    nome: 'Pare Certo - Análises',
+    descricao: 'Análises operacionais e KPIs do Pare Certo',
+    icone: 'PC',
+    cor: 'from-emerald-500 to-teal-600',
+    ativo: true,
+    versao: PARECETO_VERSION,
+    permissaoNecessaria: 'pareceto',
+  },
   { id: 'placeholder2', placeholder: true },
   { id: 'placeholder3', placeholder: true },
   { id: 'placeholder4', placeholder: true },
   { id: 'placeholder5', placeholder: true },
 ]
 
+function podeAcessar(sistema, usuario) {
+  if (!sistema.permissaoNecessaria) return true
+  if (usuario?.perfil_codigo === 'admin') return true
+  const p = usuario?.permissoes
+  if (!p) return false
+  if (typeof p === 'object') return !!p[sistema.permissaoNecessaria]
+  return false
+}
+
 export default function SistemasHub({ usuario, onSelecionarSistema, onLogout }) {
+  const sistemasVisiveis = SISTEMAS.map(s => {
+    if (s.placeholder || podeAcessar(s, usuario)) return s
+    // Sistema existe mas usuário não tem permissão → vira placeholder
+    return { id: `bloqueado-${s.id}`, placeholder: true }
+  })
   return (
     <div className="min-h-screen bg-white text-slate-900">
       <header className="border-b border-slate-200 bg-white/95 backdrop-blur sticky top-0 z-10 shadow-sm">
@@ -46,7 +75,7 @@ export default function SistemasHub({ usuario, onSelecionarSistema, onLogout }) 
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {SISTEMAS.map(s => s.placeholder ? (
+          {sistemasVisiveis.map(s => s.placeholder ? (
             <div
               key={s.id}
               className="p-6 rounded-2xl border border-dashed border-slate-300 bg-slate-50 min-h-[180px] flex flex-col items-center justify-center text-center"
