@@ -37,11 +37,18 @@ Gestor/usuário principal: **Celso Almeida** (`celso.almeida@grupomr.seg.br`)
 
 ### Versão ativa do monolito
 
-**`MRSys_v98.jsx`** — `frontend/src/App.jsx` é wrapper que repassa props para o monolito:
+**`MRSys_v99.jsx`** — `frontend/src/App.jsx` é wrapper que repassa props para o monolito:
 ```jsx
-import MRSysApp from './versions/MRSys_v98.jsx'
+import MRSysApp from './versions/MRSys_v99.jsx'
 export default function App(props) { return <MRSysApp {...props} /> }
 ```
+
+Novidade v99 (PDF medição sem impostos + conversão de despesa/vale em parcelamento + Resumo/Export com parcelamentos consolidados):
+- **PDF de medição enviado por e-mail não exibe mais impostos** — a linha "Imposto: R$ X" foi removida do `gerarMedicaoPDFBlob`. O documento que chega ao cliente mostra apenas serviços prestados e valor bruto faturado. Alíquota/ISS/retenções/líquido continuam visíveis internamente nos resumos e exports, mas não no PDF enviado ao cliente
+- **Editar Despesa / Despesa da Chefia / Vale → marcar "Parcelado" agora funciona em modo edição**: o checkbox antes só aparecia em criação. Ao salvar com `__parcelado: true` em registro com `id`, sistema confirma com modal, cria N parcelas via `/api/parcelas/criar.php` (1ª na mesma competência) e apaga o registro original via DELETE no `item.php` da entidade. Botão muda pra roxo "Migrar para N parcelas" em modo edição
+- **`criarParceladoAPI(entidade, d, idAntigo)` ganhou 3º parâmetro** opcional: quando informado, faz DELETE do registro pré-existente após criar as parcelas. Toast diferencia "Convertida em N parcelas" vs "N parcelas criadas". `salvarDespesa`/`salvarDespChefia`/`salvarDesconto` repassam `d.id` quando há
+- **Painel 8 no Resumo — "Parcelamentos — visão geral"**: tabela consolidada com despesas operacionais + chefia + vales parcelados desta competência. Cada linha mostra origem (badge Despesa/Chefia/Vale), descrição/beneficiário, parcela N/M, categoria, valor. Painel **informativo** (não soma em `custoTotal` — cada parcela já é contada em seu bloco original). Sub-totais por origem no header. Suporta exclusão manual via botão × (não destrói dado)
+- **Aba "Parcelamentos" no Export XLSX reformulada**: agora consolida os 3 tipos (Despesa op + Chefia + Vale) com colunas ORIGEM | LANÇAMENTO/BENEFICIÁRIO | PARCELA | CATEGORIA | COMPETÊNCIA | VALOR. Rodapé com TOTAL + detalhamento por origem. Aba Consolidado segue usando `totalParcelamentos` (só despesas op) pra preservar o cálculo do resultado
 
 Novidade v98 (Propostas: campos operacionais ESCOLTA):
 - **Migration 013** (`013_proposta_itens_operacionais.sql`) adiciona em `proposta_itens` 6 campos: `franquia_horas`, `franquia_km`, `hora_extra_fatura`, `km_extra_fatura`, `adicional_domingos_fatura`, `aliquota`
@@ -400,7 +407,7 @@ Se eu (Celso) der uma instrução que conflita com algo nas Decisões já tomada
 
 ---
 
-*Última atualização: 2026-05-10. Sistema em produção na v98 em `https://celso.cloud`. Trabalho atual: módulo de Propostas com itens ESCOLTA enriquecidos (v98). Parcelamentos v96 também em produção. Pendente: Fase 4 (PDF overlay). Pendentes:*
+*Última atualização: 2026-05-11. Sistema em produção na v99 em `https://celso.cloud`. Trabalho atual: PDF de medição limpo (sem impostos), conversão de despesas/vales em parcelamento via edição, e Resumo/Export XLSX com painel consolidado de parcelamentos das 3 origens (v99). Módulo de Propostas (v97/v98) e Parcelamentos (v96) em produção. Pendente: Fase 4 (PDF overlay) do módulo de Propostas. Pendentes:*
 - *Rodar migration 013 (`database/migrations/013_proposta_itens_operacionais.sql`) no phpMyAdmin antes de testar v98.*
 - *Rodar migration 012 (`database/migrations/012_parcelas.sql`) no phpMyAdmin antes de testar v96/v97.*
 - *Após rodar migration 012, **rodar uma vez** o botão "Migrar parcelas" em cada uma das 3 abas (Despesas, Desp. Chefia, Vales) para inferir os grupos existentes e criar as parcelas faltantes. Conferir relatório no console + alert. Apagar o botão depois (linhas 3317, 3413, 3481 no v96 + helper `migrarParcelasExistentes`).*

@@ -1,6 +1,6 @@
-// Versão ativa: v98 — Propostas: itens ESCOLTA com campos operacionais (franquia h/km, h/km extra fatura, adic. dom., alíquota) capturados do catálogo e usados na conversão pro serviço
+// Versão ativa: v99 — PDF de medição sem impostos; editar despesa/chefia/vale aceita conversão em parcelamento; Resumo + Export XLSX consolidam parcelamentos de despesas+chefia+vales
 // Versões anteriores em src/versions/
-import MRSysApp from './versions/MRSys_v98.jsx'
+import MRSysApp from './versions/MRSys_v99.jsx'
 
 export default function App(props) {
   return <MRSysApp {...props} />
