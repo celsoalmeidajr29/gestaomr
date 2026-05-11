@@ -138,41 +138,54 @@ function isIrregular(f) {
   return v !== '' && v !== 'Nenhuma' && v !== '—' && v !== '-'
 }
 
+// Gera hash simples para dedup: concatena dtReg|placa|valor (mesmo criterio do backend SHA1)
+function hashTransacao(dtReg, placa, valor) {
+  const src = (dtReg ? dtReg.toISOString().slice(0, 19).replace('T', ' ') : '') + '|' + placa + '|' + String(Math.round(valor * 100) / 100)
+  // djb2 — colisao improvavel para este volume; backend usa SHA1 como autoridade final
+  let h = 5381
+  for (let i = 0; i < src.length; i++) h = ((h << 5) + h) ^ src.charCodeAt(i)
+  return (h >>> 0).toString(16).padStart(8, '0') + '_' + src.length
+}
+
+// Guarda TODAS as transacoes (sem dedup por placa).
+// Unicidade real e garantida pelo hash_dedup no banco (dt_registro|placa|valor).
 function parseVendas(rows, funcs) {
   const funcMap = {}
   funcs.forEach(f => { funcMap[normalizar(f.login)] = f })
   const premissas = []
-  const byPlaca = {}
+  const records = []
+  const seenHashes = new Set()
 
   rows.forEach(r => {
     const placa = extractPlaca(r['Placa'] || r['placa'] || '')
     if (!placa) return
     const dtReg = parseDateTime(r['Hora registro'] || r['hora_registro'] || '')
-    const prev = byPlaca[placa]
-    if (prev && dtReg && prev._dtReg && dtReg <= prev._dtReg) return
+    const valor = num(r['Valor pago'] || r['Valor'] || r['valor'] || 0)
+    // Dedup local: ignora linhas identicas dentro do mesmo arquivo
+    const hk = hashTransacao(dtReg, placa, valor)
+    if (seenHashes.has(hk)) return
+    seenHashes.add(hk)
     const origem = r['Origem'] || r['origem'] || ''
     const trecho = r['Trecho'] || r['trecho'] || ''
     const usuario = r['Usuario'] || r['Usuário'] || r['usuario'] || ''
-    const valor = num(r['Valor pago'] || r['Valor'] || r['valor'] || 0)
-    const irregular = isIrregular(r['Irregularidade'] || r['irregularidade'] || '')
     const fn = normalizar(usuario)
     const func = funcMap[fn]
-    byPlaca[placa] = {
-      placa, _dtReg: dtReg, dtReg,
+    records.push({
+      placa, dtReg, hashDedup: hk,
       dtInicial: parseDateTime(r['Hora inicial'] || ''),
       periodo: r['Periodo'] || r['periodo'] || '',
       usuario, cargo: func ? func.cargo : 'Não cadastrado',
       naoEncontrado: !func && usuario !== '',
       origem, trecho,
       formaPagamento: r['Forma de pagamento'] || '',
-      valor, irregular,
+      valor,
+      irregular: isIrregular(r['Irregularidade'] || r['irregularidade'] || ''),
       canal: classifyCanal(origem),
       zona: classifyZona(trecho),
       tipo: classifyTipo(valor),
-    }
+    })
   })
 
-  const records = Object.values(byPlaca)
   const naoEnc = [...new Set(records.filter(r => r.naoEncontrado).map(r => r.usuario))].length
   if (naoEnc > 0) premissas.push(`${naoEnc} login(s) não encontrado(s) no cadastro`)
   return { records, premissas }
@@ -1354,9 +1367,11 @@ export default function PareCetoApp({ usuario, onVoltarHub, onLogout }) {
     if (!analiseVendas || !dadosVendas?.records?.length) return
     setSalvandoVendas(true)
     try {
+      const nomeArq = dadosVendas?.nomeArquivo || ''
       const payload = dadosVendas.records.map(r => ({
+        hash_dedup:   r.hashDedup || null,
         placa:        r.placa,
-        dt_registro:  r.dtReg   ? r.dtReg.toISOString().slice(0,19).replace('T',' ')   : null,
+        dt_registro:  r.dtReg     ? r.dtReg.toISOString().slice(0,19).replace('T',' ')     : null,
         dt_inicial:   r.dtInicial ? r.dtInicial.toISOString().slice(0,19).replace('T',' ') : null,
         periodo:      r.periodo   || null,
         usuario:      r.usuario   || null,
@@ -1366,11 +1381,15 @@ export default function PareCetoApp({ usuario, onVoltarHub, onLogout }) {
         forma_pag:    r.formaPagamento || null,
         valor:        r.valor,
         irregular:    r.irregular ? 1 : 0,
-        canal:        r.canal  || null,
-        zona:         r.zona   || null,
-        tipo:         r.tipo   || null,
+        canal:        r.canal     || null,
+        zona:         r.zona      || null,
+        tipo:         r.tipo      || null,
+        nome_arquivo: nomeArq,
       }))
       const res = await apiFetch('/vendas/index.php', { method: 'POST', body: JSON.stringify(payload) })
+      const partes = [`${res.inseridos} novas`]
+      if (res.duplicatas > 0) partes.push(`${res.duplicatas} já existiam`)
+      showToast(partes.join(' · '), 'sucesso')
       await apiFetch('/relatorios/index.php', {
         method: 'POST',
         body: JSON.stringify({
@@ -1382,7 +1401,6 @@ export default function PareCetoApp({ usuario, onVoltarHub, onLogout }) {
           nome_arquivo: dadosVendas?.nomeArquivo || '',
         }),
       })
-      showToast(`Salvo: ${res.inseridos} novos, ${res.atualizados} atualizados`)
     } catch (e) { showToast('Erro ao salvar: ' + e.message, 'erro') }
     finally { setSalvandoVendas(false) }
   }
@@ -1443,7 +1461,9 @@ export default function PareCetoApp({ usuario, onVoltarHub, onLogout }) {
           nome_arquivo: dadosIrreg?.nomeArquivo || '',
         }),
       })
-      showToast(`Salvo: ${res.inseridos} novos, ${res.atualizados} atualizados`)
+      const partesIr = [`${res.inseridos} novas`]
+      if (res.duplicatas > 0) partesIr.push(`${res.duplicatas} já existiam`)
+      showToast(partesIr.join(' · '), 'sucesso')
     } catch (e) { showToast('Erro ao salvar: ' + e.message, 'erro') }
     finally { setSalvandoIrreg(false) }
   }

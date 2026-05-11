@@ -10,54 +10,56 @@ if ($method !== 'POST') json_error('Metodo nao permitido', 405);
 $records = json_input();
 if (!is_array($records) || empty($records)) json_error('Array de registros obrigatorio', 422);
 
+// Insere usando hash_dedup como chave de unicidade.
+// ON DUPLICATE KEY: ignora exatos duplicados (id = id e no-op mas forca rowCount=2).
 $stmt = db()->prepare(
     'INSERT INTO pc_vendas
-       (placa, dt_registro, dt_inicial, periodo, usuario, cargo, origem, trecho, forma_pag, valor, irregular, canal, zona, tipo)
+       (hash_dedup, placa, dt_registro, dt_inicial, periodo, usuario, cargo,
+        origem, trecho, forma_pag, valor, irregular, canal, zona, tipo,
+        nome_arquivo, importado_em)
      VALUES
-       (:placa, :dt_reg, :dt_ini, :periodo, :usuario, :cargo, :origem, :trecho, :forma_pag, :valor, :irregular, :canal, :zona, :tipo)
-     ON DUPLICATE KEY UPDATE
-       dt_registro = VALUES(dt_registro),
-       dt_inicial  = VALUES(dt_inicial),
-       periodo     = VALUES(periodo),
-       usuario     = VALUES(usuario),
-       cargo       = VALUES(cargo),
-       origem      = VALUES(origem),
-       trecho      = VALUES(trecho),
-       forma_pag   = VALUES(forma_pag),
-       valor       = VALUES(valor),
-       irregular   = VALUES(irregular),
-       canal       = VALUES(canal),
-       zona        = VALUES(zona),
-       tipo        = VALUES(tipo)'
+       (:hash, :placa, :dt_reg, :dt_ini, :periodo, :usuario, :cargo,
+        :origem, :trecho, :forma_pag, :valor, :irregular, :canal, :zona, :tipo,
+        :nome_arquivo, NOW())
+     ON DUPLICATE KEY UPDATE id = id'
 );
 
-$inseridos = 0;
-$atualizados = 0;
+$inseridos  = 0;
+$duplicatas = 0;
 
 db()->beginTransaction();
 try {
     foreach ($records as $r) {
         $placa = trim((string)($r['placa'] ?? ''));
         if (!$placa) continue;
+
+        $dtReg    = $r['dt_registro'] ?: null;
+        $valor    = round((float)($r['valor'] ?? 0), 2);
+        $hashSrc  = ($dtReg ?? '') . '|' . $placa . '|' . $valor;
+        $hash     = $r['hash_dedup'] ?? sha1($hashSrc);
+
         $stmt->execute([
-            ':placa'     => $placa,
-            ':dt_reg'    => $r['dt_registro'] ?: null,
-            ':dt_ini'    => $r['dt_inicial'] ?: null,
-            ':periodo'   => $r['periodo'] ?: null,
-            ':usuario'   => $r['usuario'] ?: null,
-            ':cargo'     => $r['cargo'] ?: null,
-            ':origem'    => $r['origem'] ?: null,
-            ':trecho'    => $r['trecho'] ?: null,
-            ':forma_pag' => $r['forma_pag'] ?: null,
-            ':valor'     => (float)($r['valor'] ?? 0),
-            ':irregular' => (int)(bool)($r['irregular'] ?? false),
-            ':canal'     => $r['canal'] ?: null,
-            ':zona'      => $r['zona'] ?: null,
-            ':tipo'      => $r['tipo'] ?: null,
+            ':hash'         => $hash,
+            ':placa'        => $placa,
+            ':dt_reg'       => $dtReg,
+            ':dt_ini'       => $r['dt_inicial'] ?: null,
+            ':periodo'      => $r['periodo'] ?: null,
+            ':usuario'      => $r['usuario'] ?: null,
+            ':cargo'        => $r['cargo'] ?: null,
+            ':origem'       => $r['origem'] ?: null,
+            ':trecho'       => $r['trecho'] ?: null,
+            ':forma_pag'    => $r['forma_pag'] ?: null,
+            ':valor'        => $valor,
+            ':irregular'    => (int)(bool)($r['irregular'] ?? false),
+            ':canal'        => $r['canal'] ?: null,
+            ':zona'         => $r['zona'] ?: null,
+            ':tipo'         => $r['tipo'] ?: null,
+            ':nome_arquivo' => $r['nome_arquivo'] ?: null,
         ]);
+
         $rc = $stmt->rowCount();
         if ($rc === 1) $inseridos++;
-        elseif ($rc === 2) $atualizados++;
+        else           $duplicatas++;
     }
     db()->commit();
 } catch (\Throwable $e) {
@@ -65,4 +67,8 @@ try {
     throw $e;
 }
 
-json_response(['inseridos' => $inseridos, 'atualizados' => $atualizados, 'total' => $inseridos + $atualizados]);
+json_response([
+    'inseridos'  => $inseridos,
+    'duplicatas' => $duplicatas,
+    'total'      => count($records),
+]);
