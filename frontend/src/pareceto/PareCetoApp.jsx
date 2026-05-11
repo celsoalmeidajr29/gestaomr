@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react'
-import { ArrowLeft, LogOut, Upload, Users, BarChart3, AlertTriangle, Clock, Plus, Edit2, Trash2, Download, FileText, RefreshCw, X, Check, Search, Settings, Bell, Shield, Target, ChevronDown, ChevronUp, Activity, TrendingUp, TrendingDown, Minus } from 'lucide-react'
+import { ArrowLeft, LogOut, Upload, Users, BarChart3, AlertTriangle, Clock, Plus, Edit2, Trash2, Download, FileText, RefreshCw, X, Check, Search, Settings, Bell, Shield, Target, ChevronDown, ChevronUp, Activity, TrendingUp, TrendingDown, Minus, Filter } from 'lucide-react'
 import * as XLSX from 'xlsx'
 import {
   AreaChart, Area, BarChart, Bar, LineChart, Line,
@@ -1722,6 +1722,41 @@ function AbaFuncionarios({ funcionarios, todos, loading, busca, setBusca, filtro
   )
 }
 
+// ---- FILTER BAR ----
+function FilterBar({ meses, agentes, trechos, filtroMes, setFiltroMes, filtroDe, setFiltroDe, filtroAte, setFiltroAte, filtroAgente, setFiltroAgente, filtroTrecho, setFiltroTrecho, onLimpar, labelAgente = 'Agente' }) {
+  const temFiltro = !!(filtroMes || filtroDe || filtroAte || filtroAgente || filtroTrecho)
+  return (
+    <div className="flex flex-wrap gap-2 items-center mb-4 p-3 bg-slate-800/40 border border-slate-700/50 rounded-xl">
+      <Filter className="w-3.5 h-3.5 text-slate-500 flex-shrink-0"/>
+      <select value={filtroMes} onChange={e => setFiltroMes(e.target.value)} className="text-xs bg-slate-700 border border-slate-600 rounded px-2 py-1.5 text-slate-300">
+        <option value="">Todos os meses</option>
+        {meses.map(m => <option key={m} value={m}>{m}</option>)}
+      </select>
+      <input type="date" value={filtroDe} onChange={e => setFiltroDe(e.target.value)} className="text-xs bg-slate-700 border border-slate-600 rounded px-2 py-1.5 text-slate-300" title="Data inicial"/>
+      <span className="text-xs text-slate-500">até</span>
+      <input type="date" value={filtroAte} onChange={e => setFiltroAte(e.target.value)} className="text-xs bg-slate-700 border border-slate-600 rounded px-2 py-1.5 text-slate-300" title="Data final"/>
+      {agentes.length > 0 && (
+        <select value={filtroAgente} onChange={e => setFiltroAgente(e.target.value)} className="text-xs bg-slate-700 border border-slate-600 rounded px-2 py-1.5 text-slate-300 max-w-[160px]">
+          <option value="">Todos os {labelAgente.toLowerCase()}s</option>
+          {agentes.map(a => <option key={a} value={a}>{a}</option>)}
+        </select>
+      )}
+      {trechos.length > 0 && (
+        <select value={filtroTrecho} onChange={e => setFiltroTrecho(e.target.value)} className="text-xs bg-slate-700 border border-slate-600 rounded px-2 py-1.5 text-slate-300 max-w-[160px]">
+          <option value="">Todos os trechos</option>
+          {trechos.map(t => <option key={t} value={t}>{t}</option>)}
+        </select>
+      )}
+      {temFiltro && (
+        <button onClick={onLimpar} className="text-xs text-red-400 hover:text-red-300 flex items-center gap-1 ml-1">
+          <X className="w-3 h-3"/> Limpar
+        </button>
+      )}
+      {temFiltro && <span className="text-xs bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded-full font-medium">Filtro ativo</span>}
+    </div>
+  )
+}
+
 // ---- ABA VENDAS ----
 function SubTabs({ tabs, aba, setAba }) {
   return (
@@ -1994,6 +2029,32 @@ function VendasFuncionarioDetalhe({ nome, cargo, records, analise, onVoltar }) {
 
 function AbaVendas({ funcionarios, dados, premissas, analise, jornada, subAba, setSubAba, onUpload, onSalvar, salvando }) {
   const [selectedAgente, setSelectedAgente] = useState(null)
+  const [filtroMes, setFiltroMes] = useState('')
+  const [filtroDe, setFiltroDe] = useState('')
+  const [filtroAte, setFiltroAte] = useState('')
+  const [filtroAgente, setFiltroAgente] = useState('')
+  const [filtroTrecho, setFiltroTrecho] = useState('')
+
+  const records = useMemo(() => dados?.records || [], [dados])
+  const mesesDisp = useMemo(() => [...new Set(records.map(r => r.dtReg?.toISOString().slice(0,7)).filter(Boolean))].sort(), [records])
+  const agentesDisp = useMemo(() => [...new Set(records.map(r => r.usuario).filter(Boolean))].sort(), [records])
+  const trechosDisp = useMemo(() => [...new Set(records.map(r => r.trecho).filter(Boolean))].sort(), [records])
+  const temFiltro = !!(filtroMes || filtroDe || filtroAte || filtroAgente || filtroTrecho)
+
+  const recordsFiltrados = useMemo(() => {
+    if (!temFiltro) return records
+    let r = records
+    if (filtroMes) r = r.filter(x => x.dtReg?.toISOString().slice(0,7) === filtroMes)
+    if (filtroDe) { const d = new Date(filtroDe); r = r.filter(x => x.dtReg && x.dtReg >= d) }
+    if (filtroAte) { const d = new Date(filtroAte + 'T23:59:59'); r = r.filter(x => x.dtReg && x.dtReg <= d) }
+    if (filtroAgente) r = r.filter(x => x.usuario === filtroAgente)
+    if (filtroTrecho) r = r.filter(x => x.trecho === filtroTrecho)
+    return r
+  }, [records, filtroMes, filtroDe, filtroAte, filtroAgente, filtroTrecho, temFiltro])
+
+  const analiseEfetiva = useMemo(() => recordsFiltrados.length ? analyzeVendas(recordsFiltrados) : null, [recordsFiltrados])
+
+  function limparFiltros() { setFiltroMes(''); setFiltroDe(''); setFiltroAte(''); setFiltroAgente(''); setFiltroTrecho('') }
 
   if (!dados) {
     return (
@@ -2012,29 +2073,32 @@ function AbaVendas({ funcionarios, dados, premissas, analise, jornada, subAba, s
     )
   }
 
-  // Drill-down individual
-  if (selectedAgente && analise && dados) {
-    const ag = analise.rankingAgentes.find(a => a.nome === selectedAgente)
+  if (selectedAgente && analiseEfetiva && dados) {
+    const ag = analiseEfetiva.rankingAgentes.find(a => a.nome === selectedAgente)
     return (
       <VendasFuncionarioDetalhe
         nome={selectedAgente}
         cargo={ag?.cargo}
-        records={dados.records}
-        analise={analise}
+        records={recordsFiltrados}
+        analise={analiseEfetiva}
         onVoltar={() => setSelectedAgente(null)}
       />
     )
   }
 
+  const subLabel = temFiltro
+    ? `${recordsFiltrados.length.toLocaleString('pt-BR')} de ${records.length.toLocaleString('pt-BR')} transações`
+    : `${records.length.toLocaleString('pt-BR')} transações`
+
   return (
     <div>
       <ActionBar
         titulo="Análise de Vendas"
-        sub={`${dados.nomeArquivo} · ${dados.records.length.toLocaleString('pt-BR')} transações`}
-        sub2={analise ? `${fmtDate(analise.dataMin)} a ${fmtDate(analise.dataMax)}` : ''}
+        sub={`${dados.nomeArquivo} · ${subLabel}`}
+        sub2={analiseEfetiva ? `${fmtDate(analiseEfetiva.dataMin)} a ${fmtDate(analiseEfetiva.dataMax)}` : ''}
         onNovoArquivo={onUpload}
-        onExportTXT={analise ? () => gerarTXTVendas(analise, jornada, premissas) : null}
-        onExportXLSX={analise ? () => exportVendasXLSX(analise, dados.records, jornada) : null}
+        onExportTXT={analiseEfetiva ? () => gerarTXTVendas(analiseEfetiva, jornada, premissas) : null}
+        onExportXLSX={analiseEfetiva ? () => exportVendasXLSX(analiseEfetiva, recordsFiltrados, jornada) : null}
         onSalvar={onSalvar} salvando={salvando}
       />
       {premissas.length > 0 && (
@@ -2042,15 +2106,24 @@ function AbaVendas({ funcionarios, dados, premissas, analise, jornada, subAba, s
           <strong className="text-slate-300">Premissas:</strong> {premissas.join(' · ')}
         </div>
       )}
+      <FilterBar
+        meses={mesesDisp} agentes={agentesDisp} trechos={trechosDisp}
+        filtroMes={filtroMes} setFiltroMes={setFiltroMes}
+        filtroDe={filtroDe} setFiltroDe={setFiltroDe}
+        filtroAte={filtroAte} setFiltroAte={setFiltroAte}
+        filtroAgente={filtroAgente} setFiltroAgente={setFiltroAgente}
+        filtroTrecho={filtroTrecho} setFiltroTrecho={setFiltroTrecho}
+        onLimpar={limparFiltros} labelAgente="Agente"
+      />
       <SubTabs tabs={[['kpis','KPIs'],['temporal','Temporal'],['agentes','Agentes'],['trechos','Trechos'],['pagamentos','Pagamentos'],['jornada','Jornada'],['comparar','Comparar'],['trechos-comp','Comp. Trechos']]} aba={subAba} setAba={setSubAba} />
-      {analise && subAba === 'kpis' && <VendasKPIs a={analise} />}
-      {analise && subAba === 'temporal' && <VendasTemporal a={analise} />}
-      {analise && subAba === 'agentes' && <VendasAgentesChart a={analise} onSelectAgente={setSelectedAgente} />}
-      {analise && subAba === 'trechos' && <VendasTrechosChart a={analise} />}
-      {analise && subAba === 'pagamentos' && <VendasPagamentos a={analise} />}
+      {analiseEfetiva && subAba === 'kpis' && <VendasKPIs a={analiseEfetiva} />}
+      {analiseEfetiva && subAba === 'temporal' && <VendasTemporal a={analiseEfetiva} />}
+      {analiseEfetiva && subAba === 'agentes' && <VendasAgentesChart a={analiseEfetiva} onSelectAgente={setSelectedAgente} />}
+      {analiseEfetiva && subAba === 'trechos' && <VendasTrechosChart a={analiseEfetiva} />}
+      {analiseEfetiva && subAba === 'pagamentos' && <VendasPagamentos a={analiseEfetiva} />}
       {subAba === 'jornada' && <VendasJornada jornada={jornada} />}
-      {subAba === 'comparar' && <ComparacaoPeriodos records={dados.records} tipo="vendas" />}
-      {subAba === 'trechos-comp' && <ComparacaoTrechos records={dados.records} tipo="vendas" />}
+      {subAba === 'comparar' && <ComparacaoPeriodos records={recordsFiltrados} tipo="vendas" />}
+      {subAba === 'trechos-comp' && <ComparacaoTrechos records={recordsFiltrados} tipo="vendas" />}
     </div>
   )
 }
@@ -2485,6 +2558,33 @@ function VendasTrechosChart({ a }) {
 
 // ---- ABA IRREGULARIDADES ----
 function AbaIrregularidades({ funcionarios, dados, premissas, analise, subAba, setSubAba, onUpload, onSalvar, salvando, scorePlacas, alertaDismissed, onDismissAlerta, scoreConfig }) {
+  const [filtroMes, setFiltroMes] = useState('')
+  const [filtroDe, setFiltroDe] = useState('')
+  const [filtroAte, setFiltroAte] = useState('')
+  const [filtroEmissor, setFiltroEmissor] = useState('')
+  const [filtroTrecho, setFiltroTrecho] = useState('')
+
+  const records = useMemo(() => dados?.records || [], [dados])
+  const mesesDisp = useMemo(() => [...new Set(records.map(r => r.dtEmissao?.toISOString().slice(0,7)).filter(Boolean))].sort(), [records])
+  const emissoresDisp = useMemo(() => [...new Set(records.map(r => r.emissor).filter(Boolean))].sort(), [records])
+  const trechosDisp = useMemo(() => [...new Set(records.map(r => r.trecho).filter(Boolean))].sort(), [records])
+  const temFiltro = !!(filtroMes || filtroDe || filtroAte || filtroEmissor || filtroTrecho)
+
+  const recordsFiltrados = useMemo(() => {
+    if (!temFiltro) return records
+    let r = records
+    if (filtroMes) r = r.filter(x => x.dtEmissao?.toISOString().slice(0,7) === filtroMes)
+    if (filtroDe) { const d = new Date(filtroDe); r = r.filter(x => x.dtEmissao && x.dtEmissao >= d) }
+    if (filtroAte) { const d = new Date(filtroAte + 'T23:59:59'); r = r.filter(x => x.dtEmissao && x.dtEmissao <= d) }
+    if (filtroEmissor) r = r.filter(x => x.emissor === filtroEmissor)
+    if (filtroTrecho) r = r.filter(x => x.trecho === filtroTrecho)
+    return r
+  }, [records, filtroMes, filtroDe, filtroAte, filtroEmissor, filtroTrecho, temFiltro])
+
+  const analiseEfetiva = useMemo(() => recordsFiltrados.length ? analyzeIrregularidades(recordsFiltrados) : null, [recordsFiltrados])
+
+  function limparFiltros() { setFiltroMes(''); setFiltroDe(''); setFiltroAte(''); setFiltroEmissor(''); setFiltroTrecho('') }
+
   if (!dados) {
     return (
       <div>
@@ -2501,15 +2601,20 @@ function AbaIrregularidades({ funcionarios, dados, premissas, analise, subAba, s
       </div>
     )
   }
+
+  const subLabel = temFiltro
+    ? `${recordsFiltrados.length.toLocaleString('pt-BR')} de ${records.length.toLocaleString('pt-BR')} registros`
+    : `${records.length.toLocaleString('pt-BR')} registros`
+
   return (
     <div>
       <ActionBar
         titulo="Irregularidades / Notificações"
-        sub={`${dados.nomeArquivo} · ${dados.records.length} registros`}
-        sub2={analise ? `${fmtDate(analise.dataMin)} a ${fmtDate(analise.dataMax)}` : ''}
+        sub={`${dados.nomeArquivo} · ${subLabel}`}
+        sub2={analiseEfetiva ? `${fmtDate(analiseEfetiva.dataMin)} a ${fmtDate(analiseEfetiva.dataMax)}` : ''}
         onNovoArquivo={onUpload}
-        onExportTXT={analise ? () => gerarTXTIrregularidades(analise, premissas) : null}
-        onExportXLSX={analise ? () => exportIrreguXLSX(analise, dados.records, scorePlacas) : null}
+        onExportTXT={analiseEfetiva ? () => gerarTXTIrregularidades(analiseEfetiva, premissas) : null}
+        onExportXLSX={analiseEfetiva ? () => exportIrreguXLSX(analiseEfetiva, recordsFiltrados, scorePlacas) : null}
         onSalvar={onSalvar} salvando={salvando}
       />
       {premissas.length > 0 && (
@@ -2518,17 +2623,26 @@ function AbaIrregularidades({ funcionarios, dados, premissas, analise, subAba, s
         </div>
       )}
       {!alertaDismissed && scorePlacas && <AlertasPanel scorePlacas={scorePlacas} onDismiss={onDismissAlerta} />}
+      <FilterBar
+        meses={mesesDisp} agentes={emissoresDisp} trechos={trechosDisp}
+        filtroMes={filtroMes} setFiltroMes={setFiltroMes}
+        filtroDe={filtroDe} setFiltroDe={setFiltroDe}
+        filtroAte={filtroAte} setFiltroAte={setFiltroAte}
+        filtroAgente={filtroEmissor} setFiltroAgente={setFiltroEmissor}
+        filtroTrecho={filtroTrecho} setFiltroTrecho={setFiltroTrecho}
+        onLimpar={limparFiltros} labelAgente="Emissor"
+      />
       <SubTabs tabs={[['kpis','KPIs'],['risco','Score / Risco'],['inadimplencia','Inadimplência'],['semanas','Por Semana'],['emissores','Emissores'],['trechos','Trechos'],['placas','Top 20 Placas'],['comparar','Comparar'],['trechos-comp','Comp. Trechos'],['relatorio','Rel. Semanal']]} aba={subAba} setAba={setSubAba} />
-      {analise && subAba === 'kpis' && <IrregKPIs a={analise} />}
+      {analiseEfetiva && subAba === 'kpis' && <IrregKPIs a={analiseEfetiva} />}
       {subAba === 'risco' && <IrregRisco scorePlacas={scorePlacas || {}} config={scoreConfig} />}
-      {subAba === 'inadimplencia' && <AbaInadimplencia records={dados.records} scorePlacas={scorePlacas} />}
-      {analise && subAba === 'semanas' && <IrregSemanas a={analise} />}
-      {analise && subAba === 'emissores' && <IrregEmissores a={analise} />}
-      {analise && subAba === 'trechos' && <IrregTrechos a={analise} />}
-      {analise && subAba === 'placas' && <IrregPlacas a={analise} scorePlacas={scorePlacas} />}
-      {subAba === 'comparar' && <ComparacaoPeriodos records={dados.records} tipo="irregularidades" />}
-      {subAba === 'trechos-comp' && <ComparacaoTrechos records={dados.records} tipo="irregularidades" />}
-      {subAba === 'relatorio' && <RelatorioSemanal records={dados.records} scorePlacas={scorePlacas} />}
+      {subAba === 'inadimplencia' && <AbaInadimplencia records={recordsFiltrados} scorePlacas={scorePlacas} />}
+      {analiseEfetiva && subAba === 'semanas' && <IrregSemanas a={analiseEfetiva} />}
+      {analiseEfetiva && subAba === 'emissores' && <IrregEmissores a={analiseEfetiva} />}
+      {analiseEfetiva && subAba === 'trechos' && <IrregTrechos a={analiseEfetiva} />}
+      {analiseEfetiva && subAba === 'placas' && <IrregPlacas a={analiseEfetiva} scorePlacas={scorePlacas} />}
+      {subAba === 'comparar' && <ComparacaoPeriodos records={recordsFiltrados} tipo="irregularidades" />}
+      {subAba === 'trechos-comp' && <ComparacaoTrechos records={recordsFiltrados} tipo="irregularidades" />}
+      {subAba === 'relatorio' && <RelatorioSemanal records={recordsFiltrados} scorePlacas={scorePlacas} />}
     </div>
   )
 }
@@ -3002,21 +3116,21 @@ function AbaDashboard({ analiseVendas, analiseIrreg, dadosVendas, dadosIrreg, sc
       <div className="flex flex-wrap gap-2 items-center">
         <span className="text-sm font-semibold text-slate-300">Dados carregados:</span>
         <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${temV ? 'bg-emerald-500/20 text-emerald-300' : 'bg-slate-700 text-slate-500'}`}>
-          {temV ? `✓ Vendas — ${analiseVendas.totalTrans.toLocaleString('pt-BR')} trans.` : '— Vendas não carregado'}
+          {temV ? `✓ Vendas — ${analiseVendas.totalTrans.toLocaleString('pt-BR')} / ${fmtBRL(analiseVendas.totalValor)}` : '— Vendas não carregado'}
         </span>
         <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${temI ? 'bg-blue-500/20 text-blue-300' : 'bg-slate-700 text-slate-500'}`}>
-          {temI ? `✓ Irregularidades — ${analiseIrreg.total.toLocaleString('pt-BR')} notif.` : '— Irregularidades não carregado'}
+          {temI ? `✓ Irregularidades — ${analiseIrreg.total.toLocaleString('pt-BR')} / ${fmtBRL(analiseIrreg.valorTotal)}` : '— Irregularidades não carregado'}
         </span>
         {scorePlacas && <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-purple-500/20 text-purple-300">✓ Score — {scoreResumo.total} placas</span>}
       </div>
 
       {/* KPIs */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-        <DashKpi label="Transações"    value={temV ? analiseVendas.totalTrans.toLocaleString('pt-BR') : '—'} sub={temV ? `${fmtBRL(analiseVendas.receitaPorDia)}/dia` : 'Sem dados'} cor="emerald" icon={BarChart3}/>
-        <DashKpi label="Receita total" value={temV ? fmtBRL(analiseVendas.totalValor) : '—'}              sub={temV ? `Ticket médio ${fmtBRL(analiseVendas.ticketMedio)}` : 'Sem dados'} cor="emerald" icon={TrendingUp}/>
-        <DashKpi label="Notificações"  value={temI ? analiseIrreg.total.toLocaleString('pt-BR') : '—'}     sub={temI ? `${analiseIrreg.totalIrregular} irregulares` : 'Sem dados'} cor="blue" icon={AlertTriangle}/>
-        <DashKpi label="% Conversão"   value={temI ? fmtNum(analiseIrreg.pctConversao)+'%' : '—'}          sub={temI ? `${analiseIrreg.totalPaga} pagas` : 'Sem dados'} cor={temI && analiseIrreg.pctConversao >= 50 ? 'emerald' : temI ? 'amber' : undefined} icon={Check}/>
-        <DashKpi label="Pendente"      value={inadimplencia ? fmtBRL(inadimplencia.valorTotal) : '—'}       sub={inadimplencia ? `${inadimplencia.totalPlacas} placas` : 'Sem dados'} cor="amber" icon={TrendingDown}/>
+        <DashKpi label="Vendas"        value={temV ? `${analiseVendas.totalTrans.toLocaleString('pt-BR')} / ${fmtBRL(analiseVendas.totalValor)}` : '—'} sub={temV ? `Ticket médio ${fmtBRL(analiseVendas.ticketMedio)}` : 'Sem dados'} cor="emerald" icon={BarChart3}/>
+        <DashKpi label="Receita/dia"   value={temV ? fmtBRL(analiseVendas.receitaPorDia) : '—'}             sub={temV ? `${analiseVendas.rankingAgentes.length} agentes` : 'Sem dados'} cor="emerald" icon={TrendingUp}/>
+        <DashKpi label="Notificações"  value={temI ? `${analiseIrreg.total.toLocaleString('pt-BR')} / ${fmtBRL(analiseIrreg.valorTotal)}` : '—'} sub={temI ? `${analiseIrreg.totalIrregular} irregulares` : 'Sem dados'} cor="blue" icon={AlertTriangle}/>
+        <DashKpi label="% Conversão"   value={temI ? fmtNum(analiseIrreg.pctConversao)+'%' : '—'}           sub={temI ? `${analiseIrreg.totalPaga} / ${fmtBRL(analiseIrreg.valorPago)} pagos` : 'Sem dados'} cor={temI && analiseIrreg.pctConversao >= 50 ? 'emerald' : temI ? 'amber' : undefined} icon={Check}/>
+        <DashKpi label="Pendente"      value={inadimplencia ? `${inadimplencia.totalPlacas} / ${fmtBRL(inadimplencia.valorTotal)}` : '—'} sub={inadimplencia ? 'placas / valor' : 'Sem dados'} cor="amber" icon={TrendingDown}/>
         <DashKpi label="Placas críticas" value={scorePlacas ? scoreResumo.critico.toString() : '—'}          sub={scorePlacas ? `+${scoreResumo.reincidentes} reincidentes` : 'Sem dados'} cor={scoreResumo.critico > 0 ? 'red' : 'emerald'} icon={Bell}/>
       </div>
 
@@ -3084,8 +3198,7 @@ function AbaDashboard({ analiseVendas, analiseIrreg, dadosVendas, dadosIrreg, sc
                   <tr key={ag.nome} className="hover:bg-slate-800/30">
                     <td className="px-4 py-2.5 text-slate-500 text-xs">{i+1}</td>
                     <td className="px-4 py-2.5 font-medium truncate">{ag.nome}</td>
-                    <td className="px-4 py-2.5 text-right text-slate-300">{ag.count.toLocaleString('pt-BR')}</td>
-                    <td className="px-4 py-2.5 text-right text-emerald-400">{fmtBRL(ag.valor)}</td>
+                    <td className="px-4 py-2.5 text-right text-emerald-400 whitespace-nowrap">{ag.count.toLocaleString('pt-BR')} / {fmtBRL(ag.valor)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -3102,7 +3215,7 @@ function AbaDashboard({ analiseVendas, analiseIrreg, dadosVendas, dadosIrreg, sc
                   <tr key={t.trecho} className="hover:bg-slate-800/30">
                     <td className="px-4 py-2.5 text-slate-500 text-xs">{i+1}</td>
                     <td className="px-4 py-2.5 font-medium truncate">{t.trecho}</td>
-                    <td className="px-4 py-2.5 text-right text-amber-400">{t.total.toLocaleString('pt-BR')}</td>
+                    <td className="px-4 py-2.5 text-right text-blue-400 whitespace-nowrap">{t.total.toLocaleString('pt-BR')} / {fmtBRL(t.valor)}</td>
                     <td className="px-4 py-2.5 text-right"><ConvBar pct={t.total>0?t.paga/t.total*100:0}/></td>
                   </tr>
                 ))}
