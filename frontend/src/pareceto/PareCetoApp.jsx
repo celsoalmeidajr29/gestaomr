@@ -543,6 +543,429 @@ function MiniScoreBar({ score, nivel }) {
   )
 }
 
+// ---- COMPARAÇÃO DE PERÍODOS ----
+function filterByDateRange(records, de, ate, dateKey) {
+  if (!de || !ate) return []
+  const dMin = new Date(de + 'T00:00:00')
+  const dMax = new Date(ate + 'T23:59:59')
+  return records.filter(r => { const dt = r[dateKey]; return dt instanceof Date && dt >= dMin && dt <= dMax })
+}
+
+function dataRangeFromRecords(records, dateKey) {
+  const datas = records.filter(r => r[dateKey] instanceof Date).map(r => r[dateKey])
+  if (!datas.length) return { min: '', max: '' }
+  const mn = new Date(Math.min(...datas.map(d => d.getTime())))
+  const mx = new Date(Math.max(...datas.map(d => d.getTime())))
+  return { min: mn.toISOString().slice(0,10), max: mx.toISOString().slice(0,10) }
+}
+
+function DeltaBadge({ valA, valB, inverso, suffix }) {
+  if (valB === null || valB === undefined || valB === 0) return <span className="text-xs text-slate-600">—</span>
+  const pct = ((valA - valB) / Math.abs(valB)) * 100
+  const positivo = inverso ? pct < 0 : pct > 0
+  const zero = Math.abs(pct) < 0.05
+  return (
+    <span className={`inline-flex items-center gap-0.5 text-xs font-semibold px-1.5 py-0.5 rounded ${zero ? 'bg-slate-700/60 text-slate-400' : positivo ? 'bg-emerald-500/20 text-emerald-300' : 'bg-red-500/20 text-red-300'}`}>
+      {zero ? '=' : pct > 0 ? '▲' : '▼'} {Math.abs(pct) < 0.1 ? '0' : fmtNum(Math.abs(pct))}%{suffix || ''}
+    </span>
+  )
+}
+
+function KpiComparRow({ label, valA, valB, fmt, inverso }) {
+  const f = fmt || (v => fmtNum(v, 0))
+  return (
+    <div className="flex items-center justify-between py-2 border-b border-slate-700/40 last:border-0 gap-2">
+      <span className="text-xs text-slate-400 flex-1">{label}</span>
+      <span className="text-sm font-semibold text-blue-300 w-24 text-right">{valA !== null ? f(valA) : '—'}</span>
+      <span className="text-sm font-semibold text-purple-300 w-24 text-right">{valB !== null ? f(valB) : '—'}</span>
+      <div className="w-20 text-right">
+        {valA !== null && valB !== null ? <DeltaBadge valA={valA} valB={valB} inverso={inverso} /> : <span className="text-xs text-slate-600">—</span>}
+      </div>
+    </div>
+  )
+}
+
+function RankingCompar({ title, listA, listB, nameKey, valueKey, fmtVal }) {
+  const namesA = new Set(listA.map(x => x[nameKey]))
+  const namesB = new Set(listB.map(x => x[nameKey]))
+  const allNames = [...new Set([...listA.map(x => x[nameKey]), ...listB.map(x => x[nameKey])])].slice(0, 8)
+  const mapA = Object.fromEntries(listA.map(x => [x[nameKey], x[valueKey]]))
+  const mapB = Object.fromEntries(listB.map(x => [x[nameKey], x[valueKey]]))
+  const f = fmtVal || (v => v?.toLocaleString('pt-BR'))
+  return (
+    <div className="bg-slate-800/40 border border-slate-700/50 rounded-xl p-4">
+      <div className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-3">{title}</div>
+      {allNames.map(n => (
+        <div key={n} className="py-1.5 border-b border-slate-700/30 last:border-0">
+          <div className="flex items-center justify-between text-xs mb-1">
+            <span className="text-slate-300 truncate flex-1">{n}</span>
+            <span className="text-blue-300 w-20 text-right">{mapA[n] != null ? f(mapA[n]) : '—'}</span>
+            <span className="text-purple-300 w-20 text-right">{mapB[n] != null ? f(mapB[n]) : '—'}</span>
+          </div>
+          <div className="flex gap-1">
+            <div className="flex-1 h-1 bg-slate-700 rounded-full overflow-hidden">
+              <div className="h-full bg-blue-500/70 rounded-full" style={{ width: `${mapA[n] && Math.max(...allNames.map(x => mapA[x]||0)) ? mapA[n]/Math.max(...allNames.map(x => mapA[x]||0))*100 : 0}%` }} />
+            </div>
+            <div className="flex-1 h-1 bg-slate-700 rounded-full overflow-hidden">
+              <div className="h-full bg-purple-500/70 rounded-full" style={{ width: `${mapB[n] && Math.max(...allNames.map(x => mapB[x]||0)) ? mapB[n]/Math.max(...allNames.map(x => mapB[x]||0))*100 : 0}%` }} />
+            </div>
+          </div>
+        </div>
+      ))}
+      {allNames.length === 0 && <div className="text-slate-500 text-xs py-2">Sem dados</div>}
+    </div>
+  )
+}
+
+function ComparacaoPeriodos({ records, tipo }) {
+  const dateKey = tipo === 'vendas' ? 'dtReg' : 'dtEmissao'
+  const { min: dMin, max: dMax } = useMemo(() => dataRangeFromRecords(records, dateKey), [records, dateKey])
+
+  // Inicializa A = primeira metade, B = segunda metade do range total
+  const midDate = useMemo(() => {
+    if (!dMin || !dMax) return ''
+    const d = new Date((new Date(dMin).getTime() + new Date(dMax).getTime()) / 2)
+    return d.toISOString().slice(0,10)
+  }, [dMin, dMax])
+
+  const [pA, setPA] = useState({ de: '', ate: '' })
+  const [pB, setPB] = useState({ de: '', ate: '' })
+
+  useEffect(() => {
+    if (midDate && dMin && dMax && !pA.de) {
+      const prevMid = new Date(new Date(midDate).getTime() - 86400000).toISOString().slice(0,10)
+      setPA({ de: dMin, ate: prevMid })
+      setPB({ de: midDate, ate: dMax })
+    }
+  }, [midDate, dMin, dMax])
+
+  const recA = useMemo(() => filterByDateRange(records, pA.de, pA.ate, dateKey), [records, pA, dateKey])
+  const recB = useMemo(() => filterByDateRange(records, pB.de, pB.ate, dateKey), [records, pB, dateKey])
+  const analA = useMemo(() => recA.length ? (tipo === 'vendas' ? analyzeVendas : analyzeIrregularidades)(recA) : null, [recA, tipo])
+  const analB = useMemo(() => recB.length ? (tipo === 'vendas' ? analyzeVendas : analyzeIrregularidades)(recB) : null, [recB, tipo])
+
+  function preset(period, setter) {
+    if (!dMin || !dMax) return
+    if (period === 'tudo') { setter({ de: dMin, ate: dMax }); return }
+    const refDate = new Date(dMax)
+    if (period === '7d') setter({ de: new Date(refDate.getTime()-6*864e5).toISOString().slice(0,10), ate: dMax })
+    if (period === '30d') setter({ de: new Date(refDate.getTime()-29*864e5).toISOString().slice(0,10), ate: dMax })
+    if (period === 'mes') setter({ de: new Date(refDate.getFullYear(), refDate.getMonth(), 1).toISOString().slice(0,10), ate: dMax })
+  }
+
+  function PeriodPicker({ label, color, p, setP }) {
+    return (
+      <div className={`bg-slate-800/50 border rounded-xl p-4 ${color === 'A' ? 'border-blue-500/30' : 'border-purple-500/30'}`}>
+        <div className={`text-xs font-bold uppercase tracking-wider mb-3 ${color === 'A' ? 'text-blue-400' : 'text-purple-400'}`}>{label}</div>
+        <div className="grid grid-cols-2 gap-2 mb-2">
+          <div>
+            <label className="text-xs text-slate-500 block mb-1">De</label>
+            <input type="date" value={p.de} min={dMin} max={dMax}
+              onChange={e => setP(prev => ({ ...prev, de: e.target.value }))}
+              className="w-full bg-slate-900 border border-slate-600 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:border-emerald-500" />
+          </div>
+          <div>
+            <label className="text-xs text-slate-500 block mb-1">Até</label>
+            <input type="date" value={p.ate} min={dMin} max={dMax}
+              onChange={e => setP(prev => ({ ...prev, ate: e.target.value }))}
+              className="w-full bg-slate-900 border border-slate-600 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:border-emerald-500" />
+          </div>
+        </div>
+        <div className="flex flex-wrap gap-1">
+          {[['7d','7d'],['30d','30d'],['mes','Mês'],['tudo','Tudo']].map(([v,l]) => (
+            <button key={v} onClick={() => preset(v, setP)}
+              className="px-2 py-0.5 text-xs rounded bg-slate-700 hover:bg-slate-600 text-slate-300 transition">{l}</button>
+          ))}
+        </div>
+        {p.de && p.ate && <div className="text-xs text-slate-500 mt-2">{recA !== undefined ? (color === 'A' ? recA : recB).length.toLocaleString('pt-BR') : 0} registros</div>}
+      </div>
+    )
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="grid sm:grid-cols-2 gap-3">
+        <PeriodPicker label="Período A" color="A" p={pA} setP={setPA} />
+        <PeriodPicker label="Período B" color="B" p={pB} setP={setPB} />
+      </div>
+
+      {(!analA && !analB) && (
+        <div className="text-center py-8 text-slate-500 text-sm">Selecione os dois períodos para ver a comparação.</div>
+      )}
+
+      {(analA || analB) && (
+        <div className="space-y-4">
+          {/* Legenda */}
+          <div className="flex items-center gap-4 text-xs">
+            <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-blue-500 inline-block"/><span className="text-blue-300 font-semibold">A</span> {pA.de} a {pA.ate} ({recA.length.toLocaleString('pt-BR')} reg.)</span>
+            <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-purple-500 inline-block"/><span className="text-purple-300 font-semibold">B</span> {pB.de} a {pB.ate} ({recB.length.toLocaleString('pt-BR')} reg.)</span>
+            <span className="text-slate-500 ml-auto">Δ = variação de B → A</span>
+          </div>
+
+          {/* KPIs header */}
+          <div className="bg-slate-800/40 border border-slate-700/50 rounded-xl p-4">
+            <div className="flex items-center justify-between text-xs font-semibold text-slate-400 uppercase tracking-wide mb-2 pb-2 border-b border-slate-700">
+              <span>Indicador</span>
+              <div className="flex gap-2">
+                <span className="w-24 text-right text-blue-400">A</span>
+                <span className="w-24 text-right text-purple-400">B</span>
+                <span className="w-20 text-right">Δ</span>
+              </div>
+            </div>
+
+            {tipo === 'vendas' && <>
+              <KpiComparRow label="Transações" valA={analA?.totalTrans ?? null} valB={analB?.totalTrans ?? null} />
+              <KpiComparRow label="Valor total" valA={analA?.totalValor ?? null} valB={analB?.totalValor ?? null} fmt={fmtBRL} />
+              <KpiComparRow label="Ticket médio" valA={analA?.ticketMedio ?? null} valB={analB?.ticketMedio ?? null} fmt={fmtBRL} />
+              <KpiComparRow label="Agentes únicos" valA={analA?.rankingAgentes?.length ?? null} valB={analB?.rankingAgentes?.length ?? null} />
+              <KpiComparRow label="Irregulares" valA={recA.filter(r=>r.irregular).length} valB={recB.filter(r=>r.irregular).length} inverso />
+            </>}
+
+            {tipo === 'irregularidades' && <>
+              <KpiComparRow label="Total notificações" valA={analA?.total ?? null} valB={analB?.total ?? null} />
+              <KpiComparRow label="Irregulares" valA={analA?.totalIrregular ?? null} valB={analB?.totalIrregular ?? null} inverso />
+              <KpiComparRow label="Pagas" valA={analA?.totalPaga ?? null} valB={analB?.totalPaga ?? null} />
+              <KpiComparRow label="% Conversão" valA={analA?.pctConversao ?? null} valB={analB?.pctConversao ?? null} fmt={v => fmtNum(v)+'%'} />
+              <KpiComparRow label="Valor emitido" valA={analA?.valorTotal ?? null} valB={analB?.valorTotal ?? null} fmt={fmtBRL} />
+              <KpiComparRow label="Valor pago" valA={analA?.valorPago ?? null} valB={analB?.valorPago ?? null} fmt={fmtBRL} />
+            </>}
+          </div>
+
+          {/* Rankings lado-a-lado */}
+          {tipo === 'vendas' && analA && analB && (
+            <div className="grid sm:grid-cols-2 gap-4">
+              <RankingCompar title="Top agentes — transações" listA={analA.rankingAgentes.slice(0,6)} listB={analB.rankingAgentes.slice(0,6)} nameKey="nome" valueKey="count" />
+              <RankingCompar title="Top trechos — transações" listA={analA.rankingTrechos.slice(0,6)} listB={analB.rankingTrechos.slice(0,6)} nameKey="trecho" valueKey="count" />
+            </div>
+          )}
+
+          {tipo === 'irregularidades' && analA && analB && (
+            <div className="grid sm:grid-cols-2 gap-4">
+              <RankingCompar title="Top emissores — total" listA={analA.rankingEmissores.slice(0,6)} listB={analB.rankingEmissores.slice(0,6)} nameKey="nome" valueKey="total" />
+              <RankingCompar title="Top trechos — total" listA={analA.rankingTrechos.slice(0,6)} listB={analB.rankingTrechos.slice(0,6)} nameKey="trecho" valueKey="total" />
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ---- RELATÓRIO SEMANAL ----
+function exportRelatorioSemanalXLSX(semana, analise, top20, scorePlacas) {
+  const wb = XLSX.utils.book_new()
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([
+    ['Relatório Semanal — ' + semana], [],
+    ['KPI', 'Valor'],
+    ['Total notificações', analise.total],
+    ['Irregulares', analise.totalIrregular],
+    ['Pagas', analise.totalPaga],
+    ['% Conversão', fmtNum(analise.pctConversao) + '%'],
+    ['Valor emitido (R$)', analise.valorTotal],
+    ['Valor pago (R$)', analise.valorPago],
+  ]), 'KPIs')
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([
+    ['#', 'Placa', 'Score', 'Nível', 'Irregulares na semana', 'Total na semana', 'Valor (R$)'],
+    ...top20.map((p, i) => {
+      const s = scorePlacas?.[p.placa]
+      return [i+1, p.placa, s?.score ?? '', s?.nivel ?? '', p.irregular, p.total, p.valor]
+    }),
+  ]), 'Top 20 Inadimplentes')
+  if (analise.rankingEmissores?.length) {
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([
+      ['#', 'Emissor', 'Cargo', 'Total', 'Paga', '% Conv.'],
+      ...analise.rankingEmissores.slice(0,20).map((e,i) => [i+1, e.nome, e.cargo, e.total, e.paga, fmtNum(e.total>0?e.paga/e.total*100:0)+'%']),
+    ]), 'Emissores')
+  }
+  XLSX.writeFile(wb, `rel_semanal_${semana.replace(/[^a-z0-9]/gi,'_')}.xlsx`)
+}
+
+function exportRelatorioSemanalTXT(semana, analise, top20, scorePlacas) {
+  const L = [
+    `RELATÓRIO SEMANAL — ${semana}`,
+    '='.repeat(55), '',
+    'KPIs DA SEMANA', '-'.repeat(40),
+    `Total notificações : ${analise.total}`,
+    `Irregulares        : ${analise.totalIrregular}`,
+    `Pagas              : ${analise.totalPaga}`,
+    `% Conversão        : ${fmtNum(analise.pctConversao)}%`,
+    `Valor emitido      : ${fmtBRL(analise.valorTotal)}`,
+    `Valor pago         : ${fmtBRL(analise.valorPago)}`,
+    '', 'TOP 20 PLACAS INADIMPLENTES', '-'.repeat(55),
+    `${padR('#',4)}${padR('Placa',10)}${'Score'.padStart(6)}${'Nível'.padStart(9)}${'Irreg.'.padStart(8)}${'Total'.padStart(7)}`,
+    ...top20.map((p, i) => {
+      const s = scorePlacas?.[p.placa]
+      return `${padR(i+1,4)}${padR(p.placa,10)}${padL(s?.score??'—',6)}${padL(s?.nivel??'—',9)}${padL(p.irregular,8)}${padL(p.total,7)}`
+    }),
+  ]
+  downloadTXT(L.join('\n'), `rel_semanal_${semana.replace(/[^a-z0-9]/gi,'_')}.txt`)
+}
+
+function RelatorioSemanal({ records, scorePlacas }) {
+  const semanas = useMemo(() => {
+    const s = new Set(records.filter(r => r.semana).map(r => r.semana))
+    return Array.from(s).sort().reverse()
+  }, [records])
+
+  const [semana, setSemana] = useState('')
+  useEffect(() => { if (semanas.length && !semana) setSemana(semanas[0]) }, [semanas])
+
+  const semanaAnterior = useMemo(() => {
+    const idx = semanas.indexOf(semana)
+    return idx >= 0 && idx < semanas.length - 1 ? semanas[idx + 1] : null
+  }, [semana, semanas])
+
+  const recSemana   = useMemo(() => records.filter(r => r.semana === semana), [records, semana])
+  const recAnterior = useMemo(() => semanaAnterior ? records.filter(r => r.semana === semanaAnterior) : [], [records, semanaAnterior])
+
+  const analise   = useMemo(() => recSemana.length ? analyzeIrregularidades(recSemana) : null, [recSemana])
+  const analAnter = useMemo(() => recAnterior.length ? analyzeIrregularidades(recAnterior) : null, [recAnterior])
+
+  const top20 = useMemo(() => {
+    const m = {}
+    recSemana.forEach(r => {
+      if (!r.placa) return
+      if (!m[r.placa]) m[r.placa] = { placa: r.placa, total: 0, irregular: 0, valor: 0 }
+      m[r.placa].total++
+      if (r.status === 'Irregular') m[r.placa].irregular++
+      m[r.placa].valor += r.valor
+    })
+    return Object.values(m).sort((a, b) => b.irregular - a.irregular).slice(0, 20)
+  }, [recSemana])
+
+  if (!semanas.length) return <div className="text-center py-12 text-slate-500 text-sm">Nenhum dado com semana disponível.</div>
+
+  return (
+    <div className="space-y-4">
+      {/* Seletor de semana */}
+      <div className="flex flex-wrap items-center gap-3">
+        <div>
+          <label className="text-xs text-slate-400 block mb-1">Semana</label>
+          <select value={semana} onChange={e => setSemana(e.target.value)}
+            className="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500">
+            {semanas.map(s => <option key={s} value={s}>{s}</option>)}
+          </select>
+        </div>
+        {semanaAnterior && (
+          <div className="text-xs text-slate-500 mt-4">← vs <span className="text-slate-400">{semanaAnterior}</span></div>
+        )}
+        <div className="ml-auto flex gap-2">
+          {analise && (
+            <>
+              <button onClick={() => exportRelatorioSemanalXLSX(semana, analise, top20, scorePlacas)}
+                className="px-3 py-2 bg-emerald-700 hover:bg-emerald-600 text-white rounded-lg text-xs font-medium transition flex items-center gap-1.5">
+                <Download className="w-3.5 h-3.5" /> XLSX
+              </button>
+              <button onClick={() => exportRelatorioSemanalTXT(semana, analise, top20, scorePlacas)}
+                className="px-3 py-2 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded-lg text-xs font-medium transition flex items-center gap-1.5">
+                <FileText className="w-3.5 h-3.5" /> TXT
+              </button>
+            </>
+          )}
+        </div>
+      </div>
+
+      {!analise && <div className="text-center py-8 text-slate-500 text-sm">Sem dados para {semana}.</div>}
+
+      {analise && (
+        <>
+          {/* KPIs com delta vs semana anterior */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            {[
+              { label: 'Total', val: analise.total, prev: analAnter?.total },
+              { label: 'Irregulares', val: analise.totalIrregular, prev: analAnter?.totalIrregular, inv: true },
+              { label: 'Pagas', val: analise.totalPaga, prev: analAnter?.totalPaga },
+              { label: '% Conversão', val: analise.pctConversao, prev: analAnter?.pctConversao, fmt: v => fmtNum(v)+'%' },
+              { label: 'Valor emitido', val: analise.valorTotal, prev: analAnter?.valorTotal, fmt: fmtBRL },
+              { label: 'Valor pago', val: analise.valorPago, prev: analAnter?.valorPago, fmt: fmtBRL },
+            ].map(({ label, val, prev, fmt, inv }) => (
+              <div key={label} className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-3">
+                <div className="text-xs text-slate-400 mb-1">{label}</div>
+                <div className="text-xl font-bold text-slate-100">{fmt ? fmt(val) : val.toLocaleString('pt-BR')}</div>
+                {prev != null && (
+                  <div className="flex items-center gap-1.5 mt-1">
+                    <span className="text-xs text-slate-500">{fmt ? fmt(prev) : prev.toLocaleString('pt-BR')}</span>
+                    <DeltaBadge valA={val} valB={prev} inverso={inv} />
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+
+          {/* Top 20 inadimplentes */}
+          <div className="overflow-x-auto rounded-xl border border-slate-800">
+            <div className="px-4 py-3 bg-slate-800/60 border-b border-slate-700 flex items-center justify-between">
+              <span className="text-sm font-semibold text-slate-200">Top 20 placas inadimplentes — {semana}</span>
+              <span className="text-xs text-slate-500">{top20.length} placas</span>
+            </div>
+            <table className="w-full text-sm">
+              <thead className="bg-slate-800/40">
+                <tr className="text-left text-xs text-slate-400 uppercase tracking-wide">
+                  <th className="px-4 py-2.5">#</th>
+                  <th className="px-4 py-2.5">Placa</th>
+                  <th className="px-4 py-2.5">Score Risco</th>
+                  <th className="px-4 py-2.5 text-right">Irreg. semana</th>
+                  <th className="px-4 py-2.5 text-right">Total semana</th>
+                  <th className="px-4 py-2.5 text-right">Valor</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-800">
+                {top20.map((p, i) => {
+                  const s = scorePlacas?.[p.placa]
+                  return (
+                    <tr key={p.placa} className="hover:bg-slate-800/30">
+                      <td className="px-4 py-2.5 text-slate-500 text-xs">{i+1}</td>
+                      <td className="px-4 py-2.5 font-mono font-medium">{p.placa}</td>
+                      <td className="px-4 py-2.5 min-w-[140px]">
+                        {s ? <MiniScoreBar score={s.score} nivel={s.nivel} /> : <span className="text-slate-600 text-xs">—</span>}
+                      </td>
+                      <td className="px-4 py-2.5 text-right text-amber-400 font-medium">{p.irregular}</td>
+                      <td className="px-4 py-2.5 text-right">{p.total}</td>
+                      <td className="px-4 py-2.5 text-right">{fmtBRL(p.valor)}</td>
+                    </tr>
+                  )
+                })}
+                {top20.length === 0 && (
+                  <tr><td colSpan={6} className="px-4 py-8 text-center text-slate-500 text-sm">Nenhuma placa com irregulares nesta semana.</td></tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Top emissores da semana */}
+          {analise.rankingEmissores.length > 0 && (
+            <div className="bg-slate-800/40 border border-slate-700/50 rounded-xl p-4">
+              <div className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-3">Top emissores da semana</div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="text-left text-xs text-slate-500">
+                      <th className="pb-2">#</th><th className="pb-2">Emissor</th><th className="pb-2">Cargo</th>
+                      <th className="pb-2 text-right">Total</th><th className="pb-2 text-right">Paga</th><th className="pb-2 text-right">Conv.%</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-700/40">
+                    {analise.rankingEmissores.slice(0, 10).map((e, i) => (
+                      <tr key={e.nome} className="hover:bg-slate-700/20">
+                        <td className="py-2 text-slate-500 text-xs">{i+1}</td>
+                        <td className="py-2 font-medium">{e.nome}</td>
+                        <td className="py-2"><CargoBadge cargo={e.cargo} /></td>
+                        <td className="py-2 text-right">{e.total}</td>
+                        <td className="py-2 text-right text-emerald-400">{e.paga}</td>
+                        <td className="py-2 text-right"><ConvBar pct={e.total > 0 ? e.paga/e.total*100 : 0} /></td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  )
+}
+
 // ---- XLSX EXPORTS ----
 function exportVendasXLSX(analise, records, jornada) {
   const wb = XLSX.utils.book_new()
@@ -1228,13 +1651,14 @@ function AbaVendas({ funcionarios, dados, premissas, analise, jornada, subAba, s
           <strong className="text-slate-300">Premissas:</strong> {premissas.join(' · ')}
         </div>
       )}
-      <SubTabs tabs={[['kpis','KPIs'],['temporal','Temporal'],['agentes','Agentes'],['trechos','Trechos'],['pagamentos','Pagamentos'],['jornada','Jornada']]} aba={subAba} setAba={setSubAba} />
+      <SubTabs tabs={[['kpis','KPIs'],['temporal','Temporal'],['agentes','Agentes'],['trechos','Trechos'],['pagamentos','Pagamentos'],['jornada','Jornada'],['comparar','Comparar']]} aba={subAba} setAba={setSubAba} />
       {analise && subAba === 'kpis' && <VendasKPIs a={analise} />}
       {analise && subAba === 'temporal' && <VendasTemporal a={analise} />}
       {analise && subAba === 'agentes' && <VendasAgentesChart a={analise} onSelectAgente={setSelectedAgente} />}
       {analise && subAba === 'trechos' && <VendasTrechosChart a={analise} />}
       {analise && subAba === 'pagamentos' && <VendasPagamentos a={analise} />}
       {subAba === 'jornada' && <VendasJornada jornada={jornada} />}
+      {subAba === 'comparar' && <ComparacaoPeriodos records={dados.records} tipo="vendas" />}
     </div>
   )
 }
@@ -1702,13 +2126,15 @@ function AbaIrregularidades({ funcionarios, dados, premissas, analise, subAba, s
         </div>
       )}
       {!alertaDismissed && scorePlacas && <AlertasPanel scorePlacas={scorePlacas} onDismiss={onDismissAlerta} />}
-      <SubTabs tabs={[['kpis','KPIs'],['risco','Score / Risco'],['semanas','Por Semana'],['emissores','Emissores'],['trechos','Trechos'],['placas','Top 20 Placas']]} aba={subAba} setAba={setSubAba} />
+      <SubTabs tabs={[['kpis','KPIs'],['risco','Score / Risco'],['semanas','Por Semana'],['emissores','Emissores'],['trechos','Trechos'],['placas','Top 20 Placas'],['comparar','Comparar'],['relatorio','Rel. Semanal']]} aba={subAba} setAba={setSubAba} />
       {analise && subAba === 'kpis' && <IrregKPIs a={analise} />}
       {subAba === 'risco' && <IrregRisco scorePlacas={scorePlacas || {}} config={scoreConfig} />}
       {analise && subAba === 'semanas' && <IrregSemanas a={analise} />}
       {analise && subAba === 'emissores' && <IrregEmissores a={analise} />}
       {analise && subAba === 'trechos' && <IrregTrechos a={analise} />}
       {analise && subAba === 'placas' && <IrregPlacas a={analise} scorePlacas={scorePlacas} />}
+      {subAba === 'comparar' && <ComparacaoPeriodos records={dados.records} tipo="irregularidades" />}
+      {subAba === 'relatorio' && <RelatorioSemanal records={dados.records} scorePlacas={scorePlacas} />}
     </div>
   )
 }
