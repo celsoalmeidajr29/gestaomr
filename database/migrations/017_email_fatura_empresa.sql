@@ -2,7 +2,7 @@
 -- Run in phpMyAdmin before deploying v1.0.1
 
 ALTER TABLE clientes
-  ADD COLUMN emails_cobranca JSON NULL COMMENT 'Lista de e-mails para envio de medicao' AFTER email;
+  ADD COLUMN emails_cobranca JSON NULL COMMENT 'Lista de e-mails para envio de medicao' AFTER contato_email;
 
 ALTER TABLE fechamentos
   ADD COLUMN enviado_em      DATETIME     NULL COMMENT 'Data/hora do ultimo envio de medicao por e-mail' AFTER data_nf,
