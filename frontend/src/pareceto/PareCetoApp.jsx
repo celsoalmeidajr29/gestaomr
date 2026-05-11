@@ -966,6 +966,397 @@ function RelatorioSemanal({ records, scorePlacas }) {
   )
 }
 
+// ---- MÓDULO INADIMPLÊNCIA ----
+const AGING_BANDS = [
+  { key: 'recente',  label: 'Recente',  desc: '≤ 30 dias', cor: { bg: 'bg-emerald-500/20', text: 'text-emerald-300', bar: 'bg-emerald-500' } },
+  { key: 'moderado', label: 'Moderado', desc: '31–60 dias', cor: { bg: 'bg-yellow-500/20',  text: 'text-yellow-300',  bar: 'bg-yellow-400' } },
+  { key: 'antigo',   label: 'Antigo',   desc: '61–90 dias', cor: { bg: 'bg-orange-500/20',  text: 'text-orange-300',  bar: 'bg-orange-400' } },
+  { key: 'critico',  label: 'Crítico',  desc: '> 90 dias',  cor: { bg: 'bg-red-500/20',     text: 'text-red-300',     bar: 'bg-red-500' } },
+]
+
+function computeInadimplencia(records) {
+  const now = new Date()
+  const inadim = records.filter(r => r.status === 'Irregular')
+  if (!inadim.length) return null
+  const porPlaca = {}, porTrecho = {}
+  inadim.forEach(r => {
+    if (r.placa) {
+      if (!porPlaca[r.placa]) porPlaca[r.placa] = { placa: r.placa, count: 0, valor: 0, datas: [], trechos: new Set() }
+      const p = porPlaca[r.placa]; p.count++; p.valor += r.valor
+      if (r.dtEmissao) p.datas.push(r.dtEmissao); if (r.trecho) p.trechos.add(r.trecho)
+    }
+    if (r.trecho) {
+      if (!porTrecho[r.trecho]) porTrecho[r.trecho] = { trecho: r.trecho, count: 0, valor: 0, placas: new Set() }
+      const t = porTrecho[r.trecho]; t.count++; t.valor += r.valor; if (r.placa) t.placas.add(r.placa)
+    }
+  })
+  const agingKey = dias => dias > 90 ? 'critico' : dias > 60 ? 'antigo' : dias > 30 ? 'moderado' : 'recente'
+  const placasList = Object.values(porPlaca).map(p => {
+    const minDt = p.datas.length ? new Date(Math.min(...p.datas.map(d=>d.getTime()))) : null
+    const maxDt = p.datas.length ? new Date(Math.max(...p.datas.map(d=>d.getTime()))) : null
+    const dias = minDt ? Math.floor((now - minDt) / 86400000) : 0
+    return { ...p, trechos: [...p.trechos], dias, agingKey: agingKey(dias), minDt, maxDt }
+  }).sort((a, b) => b.valor - a.valor)
+  const agingCount = {}, agingValor = {}
+  AGING_BANDS.forEach(b => { agingCount[b.key] = 0; agingValor[b.key] = 0 })
+  placasList.forEach(p => { agingCount[p.agingKey]++; agingValor[p.agingKey] += p.valor })
+  return {
+    total: inadim.length,
+    valorTotal: inadim.reduce((s,r) => s+r.valor, 0),
+    totalPlacas: placasList.length,
+    placasList,
+    porTrecho: Object.values(porTrecho).map(t => ({ ...t, placas: t.placas.size })).sort((a,b)=>b.valor-a.valor),
+    agingCount, agingValor,
+  }
+}
+
+function exportInadimplenciaXLSX(analise, scorePlacas) {
+  const wb = XLSX.utils.book_new()
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([
+    ['KPI', 'Valor'],
+    ['Total irregulares pendentes', analise.total],
+    ['Valor total pendente (R$)', analise.valorTotal],
+    ['Placas únicas inadimplentes', analise.totalPlacas],
+    [], ['Envelhecimento', 'Placas', 'Valor (R$)'],
+    ...AGING_BANDS.map(b => [b.label + ' (' + b.desc + ')', analise.agingCount[b.key], analise.agingValor[b.key]]),
+  ]), 'Resumo')
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([
+    ['#','Placa','Score','Nível','Qtd Pendente','Valor (R$)','Aging','Dias (mais antiga)','1ª Irregulação','Última Irregulação','Trechos'],
+    ...analise.placasList.map((p,i) => {
+      const s = scorePlacas?.[p.placa]
+      return [i+1,p.placa,s?.score??'',s?.nivel??'',p.count,p.valor,p.agingKey,p.dias,fmtDate(p.minDt),fmtDate(p.maxDt),p.trechos.join(', ')]
+    }),
+  ]), 'Placas Inadimplentes')
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([
+    ['#','Trecho','Qtd Pendente','Valor (R$)','Placas únicas'],
+    ...analise.porTrecho.map((t,i) => [i+1,t.trecho,t.count,t.valor,t.placas]),
+  ]), 'Por Trecho')
+  XLSX.writeFile(wb, 'inadimplencia.xlsx')
+}
+
+function exportInadimplenciaTXT(analise, scorePlacas) {
+  const L = [
+    'MÓDULO INADIMPLÊNCIA — IRREGULAÇÕES PENDENTES',
+    '='.repeat(55), '',
+    `Total pendentes    : ${analise.total}`,
+    `Valor total (R$)   : ${fmtBRL(analise.valorTotal)}`,
+    `Placas únicas      : ${analise.totalPlacas}`,
+    '', 'ENVELHECIMENTO', '-'.repeat(40),
+    ...AGING_BANDS.map(b => `${padR(b.label,10)} ${padR(b.desc,12)}: ${padL(analise.agingCount[b.key],5)} placas · ${fmtBRL(analise.agingValor[b.key])}`),
+    '', 'TOP 30 PLACAS INADIMPLENTES POR VALOR', '-'.repeat(55),
+    `${padR('#',4)}${padR('Placa',10)}${'Score'.padStart(6)}${'Aging'.padStart(9)}${'Qtd'.padStart(6)}${'Valor'.padStart(14)}`,
+    ...analise.placasList.slice(0,30).map((p,i) => {
+      const s = scorePlacas?.[p.placa]
+      return `${padR(i+1,4)}${padR(p.placa,10)}${padL(s?.score??'—',6)}${padL(p.agingKey,9)}${padL(p.count,6)}${padL(fmtBRL(p.valor),14)}`
+    }),
+  ]
+  downloadTXT(L.join('\n'), 'inadimplencia.txt')
+}
+
+function AbaInadimplencia({ records, scorePlacas }) {
+  const analise = useMemo(() => computeInadimplencia(records), [records])
+  const [subAba, setSubAba] = useState('geral')
+  const [busca, setBusca] = useState('')
+  const [filtroAging, setFiltroAging] = useState('todos')
+
+  const placasFiltradas = useMemo(() => {
+    if (!analise) return []
+    let list = analise.placasList
+    if (filtroAging !== 'todos') list = list.filter(p => p.agingKey === filtroAging)
+    if (busca) { const b = busca.toUpperCase(); list = list.filter(p => p.placa.includes(b)) }
+    return list
+  }, [analise, filtroAging, busca])
+
+  if (!analise) return (
+    <div className="text-center py-12 text-slate-500 text-sm">
+      <Shield className="w-8 h-8 mx-auto mb-3 opacity-30" />
+      Nenhuma irregulação pendente nos dados carregados.
+    </div>
+  )
+
+  return (
+    <div className="space-y-4">
+      <div className="flex flex-wrap items-center gap-3">
+        <SubTabs tabs={[['geral','Visão Geral'],['placas','Por Placa']]} aba={subAba} setAba={setSubAba} />
+        <div className="ml-auto flex gap-2">
+          <button onClick={() => exportInadimplenciaXLSX(analise, scorePlacas)}
+            className="px-3 py-1.5 bg-emerald-700 hover:bg-emerald-600 text-white rounded-lg text-xs font-medium transition flex items-center gap-1.5">
+            <Download className="w-3.5 h-3.5"/>XLSX
+          </button>
+          <button onClick={() => exportInadimplenciaTXT(analise, scorePlacas)}
+            className="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded-lg text-xs font-medium transition flex items-center gap-1.5">
+            <FileText className="w-3.5 h-3.5"/>TXT
+          </button>
+        </div>
+      </div>
+
+      {subAba === 'geral' && (
+        <div className="space-y-4">
+          {/* KPIs */}
+          <div className="grid grid-cols-3 gap-3">
+            <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-4 text-center">
+              <div className="text-2xl font-bold text-red-300">{analise.total.toLocaleString('pt-BR')}</div>
+              <div className="text-xs text-slate-400 mt-1">Irregulações pendentes</div>
+            </div>
+            <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-4 text-center">
+              <div className="text-2xl font-bold text-orange-300">{fmtBRL(analise.valorTotal)}</div>
+              <div className="text-xs text-slate-400 mt-1">Valor total pendente</div>
+            </div>
+            <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-4 text-center">
+              <div className="text-2xl font-bold text-amber-300">{analise.totalPlacas.toLocaleString('pt-BR')}</div>
+              <div className="text-xs text-slate-400 mt-1">Placas únicas inadimplentes</div>
+            </div>
+          </div>
+
+          {/* Aging */}
+          <div className="bg-slate-800/40 border border-slate-700/50 rounded-xl p-4">
+            <div className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-3">Envelhecimento das irregulações</div>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              {AGING_BANDS.map(b => {
+                const pct = analise.totalPlacas > 0 ? analise.agingCount[b.key] / analise.totalPlacas * 100 : 0
+                return (
+                  <div key={b.key} className={`rounded-xl border p-3 ${b.cor.bg} ${b.cor.text.replace('text-','border-').replace('300','500/30')}`}>
+                    <div className={`text-xl font-bold ${b.cor.text}`}>{analise.agingCount[b.key]}</div>
+                    <div className="text-xs font-medium mt-0.5">{b.label}</div>
+                    <div className="text-xs opacity-60 mb-2">{b.desc}</div>
+                    <div className="h-1 bg-slate-700/50 rounded-full overflow-hidden">
+                      <div className={`h-full rounded-full ${b.cor.bar}`} style={{width:`${pct}%`}}/>
+                    </div>
+                    <div className="text-xs opacity-60 mt-1">{fmtBRL(analise.agingValor[b.key])}</div>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+
+          {/* Top trechos */}
+          {analise.porTrecho.length > 0 && (
+            <div className="bg-slate-800/40 border border-slate-700/50 rounded-xl overflow-hidden">
+              <div className="px-4 py-3 border-b border-slate-700 text-xs font-semibold text-slate-400 uppercase tracking-wide">
+                Pendências por trecho (top {Math.min(10, analise.porTrecho.length)})
+              </div>
+              <table className="w-full text-sm">
+                <thead className="bg-slate-800/30">
+                  <tr className="text-left text-xs text-slate-500">
+                    <th className="px-4 py-2.5">#</th><th className="px-4 py-2.5">Trecho</th>
+                    <th className="px-4 py-2.5 text-right">Qtd</th><th className="px-4 py-2.5 text-right">Placas</th><th className="px-4 py-2.5 text-right">Valor pendente</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-800">
+                  {analise.porTrecho.slice(0,10).map((t,i) => (
+                    <tr key={t.trecho} className="hover:bg-slate-800/30">
+                      <td className="px-4 py-2.5 text-slate-500 text-xs">{i+1}</td>
+                      <td className="px-4 py-2.5 font-medium">{t.trecho}</td>
+                      <td className="px-4 py-2.5 text-right text-amber-400">{t.count.toLocaleString('pt-BR')}</td>
+                      <td className="px-4 py-2.5 text-right text-slate-400">{t.placas}</td>
+                      <td className="px-4 py-2.5 text-right font-medium">{fmtBRL(t.valor)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
+
+      {subAba === 'placas' && (
+        <div className="space-y-3">
+          <div className="flex flex-wrap gap-2">
+            <div className="relative flex-1 min-w-[160px]">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500"/>
+              <input value={busca} onChange={e => setBusca(e.target.value)} placeholder="Buscar placa..."
+                className="w-full bg-slate-800 border border-slate-700 rounded-lg pl-9 pr-3 py-2 text-sm focus:outline-none focus:border-emerald-500"/>
+            </div>
+            <select value={filtroAging} onChange={e => setFiltroAging(e.target.value)}
+              className="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500">
+              <option value="todos">Todos os aging</option>
+              {AGING_BANDS.map(b => <option key={b.key} value={b.key}>{b.label} ({b.desc})</option>)}
+            </select>
+            <span className="self-center text-xs text-slate-500">{placasFiltradas.length} placas</span>
+          </div>
+
+          <div className="overflow-x-auto rounded-xl border border-slate-800">
+            <table className="w-full text-sm">
+              <thead className="bg-slate-800/60">
+                <tr className="text-left text-xs text-slate-400 uppercase tracking-wide">
+                  <th className="px-4 py-3">#</th><th className="px-4 py-3">Placa</th>
+                  <th className="px-4 py-3">Score</th><th className="px-4 py-3">Aging</th>
+                  <th className="px-4 py-3 text-right">Qtd</th><th className="px-4 py-3 text-right">Valor pend.</th>
+                  <th className="px-4 py-3 text-right">Dias</th><th className="px-4 py-3">1ª irreg.</th><th className="px-4 py-3">Última</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-800">
+                {placasFiltradas.slice(0, 100).map((p, i) => {
+                  const s = scorePlacas?.[p.placa]
+                  const band = AGING_BANDS.find(b => b.key === p.agingKey)
+                  return (
+                    <tr key={p.placa} className="hover:bg-slate-800/30">
+                      <td className="px-4 py-2.5 text-slate-500 text-xs">{i+1}</td>
+                      <td className="px-4 py-2.5 font-mono font-medium">{p.placa}</td>
+                      <td className="px-4 py-2.5 min-w-[130px]">
+                        {s ? <MiniScoreBar score={s.score} nivel={s.nivel}/> : <span className="text-slate-600 text-xs">—</span>}
+                      </td>
+                      <td className="px-4 py-2.5">
+                        <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${band?.cor.bg} ${band?.cor.text}`}>{band?.label}</span>
+                      </td>
+                      <td className="px-4 py-2.5 text-right text-amber-400 font-medium">{p.count}</td>
+                      <td className="px-4 py-2.5 text-right font-semibold">{fmtBRL(p.valor)}</td>
+                      <td className="px-4 py-2.5 text-right text-slate-400 text-xs">{p.dias}d</td>
+                      <td className="px-4 py-2.5 text-xs text-slate-400">{fmtDate(p.minDt)}</td>
+                      <td className="px-4 py-2.5 text-xs text-slate-400">{fmtDate(p.maxDt)}</td>
+                    </tr>
+                  )
+                })}
+                {placasFiltradas.length === 0 && (
+                  <tr><td colSpan={9} className="px-4 py-8 text-center text-slate-500 text-sm">Nenhuma placa encontrada.</td></tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+          {placasFiltradas.length > 100 && <div className="text-xs text-slate-500 text-center">Exibindo 100 de {placasFiltradas.length}. Use os filtros para refinar.</div>}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ---- COMPARAÇÃO DE TRECHOS ----
+function ComparacaoTrechos({ records, tipo }) {
+  const allTrechos = useMemo(() => {
+    const counts = {}
+    records.forEach(r => { if (r.trecho) counts[r.trecho] = (counts[r.trecho] || 0) + 1 })
+    return Object.entries(counts).sort((a,b) => b[1]-a[1]).map(([t]) => t)
+  }, [records])
+
+  const [selected, setSelected] = useState([])
+  const [metrica, setMetrica] = useState(tipo === 'vendas' ? 'count' : 'count')
+  const [showSelector, setShowSelector] = useState(false)
+
+  useEffect(() => { if (allTrechos.length && !selected.length) setSelected(allTrechos.slice(0, 6)) }, [allTrechos])
+
+  function toggleTrecho(t) {
+    setSelected(s => s.includes(t) ? s.filter(x => x !== t) : s.length < 8 ? [...s, t] : s)
+  }
+
+  const metricas = useMemo(() => {
+    return selected.map(trecho => {
+      const recs = records.filter(r => r.trecho === trecho)
+      if (tipo === 'vendas') {
+        const valor = recs.reduce((s,r)=>s+r.valor,0)
+        return { trecho, short: trecho.length>18?trecho.slice(0,18)+'…':trecho, count: recs.length, valor, ticket: recs.length?valor/recs.length:0, irregular: recs.filter(r=>r.irregular).length, agentes: new Set(recs.filter(r=>r.usuario).map(r=>r.usuario)).size }
+      } else {
+        const paga = recs.filter(r=>r.status==='Paga').length
+        const irregular = recs.filter(r=>r.status==='Irregular').length
+        const valor = recs.reduce((s,r)=>s+r.valor,0)
+        const valorPago = recs.filter(r=>r.status==='Paga').reduce((s,r)=>s+r.valor,0)
+        return { trecho, short: trecho.length>18?trecho.slice(0,18)+'…':trecho, count: recs.length, paga, irregular, pctConv: recs.length?paga/recs.length*100:0, valor, valorPago, emissores: new Set(recs.filter(r=>r.emissor).map(r=>r.emissor)).size }
+      }
+    })
+  }, [selected, records, tipo])
+
+  const chartData = metricas.map(m => ({ name: m.short, value: m[metrica] ?? 0, trecho: m.trecho }))
+  const maxVal = Math.max(...chartData.map(d => d.value), 1)
+
+  const METRICAS_VENDAS = [['count','Transações'],['valor','Valor (R$)'],['ticket','Ticket médio'],['irregular','Irregulares'],['agentes','Agentes únicos']]
+  const METRICAS_IRREG  = [['count','Total'],['irregular','Irregulares'],['paga','Pagas'],['pctConv','% Conversão'],['valor','Valor emitido'],['valorPago','Valor pago'],['emissores','Emissores únicos']]
+  const metricasDisp = tipo === 'vendas' ? METRICAS_VENDAS : METRICAS_IRREG
+  const fmtMetrica = (key, val) => {
+    if (['valor','valorPago','ticket'].includes(key)) return fmtBRL(val)
+    if (key === 'pctConv') return fmtNum(val)+'%'
+    return val?.toLocaleString('pt-BR') ?? '—'
+  }
+
+  return (
+    <div className="space-y-4">
+      {/* Controles */}
+      <div className="flex flex-wrap gap-3 items-start">
+        <div>
+          <label className="text-xs text-slate-400 block mb-1">Métrica</label>
+          <select value={metrica} onChange={e => setMetrica(e.target.value)}
+            className="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500">
+            {metricasDisp.map(([v,l]) => <option key={v} value={v}>{l}</option>)}
+          </select>
+        </div>
+        <div>
+          <label className="text-xs text-slate-400 block mb-1">Trechos selecionados ({selected.length}/8)</label>
+          <button onClick={() => setShowSelector(s=>!s)}
+            className="flex items-center gap-2 px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm hover:bg-slate-700 transition">
+            {selected.length} trechos {showSelector ? <ChevronUp className="w-3.5 h-3.5"/> : <ChevronDown className="w-3.5 h-3.5"/>}
+          </button>
+        </div>
+      </div>
+
+      {showSelector && (
+        <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-3">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs text-slate-400">Selecione até 8 trechos</span>
+            <div className="flex gap-2">
+              <button onClick={() => setSelected(allTrechos.slice(0,6))} className="text-xs text-emerald-400 hover:text-emerald-300">Top 6</button>
+              <button onClick={() => setSelected([])} className="text-xs text-slate-500 hover:text-slate-300">Limpar</button>
+            </div>
+          </div>
+          <div className="flex flex-wrap gap-1.5 max-h-36 overflow-y-auto">
+            {allTrechos.map(t => (
+              <button key={t} onClick={() => toggleTrecho(t)}
+                className={`px-2 py-1 rounded-lg text-xs font-medium transition ${selected.includes(t) ? 'bg-emerald-600 text-white' : 'bg-slate-700 text-slate-300 hover:bg-slate-600'}`}>
+                {t}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {selected.length === 0 && <div className="text-center py-8 text-slate-500 text-sm">Selecione ao menos um trecho.</div>}
+
+      {selected.length > 0 && (
+        <>
+          {/* BarChart */}
+          <ChartCard title={`${metricasDisp.find(m=>m[0]===metrica)?.[1]} por trecho`} height={Math.max(240, selected.length * 36 + 60)}>
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart layout="vertical" data={chartData} margin={{top:4,right:60,bottom:0,left:140}}>
+                <CartesianGrid {...gridStyle} horizontal={false}/>
+                <XAxis type="number" {...axisStyle} tickFormatter={v => ['valor','valorPago','ticket'].includes(metrica) ? fmtK(v) : v.toLocaleString('pt-BR')}/>
+                <YAxis type="category" dataKey="name" {...axisStyle} width={140}/>
+                <Tooltip {...ttStyle} formatter={(v,n,p) => [fmtMetrica(metrica,v), metricasDisp.find(m=>m[0]===metrica)?.[1]]} labelFormatter={(_,pl) => pl?.[0]?.payload?.trecho||''}/>
+                <Bar dataKey="value" radius={[0,4,4,0]}>
+                  {chartData.map((_,i) => <Cell key={i} fill={C_COLORS[i % C_COLORS.length]}/>)}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </ChartCard>
+
+          {/* Tabela completa */}
+          <div className="overflow-x-auto rounded-xl border border-slate-800">
+            <table className="w-full text-sm">
+              <thead className="bg-slate-800/60">
+                <tr className="text-left text-xs text-slate-400 uppercase tracking-wide">
+                  <th className="px-4 py-3">Trecho</th>
+                  {metricasDisp.map(([k,l]) => <th key={k} className="px-4 py-3 text-right">{l}</th>)}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-800">
+                {metricas.sort((a,b) => (b[metrica]??0)-(a[metrica]??0)).map((m,i) => (
+                  <tr key={m.trecho} className="hover:bg-slate-800/30">
+                    <td className="px-4 py-2.5 font-medium">
+                      <span className="inline-block w-2.5 h-2.5 rounded-full mr-2 flex-shrink-0" style={{background:C_COLORS[selected.indexOf(m.trecho)%C_COLORS.length]}}/>
+                      {m.trecho}
+                    </td>
+                    {metricasDisp.map(([k]) => (
+                      <td key={k} className={`px-4 py-2.5 text-right font-mono text-xs ${k===metrica?'font-bold text-emerald-300':''}`}>
+                        {fmtMetrica(k, m[k])}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
+      )}
+    </div>
+  )
+}
+
 // ---- XLSX EXPORTS ----
 function exportVendasXLSX(analise, records, jornada) {
   const wb = XLSX.utils.book_new()
@@ -1651,7 +2042,7 @@ function AbaVendas({ funcionarios, dados, premissas, analise, jornada, subAba, s
           <strong className="text-slate-300">Premissas:</strong> {premissas.join(' · ')}
         </div>
       )}
-      <SubTabs tabs={[['kpis','KPIs'],['temporal','Temporal'],['agentes','Agentes'],['trechos','Trechos'],['pagamentos','Pagamentos'],['jornada','Jornada'],['comparar','Comparar']]} aba={subAba} setAba={setSubAba} />
+      <SubTabs tabs={[['kpis','KPIs'],['temporal','Temporal'],['agentes','Agentes'],['trechos','Trechos'],['pagamentos','Pagamentos'],['jornada','Jornada'],['comparar','Comparar'],['trechos-comp','Comp. Trechos']]} aba={subAba} setAba={setSubAba} />
       {analise && subAba === 'kpis' && <VendasKPIs a={analise} />}
       {analise && subAba === 'temporal' && <VendasTemporal a={analise} />}
       {analise && subAba === 'agentes' && <VendasAgentesChart a={analise} onSelectAgente={setSelectedAgente} />}
@@ -1659,6 +2050,7 @@ function AbaVendas({ funcionarios, dados, premissas, analise, jornada, subAba, s
       {analise && subAba === 'pagamentos' && <VendasPagamentos a={analise} />}
       {subAba === 'jornada' && <VendasJornada jornada={jornada} />}
       {subAba === 'comparar' && <ComparacaoPeriodos records={dados.records} tipo="vendas" />}
+      {subAba === 'trechos-comp' && <ComparacaoTrechos records={dados.records} tipo="vendas" />}
     </div>
   )
 }
@@ -2126,14 +2518,16 @@ function AbaIrregularidades({ funcionarios, dados, premissas, analise, subAba, s
         </div>
       )}
       {!alertaDismissed && scorePlacas && <AlertasPanel scorePlacas={scorePlacas} onDismiss={onDismissAlerta} />}
-      <SubTabs tabs={[['kpis','KPIs'],['risco','Score / Risco'],['semanas','Por Semana'],['emissores','Emissores'],['trechos','Trechos'],['placas','Top 20 Placas'],['comparar','Comparar'],['relatorio','Rel. Semanal']]} aba={subAba} setAba={setSubAba} />
+      <SubTabs tabs={[['kpis','KPIs'],['risco','Score / Risco'],['inadimplencia','Inadimplência'],['semanas','Por Semana'],['emissores','Emissores'],['trechos','Trechos'],['placas','Top 20 Placas'],['comparar','Comparar'],['trechos-comp','Comp. Trechos'],['relatorio','Rel. Semanal']]} aba={subAba} setAba={setSubAba} />
       {analise && subAba === 'kpis' && <IrregKPIs a={analise} />}
       {subAba === 'risco' && <IrregRisco scorePlacas={scorePlacas || {}} config={scoreConfig} />}
+      {subAba === 'inadimplencia' && <AbaInadimplencia records={dados.records} scorePlacas={scorePlacas} />}
       {analise && subAba === 'semanas' && <IrregSemanas a={analise} />}
       {analise && subAba === 'emissores' && <IrregEmissores a={analise} />}
       {analise && subAba === 'trechos' && <IrregTrechos a={analise} />}
       {analise && subAba === 'placas' && <IrregPlacas a={analise} scorePlacas={scorePlacas} />}
       {subAba === 'comparar' && <ComparacaoPeriodos records={dados.records} tipo="irregularidades" />}
+      {subAba === 'trechos-comp' && <ComparacaoTrechos records={dados.records} tipo="irregularidades" />}
       {subAba === 'relatorio' && <RelatorioSemanal records={dados.records} scorePlacas={scorePlacas} />}
     </div>
   )
