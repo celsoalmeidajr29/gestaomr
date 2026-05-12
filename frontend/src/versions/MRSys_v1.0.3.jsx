@@ -3835,11 +3835,10 @@ export default function App({ onVoltarHub, onLogout } = {}) {
               // Encontra funcionário pelo nome (busca parcial normalizada)
               const nomeNorm = rawNome.trim().toUpperCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
               const func = funcionarios.find(f => f.nome.toUpperCase().normalize('NFD').replace(/[̀-ͯ]/g,'').includes(nomeNorm) || nomeNorm.includes(f.nome.toUpperCase().normalize('NFD').replace(/[̀-ͯ]/g,'')));
-              if (!func) { erros.push(`Linha ${i + 1}: funcionário não encontrado: "${rawNome}". Verifique o cadastro.`); continue; }
               // Encontra cliente pelo nome (parcial)
               const clienteNormRaw = rawCliente.toUpperCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
               const clienteObj = servicos.find(s => clienteNormRaw && s.cliente.toUpperCase().normalize('NFD').replace(/[̀-ͯ]/g,'').includes(clienteNormRaw));
-              itens.push({ competencia, data: dataISO, funcionarioId: func.id, nome: func.nome, clienteId: clienteObj?.cliente_id || null, clienteNome: rawCliente || clienteObj?.cliente || '', valor: valorNum });
+              itens.push({ competencia, data: dataISO, funcionarioId: func?.id || null, nome: func?.nome || rawNome.trim().toUpperCase(), clienteId: clienteObj?.cliente_id || null, clienteNome: rawCliente || clienteObj?.cliente || '', valor: valorNum });
             }
             return { erros, itens };
           };
@@ -3897,8 +3896,12 @@ export default function App({ onVoltarHub, onLogout } = {}) {
                   onImportar={(texto) => {
                     const { erros, itens } = parsearTexto(texto);
                     if (itens.length > 0) {
+                      const criados = garantirFuncionarios(itens.map(it => it.nome).filter(Boolean));
                       setDiarias(prev => [...prev, ...itens.map(it => ({ ...it, id: `DI_${Date.now()}_${Math.random().toString(36).slice(2)}` }))]);
-                      showToast(`${itens.length} diária(s) importada(s)${erros.length ? ` (${erros.length} erro(s))` : ''}.`, erros.length ? 'warn' : 'success');
+                      const msg = `${itens.length} diária(s) importada(s)`
+                        + (erros.length ? ` (${erros.length} erro(s))` : '')
+                        + (criados > 0 ? ` · ${criados} funcionário(s) cadastrado(s)` : '');
+                      showToast(msg, erros.length ? 'warn' : 'success');
                     }
                     if (erros.length && !itens.length) showToast(erros[0], 'error');
                     setModal(null);
