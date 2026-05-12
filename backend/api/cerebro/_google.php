@@ -71,7 +71,7 @@ function google_auth_url(): string
 {
     return 'https://accounts.google.com/o/oauth2/auth?' . http_build_query([
         'client_id'     => env('GOOGLE_CLIENT_ID', ''),
-        'redirect_uri'  => env('GOOGLE_REDIRECT_URI', ''),
+        'redirect_uri'  => env('GOOGLE_REDIRECT_URI') ?: rtrim((string) env('APP_URL', 'https://celso.cloud'), '/') . '/api/cerebro/auth/callback.php',
         'response_type' => 'code',
         'scope'         => implode(' ', GOOGLE_SCOPES),
         'access_type'   => 'offline',
@@ -86,7 +86,7 @@ function google_exchange_code(string $code): array
         'code'          => $code,
         'client_id'     => env('GOOGLE_CLIENT_ID', ''),
         'client_secret' => env('GOOGLE_CLIENT_SECRET', ''),
-        'redirect_uri'  => env('GOOGLE_REDIRECT_URI', ''),
+        'redirect_uri'  => env('GOOGLE_REDIRECT_URI') ?: rtrim((string) env('APP_URL', 'https://celso.cloud'), '/') . '/api/cerebro/auth/callback.php',
         'grant_type'    => 'authorization_code',
     ]);
 }
