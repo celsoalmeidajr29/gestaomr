@@ -857,7 +857,6 @@ function AbaDrive() {
 const TABS = [
   { id: 'agenda',  label: 'Agenda',   Icon: Calendar },
   { id: 'tarefas', label: 'Tarefas',  Icon: CheckSquare },
-  { id: 'keep',    label: 'Keep',     Icon: StickyNote },
   { id: 'notas',   label: 'Notas',    Icon: FileText },
   { id: 'drive',   label: 'Drive',    Icon: HardDrive },
 ]
@@ -1005,7 +1004,6 @@ export default function CerebroApp({ usuario, onVoltarHub, onLogout }) {
           <>
             {aba === 'agenda'  && <AbaAgenda />}
             {aba === 'tarefas' && <AbaTarefas />}
-            {aba === 'keep'    && <AbaKeep />}
             {aba === 'notas'   && <AbaNotas />}
             {aba === 'drive'   && <AbaDrive />}
           </>
