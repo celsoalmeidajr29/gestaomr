@@ -1608,11 +1608,11 @@ function DropZone({ onFile, label }) {
     <div
       className="border-2 border-dashed border-slate-700 rounded-2xl p-12 text-center cursor-pointer hover:border-emerald-600/50 hover:bg-slate-800/20 transition"
       onDragOver={e => e.preventDefault()}
-      onDrop={e => { e.preventDefault(); const f = e.dataTransfer.files[0]; if (f) onFile(f) }}
+      onDrop={e => { e.preventDefault(); if (e.dataTransfer.files?.length) onFile(e.dataTransfer.files) }}
       onClick={() => ref.current?.click()}>
       <Upload className="w-12 h-12 mx-auto mb-3 text-slate-600" />
-      <div className="text-slate-400 text-sm">{label || 'Arraste o CSV aqui ou '}<span className="text-emerald-400">clique para selecionar</span></div>
-      <input ref={ref} type="file" accept=".csv,.txt" className="hidden" onChange={e => e.target.files[0] && onFile(e.target.files[0])} />
+      <div className="text-slate-400 text-sm">{label || 'Arraste o(s) CSV aqui ou '}<span className="text-emerald-400">clique para selecionar</span></div>
+      <input ref={ref} type="file" accept=".csv,.txt" multiple className="hidden" onChange={e => e.target.files?.length && onFile(e.target.files)} />
     </div>
   )
 }
@@ -1818,7 +1818,7 @@ function ActionBar({ titulo, sub, sub2, onNovoArquivo, onExportTXT, onExportXLSX
             <button onClick={() => ref.current?.click()} className="flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg border border-slate-700 hover:bg-slate-800 text-slate-300 transition">
               <Upload className="w-4 h-4" />Novo arquivo
             </button>
-            <input ref={ref} type="file" accept=".csv,.txt" className="hidden" onChange={e => { if (e.target.files[0]) { onNovoArquivo(e.target.files[0]); e.target.value = '' } }} />
+            <input ref={ref} type="file" accept=".csv,.txt" multiple className="hidden" onChange={e => { if (e.target.files?.length) { onNovoArquivo(e.target.files); e.target.value = '' } }} />
           </>
         )}
         {onExportTXT && (
@@ -2132,7 +2132,7 @@ function VendasFuncionarioDetalhe({ nome, cargo, records, analise, onVoltar }) {
   )
 }
 
-function AbaVendas({ funcionarios, dados, premissas, analise, jornada, subAba, setSubAba, onUpload, onSalvar, salvando }) {
+function AbaVendas({ funcionarios, dados, premissas, analise, jornada, subAba, setSubAba, onUpload, loading }) {
   const [selectedAgente, setSelectedAgente] = useState(null)
   const [filtroMes, setFiltroMes] = useState('')
   const [filtroDe, setFiltroDe] = useState('')
@@ -2162,6 +2162,12 @@ function AbaVendas({ funcionarios, dados, premissas, analise, jornada, subAba, s
   function limparFiltros() { setFiltroMes(''); setFiltroDe(''); setFiltroAte(''); setFiltroAgente(''); setFiltroTrecho('') }
 
   if (!dados) {
+    if (loading) return (
+      <div className="flex flex-col items-center justify-center py-20 gap-3 text-slate-500">
+        <RefreshCw className="w-8 h-8 animate-spin text-emerald-500"/>
+        <span className="text-sm">Carregando dados do banco...</span>
+      </div>
+    )
     return (
       <div>
         <h2 className="text-xl font-semibold mb-2">Módulo 1 — Análise de Vendas</h2>
@@ -2204,7 +2210,6 @@ function AbaVendas({ funcionarios, dados, premissas, analise, jornada, subAba, s
         onNovoArquivo={onUpload}
         onExportTXT={analiseEfetiva ? () => gerarTXTVendas(analiseEfetiva, jornada, premissas) : null}
         onExportXLSX={analiseEfetiva ? () => exportVendasXLSX(analiseEfetiva, recordsFiltrados, jornada) : null}
-        onSalvar={onSalvar} salvando={salvando}
       />
       {premissas.length > 0 && (
         <div className="mb-4 p-3 rounded-lg bg-slate-800/50 border border-slate-700 text-xs text-slate-400">
@@ -2663,7 +2668,7 @@ function VendasTrechosChart({ a }) {
 }
 
 // ---- ABA IRREGULARIDADES ----
-function AbaIrregularidades({ funcionarios, dados, premissas, analise, subAba, setSubAba, onUpload, onSalvar, salvando, scorePlacas, alertaDismissed, onDismissAlerta, scoreConfig }) {
+function AbaIrregularidades({ funcionarios, dados, premissas, analise, subAba, setSubAba, onUpload, loading, scorePlacas, alertaDismissed, onDismissAlerta, scoreConfig }) {
   const [filtroMes, setFiltroMes] = useState('')
   const [filtroDe, setFiltroDe] = useState('')
   const [filtroAte, setFiltroAte] = useState('')
@@ -2692,6 +2697,12 @@ function AbaIrregularidades({ funcionarios, dados, premissas, analise, subAba, s
   function limparFiltros() { setFiltroMes(''); setFiltroDe(''); setFiltroAte(''); setFiltroEmissor(''); setFiltroTrecho('') }
 
   if (!dados) {
+    if (loading) return (
+      <div className="flex flex-col items-center justify-center py-20 gap-3 text-slate-500">
+        <RefreshCw className="w-8 h-8 animate-spin text-blue-500"/>
+        <span className="text-sm">Carregando dados do banco...</span>
+      </div>
+    )
     return (
       <div>
         <h2 className="text-xl font-semibold mb-2">Módulo 2 — Irregularidades / Notificações</h2>
@@ -2721,7 +2732,6 @@ function AbaIrregularidades({ funcionarios, dados, premissas, analise, subAba, s
         onNovoArquivo={onUpload}
         onExportTXT={analiseEfetiva ? () => gerarTXTIrregularidades(analiseEfetiva, premissas) : null}
         onExportXLSX={analiseEfetiva ? () => exportIrreguXLSX(analiseEfetiva, recordsFiltrados, scorePlacas) : null}
-        onSalvar={onSalvar} salvando={salvando}
       />
       {premissas.length > 0 && (
         <div className="mb-4 p-3 rounded-lg bg-slate-800/50 border border-slate-700 text-xs text-slate-400">
@@ -3138,13 +3148,63 @@ function DashKpi({ label, value, sub, cor, icon: Icon }) {
   )
 }
 
-function AbaDashboard({ analiseVendas, analiseIrreg, dadosVendas, dadosIrreg, scorePlacas, scoreConfig }) {
+function AbaDashboard({ recordsVendas, recordsIrreg, scorePlacas, scoreConfig }) {
+  const [filtroMes, setFiltroMes] = useState('')
+  const [filtroDe, setFiltroDe] = useState('')
+  const [filtroAte, setFiltroAte] = useState('')
+  const [filtroAgente, setFiltroAgente] = useState('')
+  const [filtroTrecho, setFiltroTrecho] = useState('')
+
+  const meses = useMemo(() => {
+    const s = new Set()
+    ;(recordsVendas || []).forEach(r => { if (r.dtReg) s.add(`${r.dtReg.getFullYear()}-${String(r.dtReg.getMonth()+1).padStart(2,'0')}`) })
+    ;(recordsIrreg || []).forEach(r => { if (r.dtEmissao) s.add(`${r.dtEmissao.getFullYear()}-${String(r.dtEmissao.getMonth()+1).padStart(2,'0')}`) })
+    return [...s].sort().reverse()
+  }, [recordsVendas, recordsIrreg])
+
+  const agentes = useMemo(() => {
+    const s = new Set()
+    ;(recordsVendas || []).forEach(r => r.usuario && s.add(r.usuario))
+    ;(recordsIrreg || []).forEach(r => r.emissor && s.add(r.emissor))
+    return [...s].sort()
+  }, [recordsVendas, recordsIrreg])
+
+  const trechosDash = useMemo(() => {
+    const s = new Set()
+    ;(recordsVendas || []).forEach(r => r.trecho && s.add(r.trecho))
+    ;(recordsIrreg || []).forEach(r => r.trecho && s.add(r.trecho))
+    return [...s].sort()
+  }, [recordsVendas, recordsIrreg])
+
+  const filteredVendas = useMemo(() => {
+    let rs = recordsVendas || []
+    if (filtroMes) rs = rs.filter(r => r.dtReg && `${r.dtReg.getFullYear()}-${String(r.dtReg.getMonth()+1).padStart(2,'0')}` === filtroMes)
+    if (filtroDe)  rs = rs.filter(r => r.dtReg && r.dtReg >= new Date(filtroDe))
+    if (filtroAte) rs = rs.filter(r => r.dtReg && r.dtReg <= new Date(filtroAte + 'T23:59:59'))
+    if (filtroAgente) rs = rs.filter(r => r.usuario === filtroAgente)
+    if (filtroTrecho) rs = rs.filter(r => r.trecho === filtroTrecho)
+    return rs
+  }, [recordsVendas, filtroMes, filtroDe, filtroAte, filtroAgente, filtroTrecho])
+
+  const filteredIrreg = useMemo(() => {
+    let rs = recordsIrreg || []
+    if (filtroMes) rs = rs.filter(r => r.dtEmissao && `${r.dtEmissao.getFullYear()}-${String(r.dtEmissao.getMonth()+1).padStart(2,'0')}` === filtroMes)
+    if (filtroDe)  rs = rs.filter(r => r.dtEmissao && r.dtEmissao >= new Date(filtroDe))
+    if (filtroAte) rs = rs.filter(r => r.dtEmissao && r.dtEmissao <= new Date(filtroAte + 'T23:59:59'))
+    if (filtroAgente) rs = rs.filter(r => r.emissor === filtroAgente)
+    if (filtroTrecho) rs = rs.filter(r => r.trecho === filtroTrecho)
+    return rs
+  }, [recordsIrreg, filtroMes, filtroDe, filtroAte, filtroAgente, filtroTrecho])
+
+  const analiseVendas = useMemo(() => filteredVendas.length ? analyzeVendas(filteredVendas) : null, [filteredVendas])
+  const analiseIrreg = useMemo(() => filteredIrreg.length ? analyzeIrregularidades(filteredIrreg) : null, [filteredIrreg])
+
   const temV = !!analiseVendas
   const temI = !!analiseIrreg
 
   const inadimplencia = useMemo(
-    () => dadosIrreg?.records?.length ? computeInadimplencia(dadosIrreg.records) : null,
-    [dadosIrreg]
+    () => filteredIrreg.length ? computeInadimplencia(filteredIrreg) : null,
+    [filteredIrreg]
   )
 
   const scoreResumo = useMemo(() => {
@@ -3197,7 +3257,7 @@ function AbaDashboard({ analiseVendas, analiseIrreg, dadosVendas, dadosIrreg, sc
     return list
   }, [temV, temI, analiseVendas, analiseIrreg, scoreResumo, inadimplencia])
 
-  if (!temV && !temI) {
+  if (!recordsVendas?.length && !recordsIrreg?.length) {
     return (
       <div className="text-center py-20 text-slate-500">
         <Activity className="w-10 h-10 mx-auto mb-3 opacity-30"/>
@@ -3218,6 +3278,17 @@ function AbaDashboard({ analiseVendas, analiseIrreg, dadosVendas, dadosIrreg, sc
 
   return (
     <div className="space-y-6">
+      <FilterBar
+        meses={meses} agentes={agentes} trechos={trechosDash}
+        filtroMes={filtroMes} setFiltroMes={setFiltroMes}
+        filtroDe={filtroDe} setFiltroDe={setFiltroDe}
+        filtroAte={filtroAte} setFiltroAte={setFiltroAte}
+        filtroAgente={filtroAgente} setFiltroAgente={setFiltroAgente}
+        filtroTrecho={filtroTrecho} setFiltroTrecho={setFiltroTrecho}
+        onLimpar={() => { setFiltroMes(''); setFiltroDe(''); setFiltroAte(''); setFiltroAgente(''); setFiltroTrecho('') }}
+        labelAgente="Agente/Emissor"
+      />
+
       {/* Status */}
       <div className="flex flex-wrap gap-2 items-center">
         <span className="text-sm font-semibold text-slate-300">Dados carregados:</span>
@@ -3639,6 +3710,42 @@ function AbaConfiguracoes({ scoreConfig, onSaveScore, metas, onSaveMeta, onDelet
   )
 }
 
+// ---- DB → records helpers ----
+function dbRowsToVendas(rows) {
+  return (rows || []).map(r => ({
+    placa:          r.placa          || '',
+    dtReg:          r.dt_registro    ? new Date(r.dt_registro.replace(' ', 'T'))    : null,
+    dtInicial:      r.dt_inicial     ? new Date(r.dt_inicial.replace(' ', 'T'))     : null,
+    hashDedup:      r.hash_dedup     || null,
+    periodo:        r.periodo        || null,
+    usuario:        r.usuario        || null,
+    cargo:          r.cargo          || null,
+    origem:         r.origem         || null,
+    trecho:         r.trecho         || null,
+    formaPagamento: r.forma_pag      || null,
+    valor:          parseFloat(r.valor) || 0,
+    irregular:      !!parseInt(r.irregular),
+    canal:          r.canal          || null,
+    zona:           r.zona           || null,
+    tipo:           r.tipo           || null,
+    nomeArquivo:    r.nome_arquivo   || null,
+  }))
+}
+function dbRowsToIrreg(rows) {
+  return (rows || []).map(r => ({
+    id:          r.id_csv       || '',
+    dtEmissao:   r.dt_emissao   ? new Date(r.dt_emissao.replace(' ', 'T'))   : null,
+    status:      r.status       || 'Irregular',
+    emissor:     r.emissor      || null,
+    cargo:       r.cargo        || null,
+    trecho:      r.trecho       || null,
+    placa:       r.placa        || null,
+    valor:       parseFloat(r.valor) || 0,
+    origemClass: r.origem_class || null,
+    semana:      r.semana       || null,
+  }))
+}
+
 // ---- ROOT ----
 export default function PareCetoApp({ usuario, onVoltarHub, onLogout }) {
   useEffect(() => {
@@ -3657,25 +3764,36 @@ export default function PareCetoApp({ usuario, onVoltarHub, onLogout }) {
   const [filtroCargoFunc, setFiltroCargoFunc] = useState('todos')
   const [filtroStatusFunc, setFiltroStatusFunc] = useState('Ativo')
 
-  // Vendas
-  const [dadosVendas, setDadosVendas] = useState(null)
+  // Vendas — source of truth vem do banco; analise é derivada via useMemo
+  const [dadosVendas, setDadosVendas] = useState(null)        // { records, nomeArquivo }
+  const [loadingVendas, setLoadingVendas] = useState(true)
   const [premissasVendas, setPremissasVendas] = useState([])
-  const [analiseVendas, setAnaliseVendas] = useState(null)
-  const [jornadaVendas, setJornadaVendas] = useState([])
   const [subAbaVendas, setSubAbaVendas] = useState('kpis')
   const [salvandoVendas, setSalvandoVendas] = useState(false)
   const [naoSalvoVendas, setNaoSalvoVendas] = useState(false)
   const [processandoVendas, setProcessandoVendas] = useState(null)
+  const analiseVendas = useMemo(
+    () => dadosVendas?.records?.length ? analyzeVendas(dadosVendas.records) : null,
+    [dadosVendas]
+  )
+  const jornadaVendas = useMemo(
+    () => analyzeJornada(dadosVendas?.records || []),
+    [dadosVendas]
+  )
 
   // Irregularidades
-  const [dadosIrreg, setDadosIrreg] = useState(null)
+  const [dadosIrreg, setDadosIrreg] = useState(null)          // { records, nomeArquivo }
+  const [loadingIrreg, setLoadingIrreg] = useState(true)
   const [premissasIrreg, setPremissasIrreg] = useState([])
-  const [analiseIrreg, setAnaliseIrreg] = useState(null)
   const [subAbaIrreg, setSubAbaIrreg] = useState('kpis')
   const [salvandoIrreg, setSalvandoIrreg] = useState(false)
   const [naoSalvoIrreg, setNaoSalvoIrreg] = useState(false)
   const [processandoIrreg, setProcessandoIrreg] = useState(null)
   const [alertaDismissed, setAlertaDismissed] = useState(false)
+  const analiseIrreg = useMemo(
+    () => dadosIrreg?.records?.length ? analyzeIrregularidades(dadosIrreg.records) : null,
+    [dadosIrreg]
+  )
 
   // Score
   const [scoreConfig, setScoreConfig] = useState(() => loadScoreConfig())
@@ -3730,6 +3848,26 @@ export default function PareCetoApp({ usuario, onVoltarHub, onLogout }) {
   }
   useEffect(() => { carregarFuncionarios() }, [])
 
+  async function carregarVendas() {
+    setLoadingVendas(true)
+    try {
+      const rows = await apiFetch('/vendas/index.php')
+      const records = dbRowsToVendas(rows)
+      setDadosVendas(records.length ? { records, nomeArquivo: `${records.length.toLocaleString('pt-BR')} transações do banco` } : null)
+    } catch (e) { showToast('Erro ao carregar vendas: ' + e.message, 'erro') }
+    finally { setLoadingVendas(false) }
+  }
+  async function carregarIrreg() {
+    setLoadingIrreg(true)
+    try {
+      const rows = await apiFetch('/irregularidades/index.php')
+      const records = dbRowsToIrreg(rows)
+      setDadosIrreg(records.length ? { records, nomeArquivo: `${records.length.toLocaleString('pt-BR')} registros do banco` } : null)
+    } catch (e) { showToast('Erro ao carregar irregularidades: ' + e.message, 'erro') }
+    finally { setLoadingIrreg(false) }
+  }
+  useEffect(() => { carregarVendas(); carregarIrreg() }, [])
+
   async function salvarFuncionario(form) {
     try {
       if (form.id) {
@@ -3778,176 +3916,138 @@ export default function PareCetoApp({ usuario, onVoltarHub, onLogout }) {
     return criados
   }
 
-  async function handleUploadVendas(file) {
-    setProcessandoVendas({ pct: 2, label: 'Lendo arquivo...' })
-    try {
-      const text = await readFileText(file)
-      setProcessandoVendas({ pct: 10, label: 'Detectando estrutura...' })
-      await new Promise(r => setTimeout(r, 0))
-      let linhasLidas = 0
-      const { rows, delim } = await parseCSVText(text, null, (ratio, count) => {
-        linhasLidas = count
-        setProcessandoVendas({ pct: 10 + Math.round(ratio * 60), label: `Processando linhas... ${count.toLocaleString('pt-BR')}` })
-      })
-      linhasLidas = rows.length
-      setProcessandoVendas({ pct: 73, label: 'Classificando por placa...' })
-      await new Promise(r => setTimeout(r, 0))
-      const { records, premissas } = parseVendas(rows, funcionarios)
-      setProcessandoVendas({ pct: 82, label: 'Gerando análise...' })
-      await new Promise(r => setTimeout(r, 0))
-      const analise = analyzeVendas(records)
-      const jornada = analyzeJornada(records)
-      const premissasLocal = [
-        `Arquivo: ${file.name}`,
-        `Delimitador: ${delim === '\t' ? 'TAB' : delim}`,
-        `${linhasLidas.toLocaleString('pt-BR')} linhas no CSV · ${records.length.toLocaleString('pt-BR')} transações`,
-        ...premissas,
-      ]
-      setDadosVendas({ records, nomeArquivo: file.name })
-      setPremissasVendas(premissasLocal)
-      setAnaliseVendas(analise)
-      setJornadaVendas(jornada)
-      setSubAbaVendas('kpis')
-      setProcessandoVendas({ pct: 90, label: 'Cadastrando funcionários...' })
-      const nomesAgentes = [...new Set(records.map(r => r.usuario).filter(Boolean))]
-      await autoRegistrarFuncionarios(nomesAgentes)
-      setProcessandoVendas({ pct: 95, label: 'Salvando no banco...' })
-      await salvarRelatorioVendas({ records, nomeArquivo: file.name, analise, premissas: premissasLocal })
-    } catch (e) {
-      showToast('Erro ao processar CSV: ' + e.message, 'erro')
-      setNaoSalvoVendas(true)
-    }
-    finally { setProcessandoVendas(null) }
-  }
-
-  async function salvarRelatorioVendas(override) {
-    const dados   = override       || dadosVendas
-    const analise = override?.analise   || analiseVendas
-    const premissas = override?.premissas || premissasVendas
-    if (!analise || !dados?.records?.length) return
-    setSalvandoVendas(true)
-    try {
-      const nomeArq = dados.nomeArquivo || ''
-      const payload = dados.records.map(r => ({
-        hash_dedup:   r.hashDedup || null,
-        placa:        r.placa,
-        dt_registro:  r.dtReg     ? r.dtReg.toISOString().slice(0,19).replace('T',' ')     : null,
-        dt_inicial:   r.dtInicial ? r.dtInicial.toISOString().slice(0,19).replace('T',' ') : null,
-        periodo:      r.periodo   || null,
-        usuario:      r.usuario   || null,
-        cargo:        r.cargo     || null,
-        origem:       r.origem    || null,
-        trecho:       r.trecho    || null,
-        forma_pag:    r.formaPagamento || null,
-        valor:        r.valor,
-        irregular:    r.irregular ? 1 : 0,
-        canal:        r.canal     || null,
-        zona:         r.zona      || null,
-        tipo:         r.tipo      || null,
-        nome_arquivo: nomeArq,
-      }))
-      const res = await apiFetch('/vendas/index.php', { method: 'POST', body: JSON.stringify(payload) })
-      const partes = [`${res.inseridos} novas`]
-      if (res.duplicatas > 0) partes.push(`${res.duplicatas} já existiam`)
-      setNaoSalvoVendas(false)
-      showToast(partes.join(' · '), 'sucesso')
-      await apiFetch('/relatorios/index.php', {
-        method: 'POST',
-        body: JSON.stringify({
+  async function handleUploadVendas(filesInput) {
+    const files = filesInput instanceof File ? [filesInput] : Array.from(filesInput)
+    if (!files.length) return
+    let totalInseridos = 0; let totalDuplic = 0; let todosPremissas = []
+    for (let fi = 0; fi < files.length; fi++) {
+      const file = files[fi]
+      const prefix = files.length > 1 ? `[${fi+1}/${files.length}] ` : ''
+      setProcessandoVendas({ pct: 2, label: `${prefix}Lendo ${file.name}...` })
+      try {
+        const text = await readFileText(file)
+        setProcessandoVendas({ pct: 10, label: `${prefix}Detectando estrutura...` })
+        await new Promise(r => setTimeout(r, 0))
+        let linhasLidas = 0
+        const { rows, delim } = await parseCSVText(text, null, (ratio, count) => {
+          linhasLidas = count
+          setProcessandoVendas({ pct: 10 + Math.round(ratio * 55), label: `${prefix}Processando linhas... ${count.toLocaleString('pt-BR')}` })
+        })
+        linhasLidas = rows.length
+        setProcessandoVendas({ pct: 68, label: `${prefix}Classificando...` })
+        await new Promise(r => setTimeout(r, 0))
+        const { records, premissas } = parseVendas(rows, funcionarios)
+        setProcessandoVendas({ pct: 78, label: `${prefix}Cadastrando funcionários...` })
+        const nomesAgentes = [...new Set(records.map(r => r.usuario).filter(Boolean))]
+        await autoRegistrarFuncionarios(nomesAgentes)
+        const analise = analyzeVendas(records)
+        const premissasLocal = [
+          `Arquivo: ${file.name}`,
+          `Delimitador: ${delim === '\t' ? 'TAB' : delim}`,
+          `${linhasLidas.toLocaleString('pt-BR')} linhas · ${records.length.toLocaleString('pt-BR')} transações`,
+          ...premissas,
+        ]
+        todosPremissas = [...todosPremissas, ...premissasLocal]
+        setProcessandoVendas({ pct: 88, label: `${prefix}Salvando no banco...` })
+        const nomeArq = file.name
+        const payload = records.map(r => ({
+          hash_dedup: r.hashDedup || null, placa: r.placa,
+          dt_registro: r.dtReg ? r.dtReg.toISOString().slice(0,19).replace('T',' ') : null,
+          dt_inicial:  r.dtInicial ? r.dtInicial.toISOString().slice(0,19).replace('T',' ') : null,
+          periodo: r.periodo || null, usuario: r.usuario || null, cargo: r.cargo || null,
+          origem: r.origem || null, trecho: r.trecho || null, forma_pag: r.formaPagamento || null,
+          valor: r.valor, irregular: r.irregular ? 1 : 0,
+          canal: r.canal || null, zona: r.zona || null, tipo: r.tipo || null, nome_arquivo: nomeArq,
+        }))
+        const res = await apiFetch('/vendas/index.php', { method: 'POST', body: JSON.stringify(payload) })
+        totalInseridos += res.inseridos || 0; totalDuplic += res.duplicatas || 0
+        await apiFetch('/relatorios/index.php', { method: 'POST', body: JSON.stringify({
           modulo: 'vendas',
           periodo_inicio: analise.dataMin?.toISOString().slice(0,10) || new Date().toISOString().slice(0,10),
           periodo_fim:    analise.dataMax?.toISOString().slice(0,10) || new Date().toISOString().slice(0,10),
           total_registros: analise.totalTrans,
-          resumo_json: JSON.stringify({ totalTrans: analise.totalTrans, totalValor: analise.totalValor, topAgentes: analise.rankingAgentes.slice(0,10), premissas }),
+          resumo_json: JSON.stringify({ totalTrans: analise.totalTrans, totalValor: analise.totalValor, topAgentes: analise.rankingAgentes.slice(0,10), premissas: premissasLocal }),
           nome_arquivo: nomeArq,
-        }),
-      })
-    } catch (e) {
-      showToast('Erro ao salvar: ' + e.message, 'erro')
-      setNaoSalvoVendas(true)
+        }) })
+      } catch (e) { showToast(`${prefix}Erro: ${e.message}`, 'erro') }
     }
-    finally { setSalvandoVendas(false) }
+    setProcessandoVendas({ pct: 97, label: 'Recarregando do banco...' })
+    await carregarVendas()
+    setPremissasVendas(todosPremissas)
+    setSubAbaVendas('kpis')
+    setNaoSalvoVendas(false)
+    const msg = [`${totalInseridos} novas`]
+    if (totalDuplic > 0) msg.push(`${totalDuplic} já existiam`)
+    if (files.length > 1) msg.push(`${files.length} arquivos`)
+    showToast(msg.join(' · '), 'sucesso')
+    setProcessandoVendas(null)
   }
 
-  async function handleUploadIrreg(file) {
-    setProcessandoIrreg({ pct: 2, label: 'Lendo arquivo...' })
-    try {
-      const text = await readFileText(file)
-      setProcessandoIrreg({ pct: 10, label: 'Detectando estrutura...' })
-      await new Promise(r => setTimeout(r, 0))
-      const { rows, delim } = await parseCSVText(text, ';', (ratio, count) => {
-        setProcessandoIrreg({ pct: 10 + Math.round(ratio * 60), label: `Processando linhas... ${count.toLocaleString('pt-BR')}` })
-      })
-      setProcessandoIrreg({ pct: 73, label: 'Processando irregularidades...' })
-      await new Promise(r => setTimeout(r, 0))
-      const { records, premissas } = parseIrregularidades(rows, funcionarios)
-      setProcessandoIrreg({ pct: 82, label: 'Gerando análise...' })
-      await new Promise(r => setTimeout(r, 0))
-      const analise = analyzeIrregularidades(records)
-      const premissasLocal = [
-        `Arquivo: ${file.name}`,
-        `Delimitador: ${delim === '\t' ? 'TAB' : delim}`,
-        `${rows.length.toLocaleString('pt-BR')} linhas no CSV · ${records.length.toLocaleString('pt-BR')} notificações`,
-        ...premissas,
-      ]
-      setDadosIrreg({ records, nomeArquivo: file.name })
-      setPremissasIrreg(premissasLocal)
-      setAnaliseIrreg(analise)
-      setAlertaDismissed(false)
-      setSubAbaIrreg('kpis')
-      setProcessandoIrreg({ pct: 90, label: 'Cadastrando funcionários...' })
-      const nomesEmissores = [...new Set(records.map(r => r.emissor).filter(Boolean))]
-      await autoRegistrarFuncionarios(nomesEmissores)
-      setProcessandoIrreg({ pct: 95, label: 'Salvando no banco...' })
-      await salvarRelatorioIrreg({ records, nomeArquivo: file.name, analise, premissas: premissasLocal })
-    } catch (e) {
-      showToast('Erro ao processar CSV: ' + e.message, 'erro')
-      setNaoSalvoIrreg(true)
-    }
-    finally { setProcessandoIrreg(null) }
-  }
-
-  async function salvarRelatorioIrreg(override) {
-    const dados   = override       || dadosIrreg
-    const analise = override?.analise   || analiseIrreg
-    const premissas = override?.premissas || premissasIrreg
-    if (!analise || !dados?.records?.length) return
-    setSalvandoIrreg(true)
-    try {
-      const nomeArq = dados.nomeArquivo || ''
-      const payload = dados.records.map(r => ({
-        id_csv:       r.id,
-        dt_emissao:   r.dtEmissao ? r.dtEmissao.toISOString().slice(0,19).replace('T',' ') : null,
-        status:       r.status    || 'Irregular',
-        emissor:      r.emissor   || null,
-        cargo:        r.cargo     || null,
-        trecho:       r.trecho    || null,
-        placa:        r.placa     || null,
-        valor:        r.valor,
-        origem_class: r.origemClass || null,
-        semana:       r.semana    || null,
-      })).filter(r => r.id_csv)
-      const res = await apiFetch('/irregularidades/index.php', { method: 'POST', body: JSON.stringify(payload) })
-      await apiFetch('/relatorios/index.php', {
-        method: 'POST',
-        body: JSON.stringify({
+  async function handleUploadIrreg(filesInput) {
+    const files = filesInput instanceof File ? [filesInput] : Array.from(filesInput)
+    if (!files.length) return
+    let totalInseridos = 0; let totalAtualizados = 0; let todosPremissas = []
+    for (let fi = 0; fi < files.length; fi++) {
+      const file = files[fi]
+      const prefix = files.length > 1 ? `[${fi+1}/${files.length}] ` : ''
+      setProcessandoIrreg({ pct: 2, label: `${prefix}Lendo ${file.name}...` })
+      try {
+        const text = await readFileText(file)
+        setProcessandoIrreg({ pct: 10, label: `${prefix}Detectando estrutura...` })
+        await new Promise(r => setTimeout(r, 0))
+        const { rows, delim } = await parseCSVText(text, ';', (ratio, count) => {
+          setProcessandoIrreg({ pct: 10 + Math.round(ratio * 60), label: `${prefix}Processando linhas... ${count.toLocaleString('pt-BR')}` })
+        })
+        setProcessandoIrreg({ pct: 73, label: `${prefix}Processando irregularidades...` })
+        await new Promise(r => setTimeout(r, 0))
+        const { records, premissas } = parseIrregularidades(rows, funcionarios)
+        const analise = analyzeIrregularidades(records)
+        const premissasLocal = [
+          `Arquivo: ${file.name}`,
+          `Delimitador: ${delim === '\t' ? 'TAB' : delim}`,
+          `${rows.length.toLocaleString('pt-BR')} linhas no CSV · ${records.length.toLocaleString('pt-BR')} notificações`,
+          ...premissas,
+        ]
+        todosPremissas = [...todosPremissas, ...premissasLocal]
+        setProcessandoIrreg({ pct: 80, label: `${prefix}Cadastrando funcionários...` })
+        const nomesEmissores = [...new Set(records.map(r => r.emissor).filter(Boolean))]
+        await autoRegistrarFuncionarios(nomesEmissores)
+        setProcessandoIrreg({ pct: 88, label: `${prefix}Salvando no banco...` })
+        const payload = records.map(r => ({
+          id_csv:       r.id,
+          dt_emissao:   r.dtEmissao ? r.dtEmissao.toISOString().slice(0,19).replace('T',' ') : null,
+          status:       r.status    || 'Irregular',
+          emissor:      r.emissor   || null,
+          cargo:        r.cargo     || null,
+          trecho:       r.trecho    || null,
+          placa:        r.placa     || null,
+          valor:        r.valor,
+          origem_class: r.origemClass || null,
+          semana:       r.semana    || null,
+        })).filter(r => r.id_csv)
+        const res = await apiFetch('/irregularidades/index.php', { method: 'POST', body: JSON.stringify(payload) })
+        totalInseridos += res.inseridos || 0; totalAtualizados += res.atualizados || 0
+        await apiFetch('/relatorios/index.php', { method: 'POST', body: JSON.stringify({
           modulo: 'irregularidades',
           periodo_inicio: analise.dataMin?.toISOString().slice(0,10) || new Date().toISOString().slice(0,10),
           periodo_fim:    analise.dataMax?.toISOString().slice(0,10) || new Date().toISOString().slice(0,10),
           total_registros: analise.total,
-          resumo_json: JSON.stringify({ total: analise.total, totalPaga: analise.totalPaga, pctConversao: analise.pctConversao, premissas }),
-          nome_arquivo: nomeArq,
-        }),
-      })
-      const partesIr = [`${res.inseridos} novas`]
-      if (res.duplicatas > 0) partesIr.push(`${res.duplicatas} já existiam`)
-      setNaoSalvoIrreg(false)
-      showToast(partesIr.join(' · '), 'sucesso')
-    } catch (e) {
-      showToast('Erro ao salvar: ' + e.message, 'erro')
-      setNaoSalvoIrreg(true)
+          resumo_json: JSON.stringify({ total: analise.total, totalPaga: analise.totalPaga, pctConversao: analise.pctConversao, premissas: premissasLocal }),
+          nome_arquivo: file.name,
+        }) })
+      } catch (e) { showToast(`${prefix}Erro: ${e.message}`, 'erro') }
     }
-    finally { setSalvandoIrreg(false) }
+    setProcessandoIrreg({ pct: 97, label: 'Recarregando do banco...' })
+    await carregarIrreg()
+    setPremissasIrreg(todosPremissas)
+    setSubAbaIrreg('kpis')
+    setAlertaDismissed(false)
+    setNaoSalvoIrreg(false)
+    const msg = [`${totalInseridos} novas`]
+    if (totalAtualizados > 0) msg.push(`${totalAtualizados} atualizadas`)
+    if (files.length > 1) msg.push(`${files.length} arquivos`)
+    showToast(msg.join(' · '), 'sucesso')
+    setProcessandoIrreg(null)
   }
 
   async function carregarHistorico() {
@@ -4040,8 +4140,7 @@ export default function PareCetoApp({ usuario, onVoltarHub, onLogout }) {
         )}
         {aba === 'dashboard' && (
           <AbaDashboard
-            analiseVendas={analiseVendas} analiseIrreg={analiseIrreg}
-            dadosVendas={dadosVendas} dadosIrreg={dadosIrreg}
+            recordsVendas={dadosVendas?.records || []} recordsIrreg={dadosIrreg?.records || []}
             scorePlacas={scorePlacas} scoreConfig={scoreConfig}
           />
         )}
@@ -4050,7 +4149,7 @@ export default function PareCetoApp({ usuario, onVoltarHub, onLogout }) {
             funcionarios={funcionarios} dados={dadosVendas} premissas={premissasVendas}
             analise={analiseVendas} jornada={jornadaVendas}
             subAba={subAbaVendas} setSubAba={setSubAbaVendas}
-            onUpload={handleUploadVendas} onSalvar={salvarRelatorioVendas} salvando={salvandoVendas}
+            onUpload={handleUploadVendas} loading={loadingVendas}
           />
         )}
         {aba === 'irregularidades' && (
@@ -4058,7 +4157,7 @@ export default function PareCetoApp({ usuario, onVoltarHub, onLogout }) {
             funcionarios={funcionarios} dados={dadosIrreg} premissas={premissasIrreg}
             analise={analiseIrreg}
             subAba={subAbaIrreg} setSubAba={setSubAbaIrreg}
-            onUpload={handleUploadIrreg} onSalvar={salvarRelatorioIrreg} salvando={salvandoIrreg}
+            onUpload={handleUploadIrreg} loading={loadingIrreg}
             scorePlacas={scorePlacas} scoreConfig={scoreConfig}
             alertaDismissed={alertaDismissed} onDismissAlerta={() => setAlertaDismissed(true)}
           />
