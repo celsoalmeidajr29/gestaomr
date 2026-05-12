@@ -11,7 +11,7 @@ $method = $_SERVER['REQUEST_METHOD'];
 if ($method === 'GET') {
     $stmt = db()->query(
         "SELECT u.id, u.nome, u.email, u.telefone, u.status,
-                u.acesso_mrsys, u.acesso_pareceto,
+                u.acesso_mrsys, u.acesso_pareceto, u.acesso_cerebro,
                 u.perfil_id, p.codigo AS perfil_codigo, p.nome AS perfil_nome,
                 u.ultimo_login, u.criado_em
          FROM usuarios u JOIN perfis p ON p.id = u.perfil_id
@@ -27,8 +27,8 @@ if ($method === 'POST') {
     }
     $hash = password_hash($d['senha'], PASSWORD_BCRYPT);
     $stmt = db()->prepare(
-        'INSERT INTO usuarios (nome, email, senha_hash, perfil_id, telefone, status, acesso_mrsys, acesso_pareceto)
-         VALUES (:nome, :email, :hash, :perfil_id, :tel, :status, :mrsys, :pareceto)'
+        'INSERT INTO usuarios (nome, email, senha_hash, perfil_id, telefone, status, acesso_mrsys, acesso_pareceto, acesso_cerebro)
+         VALUES (:nome, :email, :hash, :perfil_id, :tel, :status, :mrsys, :pareceto, :cerebro)'
     );
     try {
         $stmt->execute([
@@ -40,6 +40,7 @@ if ($method === 'POST') {
             ':status'   => $d['status'] ?? 'ATIVO',
             ':mrsys'    => isset($d['acesso_mrsys'])    ? (int)(bool)$d['acesso_mrsys']    : 1,
             ':pareceto' => isset($d['acesso_pareceto']) ? (int)(bool)$d['acesso_pareceto'] : 0,
+            ':cerebro'  => isset($d['acesso_cerebro'])  ? (int)(bool)$d['acesso_cerebro']  : 0,
         ]);
     } catch (\PDOException $e) {
         if (str_contains($e->getMessage(), 'Duplicate')) json_error('E-mail já cadastrado', 409);
@@ -47,7 +48,7 @@ if ($method === 'POST') {
     }
     $id  = (int) db()->lastInsertId();
     $row = db()->query(
-        "SELECT u.id, u.nome, u.email, u.status, u.acesso_mrsys, u.acesso_pareceto,
+        "SELECT u.id, u.nome, u.email, u.status, u.acesso_mrsys, u.acesso_pareceto, u.acesso_cerebro,
                 u.perfil_id, p.codigo AS perfil_codigo, p.nome AS perfil_nome
          FROM usuarios u JOIN perfis p ON p.id = u.perfil_id WHERE u.id = {$id}"
     )->fetch();

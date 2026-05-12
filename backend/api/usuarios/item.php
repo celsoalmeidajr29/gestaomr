@@ -14,7 +14,7 @@ if (!$isSelf && !$isAdmin) json_error('Acesso não autorizado', 403);
 if ($method === 'GET') {
     $row = db()->query(
         "SELECT u.id, u.nome, u.email, u.telefone, u.avatar_url, u.status,
-                u.acesso_mrsys, u.acesso_pareceto,
+                u.acesso_mrsys, u.acesso_pareceto, u.acesso_cerebro,
                 u.perfil_id, p.codigo AS perfil_codigo, p.nome AS perfil_nome,
                 p.permissoes, u.ultimo_login, u.criado_em
          FROM usuarios u JOIN perfis p ON p.id = u.perfil_id
@@ -60,12 +60,16 @@ if ($method === 'PUT' || $method === 'PATCH') {
             $updates[] = 'acesso_pareceto=:pareceto';
             $params[':pareceto'] = (int)(bool)$d['acesso_pareceto'];
         }
+        if (array_key_exists('acesso_cerebro', $d)) {
+            $updates[] = 'acesso_cerebro=:cerebro';
+            $params[':cerebro'] = (int)(bool)$d['acesso_cerebro'];
+        }
     }
     if ($updates) {
         db()->prepare('UPDATE usuarios SET ' . implode(', ', $updates) . ' WHERE id=:id')->execute($params);
     }
     $row = db()->query(
-        "SELECT u.id, u.nome, u.email, u.status, u.acesso_mrsys, u.acesso_pareceto,
+        "SELECT u.id, u.nome, u.email, u.status, u.acesso_mrsys, u.acesso_pareceto, u.acesso_cerebro,
                 u.perfil_id, p.codigo AS perfil_codigo, p.nome AS perfil_nome
          FROM usuarios u JOIN perfis p ON p.id = u.perfil_id WHERE u.id = {$id}"
     )->fetch();

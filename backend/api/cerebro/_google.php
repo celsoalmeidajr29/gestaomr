@@ -1,0 +1,192 @@
+<?php
+/**
+ * Helpers Google OAuth2 + API — sem Composer, PHP puro com stream_context.
+ *
+ * Escopos usados:
+ *   calendar.readonly  · tasks.readonly  · drive.readonly
+ */
+
+declare(strict_types=1);
+
+const GOOGLE_SCOPES = [
+    'https://www.googleapis.com/auth/calendar.readonly',
+    'https://www.googleapis.com/auth/tasks.readonly',
+    'https://www.googleapis.com/auth/drive.readonly',
+];
+
+// ---------------------------------------------------------------------------
+// HTTP helpers
+// ---------------------------------------------------------------------------
+
+/** POST para URL com dados application/x-www-form-urlencoded; retorna array. */
+function google_http_post(string $url, array $data): array
+{
+    $payload = http_build_query($data);
+    $ctx = stream_context_create(['http' => [
+        'method'        => 'POST',
+        'header'        => "Content-Type: application/x-www-form-urlencoded\r\n" .
+                           'Content-Length: ' . strlen($payload) . "\r\n",
+        'content'       => $payload,
+        'ignore_errors' => true,
+        'timeout'       => 15,
+    ]]);
+    $resp = @file_get_contents($url, false, $ctx);
+    if ($resp === false) return ['error' => 'Falha na conexão com o servidor Google'];
+    return json_decode($resp, true) ?? [];
+}
+
+/** GET autenticado; retorna array JSON decodificado. */
+function google_http_get(string $url, string $access_token): array
+{
+    $ctx = stream_context_create(['http' => [
+        'method'        => 'GET',
+        'header'        => "Authorization: Bearer {$access_token}\r\n",
+        'ignore_errors' => true,
+        'timeout'       => 15,
+    ]]);
+    $resp = @file_get_contents($url, false, $ctx);
+    if ($resp === false) return ['error' => 'Falha na conexão com a Google API'];
+    return json_decode($resp, true) ?? [];
+}
+
+/** GET autenticado; retorna string bruta (para download de arquivo). */
+function google_http_get_raw(string $url, string $access_token): ?string
+{
+    $ctx = stream_context_create(['http' => [
+        'method'        => 'GET',
+        'header'        => "Authorization: Bearer {$access_token}\r\n",
+        'ignore_errors' => true,
+        'timeout'       => 20,
+    ]]);
+    $resp = @file_get_contents($url, false, $ctx);
+    return $resp !== false ? $resp : null;
+}
+
+// ---------------------------------------------------------------------------
+// OAuth2 URLs e troca de tokens
+// ---------------------------------------------------------------------------
+
+/** Gera a URL de autorização Google OAuth2. */
+function google_auth_url(): string
+{
+    return 'https://accounts.google.com/o/oauth2/auth?' . http_build_query([
+        'client_id'     => env('GOOGLE_CLIENT_ID', ''),
+        'redirect_uri'  => env('GOOGLE_REDIRECT_URI', ''),
+        'response_type' => 'code',
+        'scope'         => implode(' ', GOOGLE_SCOPES),
+        'access_type'   => 'offline',
+        'prompt'        => 'consent',   // força emissão de refresh_token
+    ]);
+}
+
+/** Troca authorization code por access_token + refresh_token. */
+function google_exchange_code(string $code): array
+{
+    return google_http_post('https://oauth2.googleapis.com/token', [
+        'code'          => $code,
+        'client_id'     => env('GOOGLE_CLIENT_ID', ''),
+        'client_secret' => env('GOOGLE_CLIENT_SECRET', ''),
+        'redirect_uri'  => env('GOOGLE_REDIRECT_URI', ''),
+        'grant_type'    => 'authorization_code',
+    ]);
+}
+
+/** Renova o access_token usando o refresh_token. */
+function google_refresh(string $refresh_token): array
+{
+    return google_http_post('https://oauth2.googleapis.com/token', [
+        'refresh_token' => $refresh_token,
+        'client_id'     => env('GOOGLE_CLIENT_ID', ''),
+        'client_secret' => env('GOOGLE_CLIENT_SECRET', ''),
+        'grant_type'    => 'refresh_token',
+    ]);
+}
+
+/** Revoga token no Google. */
+function google_revoke(string $token): void
+{
+    @file_get_contents(
+        'https://oauth2.googleapis.com/revoke?' . http_build_query(['token' => $token]),
+        false,
+        stream_context_create(['http' => ['method' => 'POST', 'ignore_errors' => true]])
+    );
+}
+
+// ---------------------------------------------------------------------------
+// Persistência de token no MySQL
+// ---------------------------------------------------------------------------
+
+/** Carrega o token do banco para o usuário. Retorna null se não conectado. */
+function google_load_token(int $usuario_id): ?array
+{
+    $stmt = db()->prepare(
+        'SELECT access_token, refresh_token, expires_at
+           FROM cerebro_tokens WHERE usuario_id = :uid LIMIT 1'
+    );
+    $stmt->execute([':uid' => $usuario_id]);
+    $row = $stmt->fetch();
+    return $row ?: null;
+}
+
+/**
+ * Persiste (INSERT ou UPDATE) o token no banco.
+ * Se o novo token não tiver refresh_token, preserva o existente.
+ */
+function google_save_token(int $usuario_id, array $token): void
+{
+    $expires_at = isset($token['expires_in'])
+        ? time() + (int) $token['expires_in']
+        : (int) ($token['expires_at'] ?? 0);
+
+    $stmt = db()->prepare(
+        'INSERT INTO cerebro_tokens (usuario_id, access_token, refresh_token, expires_at)
+         VALUES (:uid, :at, :rt, :ea) AS nr
+         ON DUPLICATE KEY UPDATE
+           access_token  = nr.access_token,
+           refresh_token = COALESCE(nr.refresh_token, cerebro_tokens.refresh_token),
+           expires_at    = nr.expires_at'
+    );
+    $stmt->execute([
+        ':uid' => $usuario_id,
+        ':at'  => $token['access_token'],
+        ':rt'  => $token['refresh_token'] ?? null,
+        ':ea'  => $expires_at,
+    ]);
+}
+
+/** Remove o token do banco (desconectar). */
+function google_delete_token(int $usuario_id): void
+{
+    db()->prepare('DELETE FROM cerebro_tokens WHERE usuario_id = :uid')
+        ->execute([':uid' => $usuario_id]);
+}
+
+// ---------------------------------------------------------------------------
+// Access token válido (com refresh automático)
+// ---------------------------------------------------------------------------
+
+/**
+ * Retorna um access_token válido para o usuário.
+ * Renova automaticamente se expirado. Retorna null se não conectado.
+ */
+function google_access_token(int $usuario_id): ?string
+{
+    $token = google_load_token($usuario_id);
+    if (!$token) return null;
+
+    // Token expira em menos de 60 s — precisa renovar
+    if ((int) $token['expires_at'] < time() + 60) {
+        if (empty($token['refresh_token'])) return null;
+
+        $new = google_refresh($token['refresh_token']);
+        if (empty($new['access_token'])) return null;
+
+        // Preserva o refresh_token existente se o novo não trouxer
+        $new['refresh_token'] = $new['refresh_token'] ?? $token['refresh_token'];
+        google_save_token($usuario_id, $new);
+
+        return $new['access_token'];
+    }
+
+    return $token['access_token'];
+}

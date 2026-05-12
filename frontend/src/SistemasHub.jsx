@@ -7,6 +7,9 @@ export const MRSYS_VERSION = 'v1.0.2'
 // Versão atual do Pare Certo (atualizada a cada release)
 export const PARECETO_VERSION = 'v0.1'
 
+// Versão atual do Cérebro
+export const CEREBRO_VERSION = 'v1.0'
+
 const SISTEMAS = [
   {
     id: 'mrsys',
@@ -26,7 +29,15 @@ const SISTEMAS = [
     ativo: true,
     versao: PARECETO_VERSION,
   },
-  { id: 'placeholder2', placeholder: true },
+  {
+    id: 'cerebro',
+    nome: 'Cérebro',
+    descricao: 'Agenda, Tarefas, Notas e Drive integrados ao Google',
+    icone: '🧠',
+    cor: 'from-violet-600 to-indigo-700',
+    ativo: true,
+    versao: CEREBRO_VERSION,
+  },
   { id: 'placeholder3', placeholder: true },
   { id: 'placeholder4', placeholder: true },
   { id: 'placeholder5', placeholder: true },
@@ -36,6 +47,7 @@ function podeAcessar(sistema, usuario) {
   if (usuario?.perfil_codigo === 'admin') return true
   if (sistema.id === 'mrsys')    return !!usuario?.acesso_mrsys
   if (sistema.id === 'pareceto') return !!usuario?.acesso_pareceto
+  if (sistema.id === 'cerebro')  return !!usuario?.acesso_cerebro
   return false
 }
 
@@ -72,6 +84,7 @@ function ModalUsuario({ usuario, perfis, onSalvar, onFechar }) {
     status: usuario?.status || 'ATIVO',
     acesso_mrsys: usuario?.acesso_mrsys ?? 1,
     acesso_pareceto: usuario?.acesso_pareceto ?? 0,
+    acesso_cerebro: usuario?.acesso_cerebro ?? 0,
   })
   const [erro, setErro] = useState('')
   const [salvando, setSalvando] = useState(false)
@@ -92,6 +105,7 @@ function ModalUsuario({ usuario, perfis, onSalvar, onFechar }) {
         status: form.status,
         acesso_mrsys: form.acesso_mrsys,
         acesso_pareceto: form.acesso_pareceto,
+        acesso_cerebro: form.acesso_cerebro,
       }
       if (!isEdicao) {
         payload.email = form.email.trim()
@@ -191,6 +205,13 @@ function ModalUsuario({ usuario, perfis, onSalvar, onFechar }) {
                 <div className="text-xs text-slate-500">Análises operacionais e KPIs</div>
               </div>
               <Toggle checked={!!form.acesso_pareceto} onChange={v => set('acesso_pareceto', v ? 1 : 0)} />
+            </div>
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-sm font-medium text-slate-800">Cérebro</div>
+                <div className="text-xs text-slate-500">Agenda, Tarefas, Notas e Drive</div>
+              </div>
+              <Toggle checked={!!form.acesso_cerebro} onChange={v => set('acesso_cerebro', v ? 1 : 0)} />
             </div>
           </div>
           {erro && (
@@ -301,6 +322,7 @@ function GestaoUsuarios({ onVoltar }) {
                   <th className="text-center px-4 py-3 font-semibold text-slate-600">Status</th>
                   <th className="text-center px-4 py-3 font-semibold text-slate-600">MRSys</th>
                   <th className="text-center px-4 py-3 font-semibold text-slate-600">Pare Certo</th>
+                  <th className="text-center px-4 py-3 font-semibold text-slate-600">Cérebro</th>
                   <th className="px-4 py-3"></th>
                 </tr>
               </thead>
@@ -346,6 +368,17 @@ function GestaoUsuarios({ onVoltar }) {
                           checked={!!u.acesso_pareceto}
                           disabled={!!togglingId}
                           onChange={() => toggleAcesso(u, 'acesso_pareceto')}
+                        />
+                      )}
+                    </td>
+                    <td className="px-4 py-3 text-center">
+                      {u.perfil_codigo === 'admin' ? (
+                        <span className="text-xs text-slate-400 italic">admin</span>
+                      ) : (
+                        <Toggle
+                          checked={!!u.acesso_cerebro}
+                          disabled={!!togglingId}
+                          onChange={() => toggleAcesso(u, 'acesso_cerebro')}
                         />
                       )}
                     </td>

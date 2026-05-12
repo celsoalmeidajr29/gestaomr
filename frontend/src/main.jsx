@@ -7,6 +7,7 @@ import Login from './Login.jsx'
 import SistemasHub from './SistemasHub.jsx'
 import PropostaPublica from './PropostaPublica.jsx'
 import PareCetoApp from './pareceto/PareCetoApp.jsx'
+import CerebroApp from './cerebro/CerebroApp.jsx'
 import './index.css'
 
 /**
@@ -81,6 +82,10 @@ function Root() {
 
   if (sistemaAtivo === 'pareceto') {
     return <PareCetoApp usuario={user} onVoltarHub={handleVoltarHub} onLogout={handleLogout} />
+  }
+
+  if (sistemaAtivo === 'cerebro') {
+    return <CerebroApp usuario={user} onVoltarHub={handleVoltarHub} onLogout={handleLogout} />
   }
 
   return null
