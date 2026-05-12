@@ -11,10 +11,25 @@ $isSelf  = $user['id'] === $id;
 $isAdmin = $user['perfil_codigo'] === 'admin';
 if (!$isSelf && !$isAdmin) json_error('Acesso não autorizado', 403);
 
+// Detecta se migration 021 foi aplicada (coluna acesso_cerebro existe)
+function hasCerebroCol(): bool
+{
+    static $has = null;
+    if ($has !== null) return $has;
+    $has = (bool) db()->query(
+        "SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
+          WHERE TABLE_SCHEMA = DATABASE()
+            AND TABLE_NAME   = 'usuarios'
+            AND COLUMN_NAME  = 'acesso_cerebro'"
+    )->fetchColumn();
+    return $has;
+}
+
 if ($method === 'GET') {
+    $cerebro = hasCerebroCol() ? ', u.acesso_cerebro' : '';
     $row = db()->query(
         "SELECT u.id, u.nome, u.email, u.telefone, u.avatar_url, u.status,
-                u.acesso_mrsys, u.acesso_pareceto, u.acesso_cerebro,
+                u.acesso_mrsys, u.acesso_pareceto{$cerebro},
                 u.perfil_id, p.codigo AS perfil_codigo, p.nome AS perfil_nome,
                 p.permissoes, u.ultimo_login, u.criado_em
          FROM usuarios u JOIN perfis p ON p.id = u.perfil_id
@@ -60,7 +75,8 @@ if ($method === 'PUT' || $method === 'PATCH') {
             $updates[] = 'acesso_pareceto=:pareceto';
             $params[':pareceto'] = (int)(bool)$d['acesso_pareceto'];
         }
-        if (array_key_exists('acesso_cerebro', $d)) {
+        // Só atualiza acesso_cerebro se a migration 021 já foi aplicada
+        if (array_key_exists('acesso_cerebro', $d) && hasCerebroCol()) {
             $updates[] = 'acesso_cerebro=:cerebro';
             $params[':cerebro'] = (int)(bool)$d['acesso_cerebro'];
         }
@@ -68,8 +84,10 @@ if ($method === 'PUT' || $method === 'PATCH') {
     if ($updates) {
         db()->prepare('UPDATE usuarios SET ' . implode(', ', $updates) . ' WHERE id=:id')->execute($params);
     }
+
+    $cerebro = hasCerebroCol() ? ', u.acesso_cerebro' : '';
     $row = db()->query(
-        "SELECT u.id, u.nome, u.email, u.status, u.acesso_mrsys, u.acesso_pareceto, u.acesso_cerebro,
+        "SELECT u.id, u.nome, u.email, u.status, u.acesso_mrsys, u.acesso_pareceto{$cerebro},
                 u.perfil_id, p.codigo AS perfil_codigo, p.nome AS perfil_nome
          FROM usuarios u JOIN perfis p ON p.id = u.perfil_id WHERE u.id = {$id}"
     )->fetch();

@@ -222,7 +222,7 @@ function current_user(): ?array
     }
     $stmt = db()->prepare(
         'SELECT u.id, u.nome, u.email, u.perfil_id, u.status,
-                u.acesso_mrsys, u.acesso_pareceto, u.acesso_cerebro,
+                u.acesso_mrsys, u.acesso_pareceto,
                 p.codigo AS perfil_codigo, p.nome AS perfil_nome, p.permissoes
            FROM usuarios u
            JOIN perfis p ON p.id = u.perfil_id
