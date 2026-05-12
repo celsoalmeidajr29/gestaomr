@@ -5,26 +5,42 @@ require_once __DIR__ . '/../../../_bootstrap.php';
 require_permission('pareceto');
 $method = $_SERVER['REQUEST_METHOD'];
 
+// ---- GET: retorna todos os registros do banco ----
+if ($method === 'GET') {
+    $where  = [];
+    $params = [];
+    if (!empty($_GET['de']))      { $where[] = 'dt_emissao >= :de';      $params[':de']      = $_GET['de']; }
+    if (!empty($_GET['ate']))     { $where[] = 'dt_emissao <= :ate';     $params[':ate']     = $_GET['ate'] . ' 23:59:59'; }
+    if (!empty($_GET['trecho']))  { $where[] = 'trecho = :trecho';       $params[':trecho']  = $_GET['trecho']; }
+    if (!empty($_GET['emissor'])) { $where[] = 'emissor = :emissor';     $params[':emissor'] = $_GET['emissor']; }
+    $wc   = $where ? 'WHERE ' . implode(' AND ', $where) : '';
+    $stmt = db()->prepare("SELECT * FROM pc_irregularidades {$wc} ORDER BY dt_emissao DESC LIMIT 500000");
+    $stmt->execute($params);
+    json_response($stmt->fetchAll());
+}
+
 if ($method !== 'POST') json_error('Metodo nao permitido', 405);
 
 $records = json_input();
 if (!is_array($records) || empty($records)) json_error('Array de registros obrigatorio', 422);
 
+// Usa alias de linha (MySQL 8.0.19+) em vez de VALUES() removido no MySQL 8.4
 $stmt = db()->prepare(
     'INSERT INTO pc_irregularidades
        (id_csv, dt_emissao, status, emissor, cargo, trecho, placa, valor, origem_class, semana)
      VALUES
        (:id_csv, :dt_emissao, :status, :emissor, :cargo, :trecho, :placa, :valor, :origem_class, :semana)
+     AS nr
      ON DUPLICATE KEY UPDATE
-       dt_emissao   = VALUES(dt_emissao),
-       status       = VALUES(status),
-       emissor      = VALUES(emissor),
-       cargo        = VALUES(cargo),
-       trecho       = VALUES(trecho),
-       placa        = VALUES(placa),
-       valor        = VALUES(valor),
-       origem_class = VALUES(origem_class),
-       semana       = VALUES(semana)'
+       dt_emissao   = nr.dt_emissao,
+       status       = nr.status,
+       emissor      = nr.emissor,
+       cargo        = nr.cargo,
+       trecho       = nr.trecho,
+       placa        = nr.placa,
+       valor        = nr.valor,
+       origem_class = nr.origem_class,
+       semana       = nr.semana'
 );
 
 $inseridos = 0;
