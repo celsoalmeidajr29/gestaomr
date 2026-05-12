@@ -140,11 +140,11 @@ function google_save_token(int $usuario_id, array $token): void
 
     $stmt = db()->prepare(
         'INSERT INTO cerebro_tokens (usuario_id, access_token, refresh_token, expires_at)
-         VALUES (:uid, :at, :rt, :ea) AS nr
+         VALUES (:uid, :at, :rt, :ea)
          ON DUPLICATE KEY UPDATE
-           access_token  = nr.access_token,
-           refresh_token = COALESCE(nr.refresh_token, cerebro_tokens.refresh_token),
-           expires_at    = nr.expires_at'
+           access_token  = VALUES(access_token),
+           refresh_token = COALESCE(VALUES(refresh_token), refresh_token),
+           expires_at    = VALUES(expires_at)'
     );
     $stmt->execute([
         ':uid' => $usuario_id,

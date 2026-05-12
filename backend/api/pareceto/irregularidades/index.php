@@ -24,23 +24,21 @@ if ($method !== 'POST') json_error('Metodo nao permitido', 405);
 $records = json_input();
 if (!is_array($records) || empty($records)) json_error('Array de registros obrigatorio', 422);
 
-// Usa alias de linha (MySQL 8.0.19+) em vez de VALUES() removido no MySQL 8.4
 $stmt = db()->prepare(
     'INSERT INTO pc_irregularidades
        (id_csv, dt_emissao, status, emissor, cargo, trecho, placa, valor, origem_class, semana)
      VALUES
        (:id_csv, :dt_emissao, :status, :emissor, :cargo, :trecho, :placa, :valor, :origem_class, :semana)
-     AS nr
      ON DUPLICATE KEY UPDATE
-       dt_emissao   = nr.dt_emissao,
-       status       = nr.status,
-       emissor      = nr.emissor,
-       cargo        = nr.cargo,
-       trecho       = nr.trecho,
-       placa        = nr.placa,
-       valor        = nr.valor,
-       origem_class = nr.origem_class,
-       semana       = nr.semana'
+       dt_emissao   = VALUES(dt_emissao),
+       status       = VALUES(status),
+       emissor      = VALUES(emissor),
+       cargo        = VALUES(cargo),
+       trecho       = VALUES(trecho),
+       placa        = VALUES(placa),
+       valor        = VALUES(valor),
+       origem_class = VALUES(origem_class),
+       semana       = VALUES(semana)'
 );
 
 $inseridos = 0;

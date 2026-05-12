@@ -47,7 +47,6 @@ if ($hasMig019) {
     );
 } else {
     // Schema antigo (migration 016): dedup por placa
-    // Usa alias de linha (MySQL 8.0.19+) em vez de VALUES() removido no MySQL 8.4
     $stmt = db()->prepare(
         'INSERT INTO pc_vendas
            (placa, dt_registro, dt_inicial, periodo, usuario, cargo,
@@ -55,10 +54,9 @@ if ($hasMig019) {
          VALUES
            (:placa, :dt_reg, :dt_ini, :periodo, :usuario, :cargo,
             :origem, :trecho, :forma_pag, :valor, :irregular, :canal, :zona, :tipo)
-         AS nr
          ON DUPLICATE KEY UPDATE
-           dt_registro = nr.dt_registro,
-           valor       = nr.valor'
+           dt_registro = VALUES(dt_registro),
+           valor       = VALUES(valor)'
     );
 }
 
