@@ -9,10 +9,10 @@
 declare(strict_types=1);
 
 const GOOGLE_SCOPES = [
-    'https://www.googleapis.com/auth/calendar.readonly',
-    'https://www.googleapis.com/auth/tasks.readonly',
-    'https://www.googleapis.com/auth/drive.readonly',
-    'https://www.googleapis.com/auth/keep.readonly',
+    'https://www.googleapis.com/auth/calendar.events',
+    'https://www.googleapis.com/auth/tasks',
+    'https://www.googleapis.com/auth/drive',
+    'https://www.googleapis.com/auth/keep',
 ];
 
 // ---------------------------------------------------------------------------
@@ -48,6 +48,54 @@ function google_http_get(string $url, string $access_token): array
     $resp = @file_get_contents($url, false, $ctx);
     if ($resp === false) return ['error' => 'Falha na conexão com a Google API'];
     return json_decode($resp, true) ?? [];
+}
+
+/** POST JSON autenticado (criar recursos). */
+function google_http_post_json(string $url, array $data, string $access_token): array
+{
+    $json = json_encode($data, JSON_UNESCAPED_UNICODE);
+    $ctx = stream_context_create(['http' => [
+        'method'        => 'POST',
+        'header'        => "Authorization: Bearer {$access_token}\r\n" .
+                           "Content-Type: application/json; charset=utf-8\r\n" .
+                           'Content-Length: ' . strlen($json) . "\r\n",
+        'content'       => $json,
+        'ignore_errors' => true,
+        'timeout'       => 15,
+    ]]);
+    $resp = @file_get_contents($url, false, $ctx);
+    if ($resp === false) return ['error' => ['message' => 'Falha na conexão com a Google API']];
+    return json_decode($resp, true) ?? [];
+}
+
+/** PATCH JSON autenticado (atualização parcial). */
+function google_http_patch(string $url, array $data, string $access_token): array
+{
+    $json = json_encode($data, JSON_UNESCAPED_UNICODE);
+    $ctx = stream_context_create(['http' => [
+        'method'        => 'PATCH',
+        'header'        => "Authorization: Bearer {$access_token}\r\n" .
+                           "Content-Type: application/json; charset=utf-8\r\n" .
+                           'Content-Length: ' . strlen($json) . "\r\n",
+        'content'       => $json,
+        'ignore_errors' => true,
+        'timeout'       => 15,
+    ]]);
+    $resp = @file_get_contents($url, false, $ctx);
+    if ($resp === false) return ['error' => ['message' => 'Falha na conexão com a Google API']];
+    return json_decode($resp, true) ?? [];
+}
+
+/** DELETE autenticado. */
+function google_http_delete(string $url, string $access_token): void
+{
+    $ctx = stream_context_create(['http' => [
+        'method'        => 'DELETE',
+        'header'        => "Authorization: Bearer {$access_token}\r\n",
+        'ignore_errors' => true,
+        'timeout'       => 15,
+    ]]);
+    @file_get_contents($url, false, $ctx);
 }
 
 /** GET autenticado; retorna string bruta (para download de arquivo). */
