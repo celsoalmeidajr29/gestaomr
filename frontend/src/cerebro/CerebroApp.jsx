@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react'
 import {
   ArrowLeft, LogOut, Calendar, CheckSquare, FileText, HardDrive,
   RefreshCw, AlertCircle, ExternalLink, ChevronRight, X, Brain,
-  Wifi, WifiOff, Clock, Search,
+  Wifi, WifiOff, Clock, Search, StickyNote,
 } from 'lucide-react'
 
 // ---- Configuração ----
@@ -146,7 +146,7 @@ function TelaConectar({ onConnect, connecting }) {
       <div className="text-center">
         <p className="font-semibold text-lg" style={{ color: C.text }}>Conectar ao Google</p>
         <p className="text-sm mt-1 max-w-sm text-center" style={{ color: C.muted }}>
-          Autorize o acesso à sua Agenda, Tarefas e Drive para usar o Cérebro.
+          Autorize o acesso à sua Agenda, Tarefas, Keep e Drive para usar o Cérebro.
         </p>
       </div>
       <Btn variant="accent" onClick={onConnect} disabled={connecting}>
@@ -524,10 +524,130 @@ function AbaDrive() {
   )
 }
 
+// ---- Aba Keep ----
+const KEEP_COLORS = ['#fff9c4','#c8e6c9','#bbdefb','#f8bbd0','#ffe0b2','#e1bee7','#b2dfdb','#cfd8dc']
+
+function AbaKeep() {
+  const [notas, setNotas]   = useState(null)
+  const [loading, setLoading] = useState(false)
+  const [erro, setErro]     = useState(null)
+  const [busca, setBusca]   = useState('')
+
+  const carregar = useCallback(async () => {
+    setLoading(true); setErro(null)
+    try { setNotas(await apiFetch('/keep.php')) }
+    catch (e) { setErro(e.message) }
+    finally { setLoading(false) }
+  }, [])
+
+  const filtradas = (notas || []).filter(n => {
+    if (!busca) return true
+    const q = busca.toLowerCase()
+    return (
+      (n.title || '').toLowerCase().includes(q) ||
+      (n.text  || '').toLowerCase().includes(q) ||
+      (n.items || []).some(i => i.text.toLowerCase().includes(q))
+    )
+  })
+
+  const pinned   = filtradas.filter(n => n.pinned)
+  const unpinned = filtradas.filter(n => !n.pinned)
+
+  return (
+    <div>
+      <div className="flex items-center gap-2 mb-5">
+        <input
+          value={busca}
+          onChange={e => setBusca(e.target.value)}
+          placeholder="Filtrar notas..."
+          className="flex-1 rounded-xl px-4 py-2 text-sm outline-none"
+          style={{ background: C.card, border: `1px solid ${C.border}`, color: C.text }}
+        />
+        <Btn onClick={carregar} disabled={loading} variant="accent">
+          {loading ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <StickyNote className="w-3.5 h-3.5" />}
+          {notas === null ? 'Carregar' : 'Atualizar'}
+        </Btn>
+        {busca && (
+          <Btn onClick={() => setBusca('')} variant="ghost"><X className="w-3.5 h-3.5" /></Btn>
+        )}
+      </div>
+
+      {loading && <Spinner />}
+      {erro    && <Erro msg={erro} onRetry={carregar} />}
+      {!loading && !erro && notas === null && (
+        <Empty msg="Clique em 'Carregar' para buscar suas notas do Keep." />
+      )}
+      {!loading && !erro && notas !== null && filtradas.length === 0 && (
+        <Empty msg="Nenhuma nota encontrada." />
+      )}
+
+      {!loading && !erro && pinned.length > 0 && (
+        <div className="mb-6">
+          <p className="text-xs font-semibold uppercase tracking-widest mb-3 px-1" style={{ color: C.accent2 }}>
+            📌 Fixadas
+          </p>
+          <KeepGrid notas={pinned} />
+        </div>
+      )}
+      {!loading && !erro && unpinned.length > 0 && (
+        <div>
+          {pinned.length > 0 && (
+            <p className="text-xs font-semibold uppercase tracking-widest mb-3 px-1" style={{ color: C.accent2 }}>
+              Outras
+            </p>
+          )}
+          <KeepGrid notas={unpinned} />
+        </div>
+      )}
+    </div>
+  )
+}
+
+function KeepGrid({ notas }) {
+  return (
+    <div className="columns-1 sm:columns-2 lg:columns-3 gap-3 space-y-3">
+      {notas.map((n, i) => {
+        const bg = KEEP_COLORS[i % KEEP_COLORS.length]
+        return (
+          <div
+            key={n.id || i}
+            className="break-inside-avoid rounded-2xl p-4 mb-3"
+            style={{ background: bg, color: '#202124' }}
+          >
+            {n.title && (
+              <p className="font-semibold text-sm mb-2 leading-snug">{n.title}</p>
+            )}
+            {n.isChecklist ? (
+              <ul className="space-y-1">
+                {(n.items || []).map((item, j) => (
+                  <li key={j} className="flex items-start gap-2 text-xs">
+                    <span className="flex-shrink-0 mt-0.5">{item.checked ? '☑' : '☐'}</span>
+                    <span style={item.checked ? { textDecoration: 'line-through', opacity: 0.5 } : {}}>
+                      {item.text}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              n.text && (
+                <p className="text-xs leading-relaxed whitespace-pre-wrap line-clamp-[12]">{n.text}</p>
+              )
+            )}
+            {n.updateTime && (
+              <p className="text-[10px] mt-2 opacity-50">{fmtDateTime(n.updateTime)}</p>
+            )}
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
 // ---- App principal ----
 const TABS = [
   { id: 'agenda',  label: 'Agenda',   Icon: Calendar },
   { id: 'tarefas', label: 'Tarefas',  Icon: CheckSquare },
+  { id: 'keep',    label: 'Keep',     Icon: StickyNote },
   { id: 'notas',   label: 'Notas',    Icon: FileText },
   { id: 'drive',   label: 'Drive',    Icon: HardDrive },
 ]
@@ -731,6 +851,7 @@ export default function CerebroApp({ usuario, onVoltarHub, onLogout }) {
           <>
             {aba === 'agenda'  && <AbaAgenda />}
             {aba === 'tarefas' && <AbaTarefas />}
+            {aba === 'keep'    && <AbaKeep />}
             {aba === 'notas'   && <AbaNotas />}
             {aba === 'drive'   && <AbaDrive />}
           </>

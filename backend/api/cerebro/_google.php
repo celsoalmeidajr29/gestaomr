@@ -12,6 +12,7 @@ const GOOGLE_SCOPES = [
     'https://www.googleapis.com/auth/calendar.readonly',
     'https://www.googleapis.com/auth/tasks.readonly',
     'https://www.googleapis.com/auth/drive.readonly',
+    'https://www.googleapis.com/auth/keep.readonly',
 ];
 
 // ---------------------------------------------------------------------------
