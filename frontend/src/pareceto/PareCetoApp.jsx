@@ -3759,12 +3759,18 @@ export default function PareCetoApp({ usuario, onVoltarHub, onLogout }) {
   }, [funcionarios, filtroStatusFunc, filtroCargoFunc, buscaFunc])
 
   async function autoRegistrarFuncionarios(nomes, cargo = 'Agente') {
-    const novos = nomes.filter(n => n && !funcionarios.some(f => f.nome?.toLowerCase().trim() === n.toLowerCase().trim()))
+    const novos = nomes.filter(n => n && !funcionarios.some(f =>
+      f.nome?.toLowerCase().trim() === n.toLowerCase().trim() ||
+      f.login?.toLowerCase().trim() === n.toLowerCase().trim()
+    ))
     if (!novos.length) return 0
     let criados = 0
     for (const nome of novos) {
       try {
-        const f = await apiFetch('/funcionarios/index.php', { method: 'POST', body: JSON.stringify({ nome: nome.trim(), cargo, status: 'Ativo' }) })
+        const login = nome.trim().toLowerCase()
+          .normalize('NFD').replace(/[̀-ͯ]/g, '')
+          .replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '')
+        const f = await apiFetch('/funcionarios/index.php', { method: 'POST', body: JSON.stringify({ nome: nome.trim(), login, cargo, status: 'Ativo' }) })
         setFuncionarios(prev => [...prev, f])
         criados++
       } catch {}
@@ -3781,41 +3787,48 @@ export default function PareCetoApp({ usuario, onVoltarHub, onLogout }) {
       let linhasLidas = 0
       const { rows, delim } = await parseCSVText(text, null, (ratio, count) => {
         linhasLidas = count
-        setProcessandoVendas({ pct: 10 + Math.round(ratio * 72), label: `Processando linhas... ${count.toLocaleString('pt-BR')}` })
+        setProcessandoVendas({ pct: 10 + Math.round(ratio * 60), label: `Processando linhas... ${count.toLocaleString('pt-BR')}` })
       })
       linhasLidas = rows.length
-      setProcessandoVendas({ pct: 85, label: 'Classificando por placa...' })
+      setProcessandoVendas({ pct: 73, label: 'Classificando por placa...' })
       await new Promise(r => setTimeout(r, 0))
       const { records, premissas } = parseVendas(rows, funcionarios)
-      setProcessandoVendas({ pct: 95, label: 'Gerando análise...' })
+      setProcessandoVendas({ pct: 82, label: 'Gerando análise...' })
       await new Promise(r => setTimeout(r, 0))
-      setDadosVendas({ records, nomeArquivo: file.name })
-      setPremissasVendas([
+      const analise = analyzeVendas(records)
+      const jornada = analyzeJornada(records)
+      const premissasLocal = [
         `Arquivo: ${file.name}`,
         `Delimitador: ${delim === '\t' ? 'TAB' : delim}`,
-        `${linhasLidas.toLocaleString('pt-BR')} linhas no CSV · ${records.length.toLocaleString('pt-BR')} placas únicas`,
+        `${linhasLidas.toLocaleString('pt-BR')} linhas no CSV · ${records.length.toLocaleString('pt-BR')} transações`,
         ...premissas,
-      ])
-      setAnaliseVendas(analyzeVendas(records))
-      setJornadaVendas(analyzeJornada(records))
+      ]
+      setDadosVendas({ records, nomeArquivo: file.name })
+      setPremissasVendas(premissasLocal)
+      setAnaliseVendas(analise)
+      setJornadaVendas(jornada)
       setSubAbaVendas('kpis')
-      setNaoSalvoVendas(true)
+      setProcessandoVendas({ pct: 90, label: 'Cadastrando funcionários...' })
       const nomesAgentes = [...new Set(records.map(r => r.usuario).filter(Boolean))]
-      const criados = await autoRegistrarFuncionarios(nomesAgentes)
-      const msg = criados > 0
-        ? `${records.length.toLocaleString('pt-BR')} transações · ${criados} funcionário(s) cadastrados`
-        : `${records.length.toLocaleString('pt-BR')} transações carregadas`
-      showToast(msg)
-    } catch (e) { showToast('Erro ao processar CSV: ' + e.message, 'erro') }
+      await autoRegistrarFuncionarios(nomesAgentes)
+      setProcessandoVendas({ pct: 95, label: 'Salvando no banco...' })
+      await salvarRelatorioVendas({ records, nomeArquivo: file.name, analise, premissas: premissasLocal })
+    } catch (e) {
+      showToast('Erro ao processar CSV: ' + e.message, 'erro')
+      setNaoSalvoVendas(true)
+    }
     finally { setProcessandoVendas(null) }
   }
 
-  async function salvarRelatorioVendas() {
-    if (!analiseVendas || !dadosVendas?.records?.length) return
+  async function salvarRelatorioVendas(override) {
+    const dados   = override       || dadosVendas
+    const analise = override?.analise   || analiseVendas
+    const premissas = override?.premissas || premissasVendas
+    if (!analise || !dados?.records?.length) return
     setSalvandoVendas(true)
     try {
-      const nomeArq = dadosVendas?.nomeArquivo || ''
-      const payload = dadosVendas.records.map(r => ({
+      const nomeArq = dados.nomeArquivo || ''
+      const payload = dados.records.map(r => ({
         hash_dedup:   r.hashDedup || null,
         placa:        r.placa,
         dt_registro:  r.dtReg     ? r.dtReg.toISOString().slice(0,19).replace('T',' ')     : null,
@@ -3842,14 +3855,17 @@ export default function PareCetoApp({ usuario, onVoltarHub, onLogout }) {
         method: 'POST',
         body: JSON.stringify({
           modulo: 'vendas',
-          periodo_inicio: analiseVendas.dataMin?.toISOString().slice(0,10) || new Date().toISOString().slice(0,10),
-          periodo_fim:    analiseVendas.dataMax?.toISOString().slice(0,10) || new Date().toISOString().slice(0,10),
-          total_registros: analiseVendas.totalTrans,
-          resumo_json: JSON.stringify({ totalTrans: analiseVendas.totalTrans, totalValor: analiseVendas.totalValor, topAgentes: analiseVendas.rankingAgentes.slice(0,10), premissas: premissasVendas }),
-          nome_arquivo: dadosVendas?.nomeArquivo || '',
+          periodo_inicio: analise.dataMin?.toISOString().slice(0,10) || new Date().toISOString().slice(0,10),
+          periodo_fim:    analise.dataMax?.toISOString().slice(0,10) || new Date().toISOString().slice(0,10),
+          total_registros: analise.totalTrans,
+          resumo_json: JSON.stringify({ totalTrans: analise.totalTrans, totalValor: analise.totalValor, topAgentes: analise.rankingAgentes.slice(0,10), premissas }),
+          nome_arquivo: nomeArq,
         }),
       })
-    } catch (e) { showToast('Erro ao salvar: ' + e.message, 'erro') }
+    } catch (e) {
+      showToast('Erro ao salvar: ' + e.message, 'erro')
+      setNaoSalvoVendas(true)
+    }
     finally { setSalvandoVendas(false) }
   }
 
@@ -3860,39 +3876,46 @@ export default function PareCetoApp({ usuario, onVoltarHub, onLogout }) {
       setProcessandoIrreg({ pct: 10, label: 'Detectando estrutura...' })
       await new Promise(r => setTimeout(r, 0))
       const { rows, delim } = await parseCSVText(text, ';', (ratio, count) => {
-        setProcessandoIrreg({ pct: 10 + Math.round(ratio * 72), label: `Processando linhas... ${count.toLocaleString('pt-BR')}` })
+        setProcessandoIrreg({ pct: 10 + Math.round(ratio * 60), label: `Processando linhas... ${count.toLocaleString('pt-BR')}` })
       })
-      setProcessandoIrreg({ pct: 85, label: 'Processando irregularidades...' })
+      setProcessandoIrreg({ pct: 73, label: 'Processando irregularidades...' })
       await new Promise(r => setTimeout(r, 0))
       const { records, premissas } = parseIrregularidades(rows, funcionarios)
-      setProcessandoIrreg({ pct: 95, label: 'Gerando análise...' })
+      setProcessandoIrreg({ pct: 82, label: 'Gerando análise...' })
       await new Promise(r => setTimeout(r, 0))
-      setDadosIrreg({ records, nomeArquivo: file.name })
-      setPremissasIrreg([
+      const analise = analyzeIrregularidades(records)
+      const premissasLocal = [
         `Arquivo: ${file.name}`,
         `Delimitador: ${delim === '\t' ? 'TAB' : delim}`,
         `${rows.length.toLocaleString('pt-BR')} linhas no CSV · ${records.length.toLocaleString('pt-BR')} notificações`,
         ...premissas,
-      ])
-      setAnaliseIrreg(analyzeIrregularidades(records))
+      ]
+      setDadosIrreg({ records, nomeArquivo: file.name })
+      setPremissasIrreg(premissasLocal)
+      setAnaliseIrreg(analise)
       setAlertaDismissed(false)
       setSubAbaIrreg('kpis')
-      setNaoSalvoIrreg(true)
+      setProcessandoIrreg({ pct: 90, label: 'Cadastrando funcionários...' })
       const nomesEmissores = [...new Set(records.map(r => r.emissor).filter(Boolean))]
-      const criados = await autoRegistrarFuncionarios(nomesEmissores)
-      const msg = criados > 0
-        ? `${records.length.toLocaleString('pt-BR')} notificações · ${criados} funcionário(s) cadastrados`
-        : `${records.length.toLocaleString('pt-BR')} notificações carregadas`
-      showToast(msg)
-    } catch (e) { showToast('Erro ao processar CSV: ' + e.message, 'erro') }
+      await autoRegistrarFuncionarios(nomesEmissores)
+      setProcessandoIrreg({ pct: 95, label: 'Salvando no banco...' })
+      await salvarRelatorioIrreg({ records, nomeArquivo: file.name, analise, premissas: premissasLocal })
+    } catch (e) {
+      showToast('Erro ao processar CSV: ' + e.message, 'erro')
+      setNaoSalvoIrreg(true)
+    }
     finally { setProcessandoIrreg(null) }
   }
 
-  async function salvarRelatorioIrreg() {
-    if (!analiseIrreg || !dadosIrreg?.records?.length) return
+  async function salvarRelatorioIrreg(override) {
+    const dados   = override       || dadosIrreg
+    const analise = override?.analise   || analiseIrreg
+    const premissas = override?.premissas || premissasIrreg
+    if (!analise || !dados?.records?.length) return
     setSalvandoIrreg(true)
     try {
-      const payload = dadosIrreg.records.map(r => ({
+      const nomeArq = dados.nomeArquivo || ''
+      const payload = dados.records.map(r => ({
         id_csv:       r.id,
         dt_emissao:   r.dtEmissao ? r.dtEmissao.toISOString().slice(0,19).replace('T',' ') : null,
         status:       r.status    || 'Irregular',
@@ -3909,18 +3932,21 @@ export default function PareCetoApp({ usuario, onVoltarHub, onLogout }) {
         method: 'POST',
         body: JSON.stringify({
           modulo: 'irregularidades',
-          periodo_inicio: analiseIrreg.dataMin?.toISOString().slice(0,10) || new Date().toISOString().slice(0,10),
-          periodo_fim:    analiseIrreg.dataMax?.toISOString().slice(0,10) || new Date().toISOString().slice(0,10),
-          total_registros: analiseIrreg.total,
-          resumo_json: JSON.stringify({ total: analiseIrreg.total, totalPaga: analiseIrreg.totalPaga, pctConversao: analiseIrreg.pctConversao, premissas: premissasIrreg }),
-          nome_arquivo: dadosIrreg?.nomeArquivo || '',
+          periodo_inicio: analise.dataMin?.toISOString().slice(0,10) || new Date().toISOString().slice(0,10),
+          periodo_fim:    analise.dataMax?.toISOString().slice(0,10) || new Date().toISOString().slice(0,10),
+          total_registros: analise.total,
+          resumo_json: JSON.stringify({ total: analise.total, totalPaga: analise.totalPaga, pctConversao: analise.pctConversao, premissas }),
+          nome_arquivo: nomeArq,
         }),
       })
       const partesIr = [`${res.inseridos} novas`]
       if (res.duplicatas > 0) partesIr.push(`${res.duplicatas} já existiam`)
       setNaoSalvoIrreg(false)
       showToast(partesIr.join(' · '), 'sucesso')
-    } catch (e) { showToast('Erro ao salvar: ' + e.message, 'erro') }
+    } catch (e) {
+      showToast('Erro ao salvar: ' + e.message, 'erro')
+      setNaoSalvoIrreg(true)
+    }
     finally { setSalvandoIrreg(false) }
   }
 
