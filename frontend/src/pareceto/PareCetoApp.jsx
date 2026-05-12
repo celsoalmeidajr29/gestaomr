@@ -3853,7 +3853,10 @@ export default function PareCetoApp({ usuario, onVoltarHub, onLogout }) {
     try {
       const rows = await apiFetch('/vendas/index.php')
       const records = dbRowsToVendas(rows)
-      setDadosVendas(records.length ? { records, nomeArquivo: `${records.length.toLocaleString('pt-BR')} transações do banco` } : null)
+      // Só limpa se o banco realmente tiver dados — preserva dados em memória caso salvo falhe
+      if (records.length) {
+        setDadosVendas({ records, nomeArquivo: `${records.length.toLocaleString('pt-BR')} transações do banco` })
+      }
     } catch (e) { showToast('Erro ao carregar vendas: ' + e.message, 'erro') }
     finally { setLoadingVendas(false) }
   }
@@ -3862,7 +3865,9 @@ export default function PareCetoApp({ usuario, onVoltarHub, onLogout }) {
     try {
       const rows = await apiFetch('/irregularidades/index.php')
       const records = dbRowsToIrreg(rows)
-      setDadosIrreg(records.length ? { records, nomeArquivo: `${records.length.toLocaleString('pt-BR')} registros do banco` } : null)
+      if (records.length) {
+        setDadosIrreg({ records, nomeArquivo: `${records.length.toLocaleString('pt-BR')} registros do banco` })
+      }
     } catch (e) { showToast('Erro ao carregar irregularidades: ' + e.message, 'erro') }
     finally { setLoadingIrreg(false) }
   }
@@ -3919,7 +3924,7 @@ export default function PareCetoApp({ usuario, onVoltarHub, onLogout }) {
   async function handleUploadVendas(filesInput) {
     const files = filesInput instanceof File ? [filesInput] : Array.from(filesInput)
     if (!files.length) return
-    let totalInseridos = 0; let totalDuplic = 0; let todosPremissas = []
+    let totalInseridos = 0; let totalDuplic = 0; let todosPremissas = []; let allRecords = []
     for (let fi = 0; fi < files.length; fi++) {
       const file = files[fi]
       const prefix = files.length > 1 ? `[${fi+1}/${files.length}] ` : ''
@@ -3937,6 +3942,7 @@ export default function PareCetoApp({ usuario, onVoltarHub, onLogout }) {
         setProcessandoVendas({ pct: 68, label: `${prefix}Classificando...` })
         await new Promise(r => setTimeout(r, 0))
         const { records, premissas } = parseVendas(rows, funcionarios)
+        allRecords = [...allRecords, ...records]
         setProcessandoVendas({ pct: 78, label: `${prefix}Cadastrando funcionários...` })
         const nomesAgentes = [...new Set(records.map(r => r.usuario).filter(Boolean))]
         await autoRegistrarFuncionarios(nomesAgentes)
@@ -3969,13 +3975,18 @@ export default function PareCetoApp({ usuario, onVoltarHub, onLogout }) {
           resumo_json: JSON.stringify({ totalTrans: analise.totalTrans, totalValor: analise.totalValor, topAgentes: analise.rankingAgentes.slice(0,10), premissas: premissasLocal }),
           nome_arquivo: nomeArq,
         }) })
-      } catch (e) { showToast(`${prefix}Erro: ${e.message}`, 'erro') }
+      } catch (e) { showToast(`${prefix}Erro ao salvar: ${e.message}`, 'erro') }
     }
-    setProcessandoVendas({ pct: 97, label: 'Recarregando do banco...' })
-    await carregarVendas()
+    // Exibe imediatamente os dados parseados (mesmo que o DB salve falhe)
+    if (allRecords.length) {
+      const label = files.length > 1 ? `${files.length} arquivos · ${allRecords.length.toLocaleString('pt-BR')} transações` : files[0].name
+      setDadosVendas({ records: allRecords, nomeArquivo: label })
+    }
     setPremissasVendas(todosPremissas)
     setSubAbaVendas('kpis')
     setNaoSalvoVendas(false)
+    setProcessandoVendas({ pct: 97, label: 'Sincronizando com banco...' })
+    await carregarVendas()
     const msg = [`${totalInseridos} novas`]
     if (totalDuplic > 0) msg.push(`${totalDuplic} já existiam`)
     if (files.length > 1) msg.push(`${files.length} arquivos`)
@@ -3986,7 +3997,7 @@ export default function PareCetoApp({ usuario, onVoltarHub, onLogout }) {
   async function handleUploadIrreg(filesInput) {
     const files = filesInput instanceof File ? [filesInput] : Array.from(filesInput)
     if (!files.length) return
-    let totalInseridos = 0; let totalAtualizados = 0; let todosPremissas = []
+    let totalInseridos = 0; let totalAtualizados = 0; let todosPremissas = []; let allRecords = []
     for (let fi = 0; fi < files.length; fi++) {
       const file = files[fi]
       const prefix = files.length > 1 ? `[${fi+1}/${files.length}] ` : ''
@@ -4001,6 +4012,7 @@ export default function PareCetoApp({ usuario, onVoltarHub, onLogout }) {
         setProcessandoIrreg({ pct: 73, label: `${prefix}Processando irregularidades...` })
         await new Promise(r => setTimeout(r, 0))
         const { records, premissas } = parseIrregularidades(rows, funcionarios)
+        allRecords = [...allRecords, ...records]
         const analise = analyzeIrregularidades(records)
         const premissasLocal = [
           `Arquivo: ${file.name}`,
@@ -4035,14 +4047,19 @@ export default function PareCetoApp({ usuario, onVoltarHub, onLogout }) {
           resumo_json: JSON.stringify({ total: analise.total, totalPaga: analise.totalPaga, pctConversao: analise.pctConversao, premissas: premissasLocal }),
           nome_arquivo: file.name,
         }) })
-      } catch (e) { showToast(`${prefix}Erro: ${e.message}`, 'erro') }
+      } catch (e) { showToast(`${prefix}Erro ao salvar: ${e.message}`, 'erro') }
     }
-    setProcessandoIrreg({ pct: 97, label: 'Recarregando do banco...' })
-    await carregarIrreg()
+    // Exibe imediatamente os dados parseados (mesmo que o DB salve falhe)
+    if (allRecords.length) {
+      const label = files.length > 1 ? `${files.length} arquivos · ${allRecords.length.toLocaleString('pt-BR')} notificações` : files[0].name
+      setDadosIrreg({ records: allRecords, nomeArquivo: label })
+    }
     setPremissasIrreg(todosPremissas)
     setSubAbaIrreg('kpis')
     setAlertaDismissed(false)
     setNaoSalvoIrreg(false)
+    setProcessandoIrreg({ pct: 97, label: 'Sincronizando com banco...' })
+    await carregarIrreg()
     const msg = [`${totalInseridos} novas`]
     if (totalAtualizados > 0) msg.push(`${totalAtualizados} atualizadas`)
     if (files.length > 1) msg.push(`${files.length} arquivos`)
