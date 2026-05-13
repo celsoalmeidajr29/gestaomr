@@ -32,6 +32,17 @@ if (!$code) {
     exit;
 }
 
+// Lê o slot a partir do state (codificado em base64 por google_auth_url)
+$state = trim((string) ($_GET['state'] ?? ''));
+$slot  = 0;
+if ($state !== '') {
+    $decoded = base64_decode($state, true);
+    if ($decoded !== false) {
+        $s = (int) trim($decoded);
+        if ($s === 0 || $s === 1) $slot = $s;
+    }
+}
+
 // Troca o code por tokens
 $token = google_exchange_code($code);
 
@@ -41,8 +52,15 @@ if (!empty($token['error']) || empty($token['access_token'])) {
     exit;
 }
 
-// Persiste no banco
-google_save_token((int) $u['id'], $token);
+// Busca o e-mail da conta autorizada para armazenar no banco
+$email = null;
+try {
+    $info  = google_http_get('https://www.googleapis.com/oauth2/v2/userinfo?fields=email', $token['access_token']);
+    $email = $info['email'] ?? null;
+} catch (\Throwable $e) { /* ignora — e-mail é opcional */ }
+
+// Persiste no banco (slot + email)
+google_save_token((int) $u['id'], $token, $slot, $email);
 
 // Notifica o popup pai e fecha
 echo '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Autenticando...</title></head><body style="background:#04040e;color:#dde1f0;font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0">';

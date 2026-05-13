@@ -19,4 +19,6 @@ if (empty(env('GOOGLE_CLIENT_ID'))) {
     json_error('GOOGLE_CLIENT_ID não configurado no .env', 503);
 }
 
-json_response(['url' => google_auth_url()]);
+$slot = (int) ($_GET['slot'] ?? 0);
+if ($slot < 0 || $slot > 1) $slot = 0;
+json_response(['url' => google_auth_url($slot)]);

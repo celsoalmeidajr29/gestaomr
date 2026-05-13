@@ -231,8 +231,8 @@ function TelaConectar({ onConnect, connecting }) {
         <p className="font-semibold text-lg" style={{ color: C.text }}>Conectar ao Google</p>
         <p className="text-sm mt-1 max-w-sm" style={{ color: C.muted }}>Autorize o acesso à Agenda, Tarefas, Drive e Gmail para usar o Cérebro.</p>
       </div>
-      <Btn variant="accent" onClick={onConnect} disabled={connecting}>
-        {connecting ? <><RefreshCw className="w-4 h-4 animate-spin" /> Aguardando...</> : <><span>G</span> Conectar com Google</>}
+      <Btn variant="accent" onClick={() => onConnect(0)} disabled={connecting !== null}>
+        {connecting === 0 ? <><RefreshCw className="w-4 h-4 animate-spin" /> Aguardando...</> : <><span>G</span> Conectar com Google</>}
       </Btn>
     </div>
   )
@@ -1410,7 +1410,8 @@ function ModalComporEmail({ initialTo = '', initialSubject = '', threadId, onSen
   )
 }
 
-function AbaEmail() {
+function AbaEmail({ slots = {}, onConnectSlot, onDisconnectSlot }) {
+  const [activeSlot, setActiveSlot] = useState(0)
   const [caixa,     setCaixa]     = useState('inbox')
   const [msgs,      setMsgs]      = useState(null)
   const [loading,   setLoading]   = useState(false)
@@ -1419,24 +1420,30 @@ function AbaEmail() {
   const [composing, setComposing] = useState(null) // null | 'new' | { replyTo: msg }
   const [busca,     setBusca]     = useState('')
 
+  const slotInfo = s => slots[s] || slots[String(s)] || { connected: false }
+  const slot0 = slotInfo(0)
+  const slot1 = slotInfo(1)
+
+  // Reset quando troca conta
+  useEffect(() => { setMsgs(null); setLendo(null); setErro(null) }, [activeSlot])
+
   const carregar = useCallback(async (q = '') => {
     setLoading(true); setErro(null)
     try {
-      const url = q ? `/gmail.php?action=${caixa}&q=${encodeURIComponent(q)}`
-                    : `/gmail.php?action=${caixa}`
+      const url = q ? `/gmail.php?action=${caixa}&slot=${activeSlot}&q=${encodeURIComponent(q)}`
+                    : `/gmail.php?action=${caixa}&slot=${activeSlot}`
       setMsgs(await apiFetch(url))
     } catch (e) { setErro(e.message) }
     finally { setLoading(false) }
-  }, [caixa])
+  }, [caixa, activeSlot])
 
-  useEffect(() => { carregar() }, [caixa]) // eslint-disable-line
+  useEffect(() => { if (slotInfo(activeSlot).connected) carregar() }, [caixa, activeSlot]) // eslint-disable-line
 
   async function lerMensagem(id) {
     setLoading(true); setErro(null)
     try {
-      const m = await apiFetch(`/gmail.php?action=read&id=${id}`)
+      const m = await apiFetch(`/gmail.php?action=read&id=${id}&slot=${activeSlot}`)
       setLendo(m)
-      // Mark as read in local list
       setMsgs(prev => prev?.map(msg => msg.id === id ? { ...msg, unread: false } : msg))
     } catch (e) { setErro(e.message) }
     finally { setLoading(false) }
@@ -1444,14 +1451,14 @@ function AbaEmail() {
 
   async function arquivar(id) {
     try {
-      await apiFetch('/gmail.php', { method: 'PATCH', body: JSON.stringify({ id, action: 'archive' }) })
+      await apiFetch(`/gmail.php?slot=${activeSlot}`, { method: 'PATCH', body: JSON.stringify({ id, action: 'archive' }) })
       setMsgs(m => m?.filter(msg => msg.id !== id))
       if (lendo?.id === id) setLendo(null)
     } catch (e) { alert(e.message) }
   }
 
   async function enviar(to, subject, body, threadId) {
-    await apiFetch('/gmail.php', { method: 'POST', body: JSON.stringify({ to, subject, body, threadId }) })
+    await apiFetch(`/gmail.php?slot=${activeSlot}`, { method: 'POST', body: JSON.stringify({ to, subject, body, threadId }) })
     setComposing(null)
     if (caixa === 'sent') carregar()
   }
@@ -1513,6 +1520,50 @@ function AbaEmail() {
   // ---- Lista de mensagens ----
   return (
     <div>
+      {/* Seletor de contas */}
+      <div className="flex flex-wrap items-center gap-2 mb-4">
+        {[0, 1].map(s => {
+          const info = slotInfo(s)
+          if (!info.connected) {
+            if (s === 0) return null // slot 0 desconectado — app já mostra TelaConectar
+            return (
+              <button key={s} onClick={() => onConnectSlot?.(1)}
+                className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs transition hover:opacity-80"
+                style={{ border: `1px dashed ${C.border}`, color: C.muted, background: 'transparent' }}>
+                <Plus className="w-3.5 h-3.5" /> Adicionar conta
+              </button>
+            )
+          }
+          return (
+            <div key={s} className="flex items-center gap-1">
+              <button onClick={() => { setActiveSlot(s); setLendo(null) }}
+                className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs transition"
+                style={activeSlot === s
+                  ? { background: C.accent + '18', border: `1px solid ${C.accent}55`, color: C.text }
+                  : { background: C.card, border: `1px solid ${C.border}`, color: C.muted }}>
+                <div className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold flex-shrink-0"
+                  style={{ background: C.accent + '33', color: C.accent }}>
+                  {(info.email?.[0] || '?').toUpperCase()}
+                </div>
+                <span className="max-w-[160px] truncate">{info.email || `Conta ${s + 1}`}</span>
+                {activeSlot === s && <div className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: '#22c55e' }} />}
+              </button>
+              <button onClick={() => onDisconnectSlot?.(s)} title="Desconectar conta"
+                className="p-1 rounded hover:opacity-80 transition"
+                style={{ color: C.muted }}>
+                <X className="w-3 h-3" />
+              </button>
+            </div>
+          )
+        })}
+      </div>
+
+      {/* Conta não conectada */}
+      {!slotInfo(activeSlot).connected && (
+        <Empty msg={`Conta ${activeSlot + 1} não conectada.`} sub="Conecte uma conta Google acima." />
+      )}
+      {slotInfo(activeSlot).connected && <>
+
       <div className="flex flex-wrap items-center gap-2 mb-5">
         {['inbox', 'sent'].map(k => (
           <button key={k} onClick={() => { setCaixa(k); setMsgs(null) }}
@@ -1575,6 +1626,7 @@ function AbaEmail() {
       {composing === 'new' && (
         <ModalComporEmail initialTo="" initialSubject="" onSend={enviar} onClose={() => setComposing(null)} />
       )}
+      </> /* fim do bloco "conta conectada" */}
     </div>
   )
 }
@@ -1598,7 +1650,7 @@ export default function CerebroApp({ usuario, onVoltarHub, onLogout }) {
   const [clock, setClock] = useState('')
   const [googleStatus, setGoogleStatus] = useState(null)
   const [checkingAuth, setCheckingAuth] = useState(true)
-  const [connecting, setConnecting] = useState(false)
+  const [connecting, setConnecting] = useState(null) // null | 0 | 1
   const [toast, setToast] = useState(null)
 
   useEffect(() => {
@@ -1619,8 +1671,8 @@ export default function CerebroApp({ usuario, onVoltarHub, onLogout }) {
 
   useEffect(() => {
     const fn = e => {
-      if (e.data === 'google_auth_success') { setConnecting(false); checkAuth(); showToast('Google conectado!') }
-      else if (typeof e.data === 'string' && e.data.startsWith('google_auth_error:')) { setConnecting(false); showToast(`Falha: ${e.data.split(':')[1]}`, 'erro') }
+      if (e.data === 'google_auth_success') { setConnecting(null); checkAuth(); showToast('Conta conectada!') }
+      else if (typeof e.data === 'string' && e.data.startsWith('google_auth_error:')) { setConnecting(null); showToast(`Falha: ${e.data.split(':')[1]}`, 'erro') }
     }
     window.addEventListener('message', fn); return () => window.removeEventListener('message', fn)
   }, [])
@@ -1632,19 +1684,24 @@ export default function CerebroApp({ usuario, onVoltarHub, onLogout }) {
     finally { setCheckingAuth(false) }
   }
 
-  async function connectGoogle() {
+  async function connectGoogle(slot = 0) {
     try {
-      const { url } = await apiFetch('/auth/start.php')
-      setConnecting(true)
+      const { url } = await apiFetch(`/auth/start.php?slot=${slot}`)
+      setConnecting(slot)
       const popup = window.open(url, 'google_oauth', 'width=520,height=660,left=200,top=100')
-      const iv = setInterval(() => { if (popup?.closed) { clearInterval(iv); setConnecting(false); checkAuth() } }, 500)
+      const iv = setInterval(() => { if (popup?.closed) { clearInterval(iv); setConnecting(null); checkAuth() } }, 500)
     } catch (e) { showToast(`Erro: ${e.message}`, 'erro') }
   }
 
-  async function disconnectGoogle() {
-    if (!confirm('Desconectar o Google?')) return
-    try { await apiFetch('/auth/status.php', { method: 'DELETE' }); setGoogleStatus({ connected: false }); showToast('Google desconectado.') }
-    catch (e) { showToast(`Erro: ${e.message}`, 'erro') }
+  async function disconnectGoogle(slot = 0) {
+    const label = slot === 0 ? 'a conta principal do Google' : 'a conta secundária do Google'
+    if (!confirm(`Desconectar ${label}?`)) return
+    try {
+      await apiFetch(`/auth/status.php?slot=${slot}`, { method: 'DELETE' })
+      if (slot === 0) setGoogleStatus({ connected: false })
+      else setGoogleStatus(s => ({ ...s, slots: { ...s.slots, 1: { connected: false } } }))
+      showToast('Conta desconectada.')
+    } catch (e) { showToast(`Erro: ${e.message}`, 'erro') }
   }
 
   function showToast(msg, tipo = 'ok') { setToast({ msg, tipo }); setTimeout(() => setToast(null), 3500) }
@@ -1669,11 +1726,11 @@ export default function CerebroApp({ usuario, onVoltarHub, onLogout }) {
               <Clock className="w-3.5 h-3.5" />{clock}
             </div>
             {!checkingAuth && (
-              <button onClick={conectado ? disconnectGoogle : connectGoogle}
-                className="hidden sm:flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg transition hover:opacity-80"
+              <button onClick={() => conectado ? disconnectGoogle(0) : connectGoogle(0)}
+                className="hidden sm:flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg transition hover:opacity-80 max-w-[180px]"
                 style={{ background: conectado ? 'rgba(79,85,247,0.12)' : 'rgba(239,68,68,0.08)', color: conectado ? C.accent : '#ef4444', border: `1px solid ${conectado ? C.border : 'rgba(239,68,68,0.2)'}` }}>
-                {conectado ? <Wifi className="w-3.5 h-3.5" /> : <WifiOff className="w-3.5 h-3.5" />}
-                {conectado ? 'Google' : 'Desconectado'}
+                {conectado ? <Wifi className="w-3.5 h-3.5 flex-shrink-0" /> : <WifiOff className="w-3.5 h-3.5 flex-shrink-0" />}
+                <span className="truncate">{conectado ? (googleStatus?.slots?.['0']?.email || googleStatus?.slots?.[0]?.email || 'Google') : 'Desconectado'}</span>
               </button>
             )}
             <button onClick={onLogout} className="text-sm px-3 py-1.5 rounded hover:bg-white/5 transition flex items-center gap-1.5" style={{ color: C.muted }}>
@@ -1710,7 +1767,7 @@ export default function CerebroApp({ usuario, onVoltarHub, onLogout }) {
             {aba === 'matriz'   && <AbaMatriz />}
             {aba === 'notas'    && <AbaNotas />}
             {aba === 'drive'    && <AbaDrive />}
-            {aba === 'email'    && <AbaEmail />}
+            {aba === 'email'    && <AbaEmail slots={googleStatus?.slots || {}} onConnectSlot={connectGoogle} onDisconnectSlot={disconnectGoogle} />}
           </>}
       </main>
     </div>

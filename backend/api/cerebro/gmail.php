@@ -4,8 +4,10 @@ require_once __DIR__ . '/../../_bootstrap.php';
 require_once __DIR__ . '/_google.php';
 
 $u = require_permission('cerebro');
-$token = google_access_token((int) $u['id']);
-if (!$token) json_error('Google nao conectado.', 401);
+$slot  = (int) ($_GET['slot'] ?? 0);
+if ($slot < 0 || $slot > 1) $slot = 0;
+$token = google_access_token((int) $u['id'], $slot);
+if (!$token) json_error('Conta Gmail nao conectada (slot ' . $slot . ').', 401);
 
 $method = $_SERVER['REQUEST_METHOD'];
 $action = trim((string) ($_GET['action'] ?? 'inbox'));
