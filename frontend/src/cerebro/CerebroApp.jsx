@@ -4,6 +4,7 @@ import {
   RefreshCw, AlertCircle, ExternalLink, X, Brain, Wifi, WifiOff,
   Clock, Search, Plus, Trash2, Save, Edit2, Check, Play, Pause,
   RotateCcw, Timer, LayoutGrid, Home, Folder, ChevronRight, Bell,
+  Mail, Send, Archive, Eye,
 } from 'lucide-react'
 
 const API = '/api/cerebro'
@@ -228,7 +229,7 @@ function TelaConectar({ onConnect, connecting }) {
       <div className="w-20 h-20 rounded-2xl flex items-center justify-center text-4xl" style={{ background: C.card, border: `1px solid ${C.border}` }}>🔑</div>
       <div className="text-center">
         <p className="font-semibold text-lg" style={{ color: C.text }}>Conectar ao Google</p>
-        <p className="text-sm mt-1 max-w-sm" style={{ color: C.muted }}>Autorize o acesso à Agenda, Tarefas e Drive para usar o Cérebro.</p>
+        <p className="text-sm mt-1 max-w-sm" style={{ color: C.muted }}>Autorize o acesso à Agenda, Tarefas, Drive e Gmail para usar o Cérebro.</p>
       </div>
       <Btn variant="accent" onClick={onConnect} disabled={connecting}>
         {connecting ? <><RefreshCw className="w-4 h-4 animate-spin" /> Aguardando...</> : <><span>G</span> Conectar com Google</>}
@@ -1126,14 +1127,159 @@ function AbaNotas() {
 }
 
 // ============================================================
+// ---- FilePreviewModal ----
+// ============================================================
+function FilePreviewModal({ file, onClose }) {
+  const [csvRows, setCsvRows]   = useState(null)
+  const [docHtml, setDocHtml]   = useState(null)
+  const [loading, setLoading]   = useState(false)
+  const [loadErr, setLoadErr]   = useState(null)
+
+  const mime        = file.mimeType || ''
+  const isImage     = mime.startsWith('image/')
+  const isPdf       = mime.includes('pdf')
+  const isGDoc      = mime === 'application/vnd.google-apps.document'
+  const isGSheet    = mime === 'application/vnd.google-apps.spreadsheet'
+  const isGSlides   = mime === 'application/vnd.google-apps.presentation'
+  const isOfficeDoc = mime.includes('word') || mime.includes('officedocument.wordprocessing')
+  const isOfficeXls = mime.includes('excel') || mime.includes('officedocument.spreadsheetml')
+
+  useEffect(() => {
+    if (isGSheet || isOfficeXls) {
+      setLoading(true)
+      fetch(`${API}/drive_preview.php?id=${file.id}&type=sheet`, { credentials: 'include' })
+        .then(r => { if (!r.ok) throw new Error('Erro ao exportar'); return r.text() })
+        .then(csv => setCsvRows(parseSimpleCSV(csv)))
+        .catch(e => setLoadErr(e.message))
+        .finally(() => setLoading(false))
+    } else if (isGDoc || isOfficeDoc) {
+      setLoading(true)
+      fetch(`${API}/drive_preview.php?id=${file.id}&type=doc`, { credentials: 'include' })
+        .then(r => { if (!r.ok) throw new Error('Erro ao exportar'); return r.text() })
+        .then(html => setDocHtml(html))
+        .catch(e => setLoadErr(e.message))
+        .finally(() => setLoading(false))
+    }
+  }, [file.id]) // eslint-disable-line
+
+  function parseSimpleCSV(text) {
+    return text.trim().split('\n').map(line => {
+      const cols = []; let cur = '', inQ = false
+      for (const ch of line) {
+        if (ch === '"') inQ = !inQ
+        else if (ch === ',' && !inQ) { cols.push(cur); cur = '' }
+        else cur += ch
+      }
+      cols.push(cur)
+      return cols
+    })
+  }
+
+  const previewImgSrc  = `${API}/drive_preview.php?id=${file.id}&type=image&mime=${encodeURIComponent(mime)}`
+  const previewPdfSrc  = `${API}/drive_preview.php?id=${file.id}&type=pdf`
+
+  const hasNativePreview = isImage || isPdf || isGDoc || isGSheet || isOfficeDoc || isOfficeXls
+
+  return (
+    <ModalWrap title={file.name} onClose={onClose} width="max-w-5xl">
+      <div className="flex flex-wrap items-center gap-2 mb-4">
+        <span className="text-xl">{mimeIcon(mime)}</span>
+        {file.size && <span className="text-xs" style={{ color: C.muted }}>{fmtSize(file.size)}</span>}
+        {file.modifiedTime && <span className="text-xs" style={{ color: C.muted }}>· {fmtDT(file.modifiedTime)}</span>}
+        {file.webViewLink && (
+          <a href={file.webViewLink} target="_blank" rel="noreferrer" className="ml-auto">
+            <Btn variant="default"><ExternalLink className="w-3.5 h-3.5" /> Abrir no Google</Btn>
+          </a>
+        )}
+      </div>
+
+      {loading && <Spinner />}
+      {loadErr && <Erro msg={loadErr} />}
+
+      {/* Imagem */}
+      {isImage && !loading && (
+        <div className="flex justify-center rounded-xl overflow-hidden" style={{ background: 'rgba(0,0,0,0.4)', maxHeight: '72vh' }}>
+          <img src={previewImgSrc} alt={file.name} loading="lazy"
+            style={{ maxWidth: '100%', maxHeight: '72vh', objectFit: 'contain' }} />
+        </div>
+      )}
+
+      {/* PDF */}
+      {isPdf && !loading && (
+        <div className="rounded-xl overflow-hidden" style={{ border: `1px solid ${C.border}`, height: '72vh' }}>
+          <iframe src={previewPdfSrc} style={{ width: '100%', height: '100%', border: 'none' }} title={file.name} />
+        </div>
+      )}
+
+      {/* Google Doc / Office Doc → HTML */}
+      {(isGDoc || isOfficeDoc) && !loading && docHtml && (
+        <div className="rounded-xl overflow-hidden" style={{ border: `1px solid ${C.border}`, height: '68vh' }}>
+          <iframe srcDoc={docHtml} sandbox="allow-popups allow-same-origin"
+            style={{ width: '100%', height: '100%', border: 'none', background: '#fff' }} title={file.name} />
+        </div>
+      )}
+
+      {/* Google Sheet / Office Excel → CSV table */}
+      {(isGSheet || isOfficeXls) && !loading && csvRows && (
+        <div className="rounded-xl overflow-auto" style={{ border: `1px solid ${C.border}`, maxHeight: '68vh' }}>
+          <table style={{ borderCollapse: 'collapse', width: '100%', fontSize: '0.73rem' }}>
+            <thead>
+              <tr>{(csvRows[0] || []).map((c, i) => (
+                <th key={i} style={{ background: 'rgba(79,85,247,0.18)', color: C.text, padding: '6px 10px', border: `1px solid ${C.border}`, textAlign: 'left', fontWeight: 600, whiteSpace: 'nowrap' }}>{c}</th>
+              ))}</tr>
+            </thead>
+            <tbody>
+              {csvRows.slice(1).map((row, ri) => (
+                <tr key={ri} style={{ background: ri % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.02)' }}>
+                  {row.map((c, ci) => (
+                    <td key={ci} style={{ color: C.text, padding: '5px 10px', border: `1px solid ${C.border}`, whiteSpace: 'nowrap', maxWidth: 220, overflow: 'hidden', textOverflow: 'ellipsis' }}>{c}</td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {/* Google Slides */}
+      {isGSlides && !loading && (
+        <div className="text-center py-10">
+          <p className="text-2xl mb-3">📑</p>
+          <p className="text-sm mb-5" style={{ color: C.muted }}>Apresentações precisam ser abertas no Google Slides.</p>
+          {file.webViewLink && (
+            <a href={file.webViewLink} target="_blank" rel="noreferrer">
+              <Btn variant="accent"><ExternalLink className="w-4 h-4" /> Abrir no Google Slides</Btn>
+            </a>
+          )}
+        </div>
+      )}
+
+      {/* Outros */}
+      {!hasNativePreview && !isGSlides && !loading && (
+        <div className="text-center py-10">
+          <p className="text-3xl mb-3">{mimeIcon(mime)}</p>
+          <p className="text-sm mb-5" style={{ color: C.muted }}>Prévia não disponível para este formato.</p>
+          {file.webViewLink && (
+            <a href={file.webViewLink} target="_blank" rel="noreferrer">
+              <Btn variant="accent"><ExternalLink className="w-4 h-4" /> Abrir no Google Drive</Btn>
+            </a>
+          )}
+        </div>
+      )}
+    </ModalWrap>
+  )
+}
+
+// ============================================================
 // ---- Aba Drive ----
 // ============================================================
 function AbaDrive() {
   const [arquivos, setArquivos] = useState(null)
-  const [stack, setStack] = useState([])
-  const [loading, setLoading] = useState(false)
-  const [erro, setErro] = useState(null)
-  const [busca, setBusca] = useState('')
+  const [stack,    setStack]    = useState([])
+  const [loading,  setLoading]  = useState(false)
+  const [erro,     setErro]     = useState(null)
+  const [busca,    setBusca]    = useState('')
+  const [preview,  setPreview]  = useState(null)
 
   const currFolder = stack[stack.length - 1] ?? null
 
@@ -1191,21 +1337,243 @@ function AbaDrive() {
                 <ChevronRight className="w-4 h-4 ml-auto opacity-40" style={{ color: C.muted }} />
               </button>
             ) : (
-              <a key={f.id} href={f.webViewLink || '#'} target="_blank" rel="noreferrer"
-                className="flex items-center gap-3 rounded-xl px-4 py-3 transition group"
+              <button key={f.id} onClick={() => setPreview(f)}
+                className="flex items-center gap-3 rounded-xl px-4 py-3 w-full text-left transition group"
                 style={{ background: C.card, border: `1px solid ${C.border}` }}>
-                <span className="text-xl flex-shrink-0">{mimeIcon(f.mimeType)}</span>
+                {f.thumbnailLink
+                  ? <img src={f.thumbnailLink} alt="" className="w-10 h-10 rounded object-cover flex-shrink-0" />
+                  : <span className="text-xl flex-shrink-0">{mimeIcon(f.mimeType)}</span>}
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-medium truncate group-hover:underline" style={{ color: C.text }}>{f.name}</p>
                   <p className="text-xs mt-0.5" style={{ color: C.muted }}>
                     {f.mimeType?.split('/').pop()?.split('.').pop()}{f.size ? ` · ${fmtSize(f.size)}` : ''}{f.modifiedTime ? ` · ${fmtDT(f.modifiedTime)}` : ''}
                   </p>
                 </div>
-                <ExternalLink className="w-3.5 h-3.5 flex-shrink-0 opacity-0 group-hover:opacity-60" style={{ color: C.accent }} />
-              </a>
+                <Eye className="w-3.5 h-3.5 flex-shrink-0 opacity-0 group-hover:opacity-60" style={{ color: C.accent }} />
+              </button>
             )
           )}
         </div>
+      )}
+      {preview && <FilePreviewModal file={preview} onClose={() => setPreview(null)} />}
+    </div>
+  )
+}
+
+// ============================================================
+// ---- Aba E-mail ----
+// ============================================================
+function senderName(from = '') {
+  const m = from.match(/^(.+?)\s*</)
+  return m ? m[1].replace(/"/g, '').trim() : (from.split('@')[0] || '?')
+}
+
+function fmtGmailDate(dateStr = '') {
+  try {
+    const d = new Date(dateStr)
+    if (isNaN(d)) return dateStr.slice(0, 16)
+    const today = new Date()
+    if (d.toDateString() === today.toDateString())
+      return d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+    return d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })
+  } catch { return '' }
+}
+
+function ModalComporEmail({ initialTo = '', initialSubject = '', threadId, onSend, onClose }) {
+  const [to,      setTo]      = useState(initialTo)
+  const [subject, setSubject] = useState(initialSubject)
+  const [body,    setBody]    = useState('')
+  const [sending, setSending] = useState(false)
+
+  async function handleSend() {
+    if (!to || !subject || !body) return
+    setSending(true)
+    try { await onSend(to, subject, body, threadId) }
+    catch (e) { alert('Erro ao enviar: ' + e.message); setSending(false) }
+  }
+
+  return (
+    <ModalWrap title={threadId ? 'Responder' : 'Novo e-mail'} onClose={onClose}>
+      <Field label="Para"><FInput value={to} onChange={e => setTo(e.target.value)} placeholder="email@exemplo.com" autoFocus={!initialTo} /></Field>
+      <Field label="Assunto"><FInput value={subject} onChange={e => setSubject(e.target.value)} /></Field>
+      <Field label="Mensagem">
+        <FTA value={body} onChange={e => setBody(e.target.value)} rows={8} placeholder="Escreva sua mensagem..." />
+      </Field>
+      <div className="flex gap-2 mt-4">
+        <Btn variant="accent" disabled={sending || !to || !subject || !body} onClick={handleSend}>
+          {sending ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
+          {sending ? 'Enviando...' : 'Enviar'}
+        </Btn>
+        <Btn variant="ghost" onClick={onClose}>Cancelar</Btn>
+      </div>
+    </ModalWrap>
+  )
+}
+
+function AbaEmail() {
+  const [caixa,     setCaixa]     = useState('inbox')
+  const [msgs,      setMsgs]      = useState(null)
+  const [loading,   setLoading]   = useState(false)
+  const [erro,      setErro]      = useState(null)
+  const [lendo,     setLendo]     = useState(null)
+  const [composing, setComposing] = useState(null) // null | 'new' | { replyTo: msg }
+  const [busca,     setBusca]     = useState('')
+
+  const carregar = useCallback(async (q = '') => {
+    setLoading(true); setErro(null)
+    try {
+      const url = q ? `/gmail.php?action=${caixa}&q=${encodeURIComponent(q)}`
+                    : `/gmail.php?action=${caixa}`
+      setMsgs(await apiFetch(url))
+    } catch (e) { setErro(e.message) }
+    finally { setLoading(false) }
+  }, [caixa])
+
+  useEffect(() => { carregar() }, [caixa]) // eslint-disable-line
+
+  async function lerMensagem(id) {
+    setLoading(true); setErro(null)
+    try {
+      const m = await apiFetch(`/gmail.php?action=read&id=${id}`)
+      setLendo(m)
+      // Mark as read in local list
+      setMsgs(prev => prev?.map(msg => msg.id === id ? { ...msg, unread: false } : msg))
+    } catch (e) { setErro(e.message) }
+    finally { setLoading(false) }
+  }
+
+  async function arquivar(id) {
+    try {
+      await apiFetch('/gmail.php', { method: 'PATCH', body: JSON.stringify({ id, action: 'archive' }) })
+      setMsgs(m => m?.filter(msg => msg.id !== id))
+      if (lendo?.id === id) setLendo(null)
+    } catch (e) { alert(e.message) }
+  }
+
+  async function enviar(to, subject, body, threadId) {
+    await apiFetch('/gmail.php', { method: 'POST', body: JSON.stringify({ to, subject, body, threadId }) })
+    setComposing(null)
+    if (caixa === 'sent') carregar()
+  }
+
+  // ---- Leitura de mensagem ----
+  if (lendo) {
+    return (
+      <div>
+        <div className="flex flex-wrap items-center gap-2 mb-4">
+          <Btn variant="ghost" onClick={() => setLendo(null)}><ArrowLeft className="w-4 h-4" /> Voltar</Btn>
+          <span className="flex-1" />
+          <Btn variant="default" onClick={() => setComposing({ replyTo: lendo })}>
+            <Send className="w-3.5 h-3.5" /> Responder
+          </Btn>
+          {caixa === 'inbox' && (
+            <Btn variant="ghost" onClick={() => arquivar(lendo.id)}>
+              <Archive className="w-3.5 h-3.5" /> Arquivar
+            </Btn>
+          )}
+        </div>
+
+        <Card className="mb-4">
+          <p className="font-semibold text-sm mb-3" style={{ color: C.text }}>{lendo.subject || '(sem assunto)'}</p>
+          <div className="space-y-1 text-xs">
+            <p style={{ color: C.muted }}><span style={{ color: C.accent2 }}>De:</span> {lendo.from}</p>
+            <p style={{ color: C.muted }}><span style={{ color: C.accent2 }}>Para:</span> {lendo.to}</p>
+            <p style={{ color: C.muted }}><span style={{ color: C.accent2 }}>Data:</span> {lendo.date}</p>
+          </div>
+        </Card>
+
+        <div className="rounded-2xl overflow-hidden" style={{ border: `1px solid ${C.border}`, background: '#fff', minHeight: 240 }}>
+          <iframe
+            srcDoc={lendo.body || '<p style="font-family:sans-serif;color:#444;padding:16px">(mensagem vazia)</p>'}
+            sandbox="allow-popups"
+            style={{ width: '100%', minHeight: 300, border: 'none' }}
+            title="email"
+            onLoad={e => {
+              try {
+                const h = e.target.contentDocument?.body?.scrollHeight
+                if (h) e.target.style.height = (h + 32) + 'px'
+              } catch {}
+            }}
+          />
+        </div>
+
+        {composing && (
+          <ModalComporEmail
+            initialTo={lendo.from}
+            initialSubject={`Re: ${lendo.subject || ''}`}
+            threadId={lendo.threadId}
+            onSend={enviar}
+            onClose={() => setComposing(null)}
+          />
+        )}
+      </div>
+    )
+  }
+
+  // ---- Lista de mensagens ----
+  return (
+    <div>
+      <div className="flex flex-wrap items-center gap-2 mb-5">
+        {['inbox', 'sent'].map(k => (
+          <button key={k} onClick={() => { setCaixa(k); setMsgs(null) }}
+            className="px-3 py-1.5 rounded-lg text-xs font-medium transition"
+            style={caixa === k
+              ? { background: C.accent, color: '#fff' }
+              : { background: C.card, border: `1px solid ${C.border}`, color: C.muted }}>
+            {k === 'inbox' ? '📥 Entrada' : '📤 Enviados'}
+          </button>
+        ))}
+        <div className="flex-1 min-w-[140px] flex items-center gap-1.5">
+          <input value={busca} onChange={e => setBusca(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && carregar(busca)}
+            placeholder="Buscar e-mails..."
+            className="w-full rounded-xl px-3 py-1.5 text-xs outline-none"
+            style={{ background: C.card, border: `1px solid ${C.border}`, color: C.text }} />
+          {busca && (
+            <button onClick={() => { setBusca(''); carregar() }} className="flex-shrink-0 p-1 hover:opacity-70">
+              <X className="w-3.5 h-3.5" style={{ color: C.muted }} />
+            </button>
+          )}
+        </div>
+        <Btn variant="accent" onClick={() => setComposing('new')}><Send className="w-3.5 h-3.5" /> Novo</Btn>
+        <Btn onClick={() => carregar(busca)} disabled={loading}>
+          <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
+        </Btn>
+      </div>
+
+      {loading && msgs === null && <Spinner />}
+      {erro && <Erro msg={erro} onRetry={() => carregar()} />}
+      {!loading && !erro && msgs !== null && msgs.length === 0 && <Empty msg="Nenhuma mensagem." />}
+
+      <div className="space-y-1.5">
+        {(msgs || []).map(msg => (
+          <button key={msg.id} onClick={() => lerMensagem(msg.id)} className="w-full text-left">
+            <div className="flex items-start gap-3 rounded-xl px-4 py-3 transition hover:opacity-80"
+              style={{ background: C.card, border: `1px solid ${msg.unread ? C.accent + '66' : C.border}` }}>
+              <div className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 text-sm font-bold"
+                style={{ background: C.accent + '22', color: C.accent }}>
+                {(senderName(caixa === 'sent' ? msg.to : msg.from)[0] || '?').toUpperCase()}
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-baseline justify-between gap-2">
+                  <p className="text-sm truncate" style={{ color: C.text, fontWeight: msg.unread ? 600 : 400 }}>
+                    {senderName(caixa === 'sent' ? msg.to : msg.from)}
+                  </p>
+                  <p className="text-[10px] flex-shrink-0" style={{ color: C.muted }}>{fmtGmailDate(msg.date)}</p>
+                </div>
+                <p className="text-xs truncate" style={{ color: msg.unread ? C.text : C.muted, fontWeight: msg.unread ? 500 : 400 }}>
+                  {msg.subject || '(sem assunto)'}
+                </p>
+                <p className="text-[11px] truncate mt-0.5" style={{ color: C.muted }}>{msg.snippet}</p>
+              </div>
+              {msg.unread && <div className="w-2 h-2 rounded-full flex-shrink-0 mt-2" style={{ background: C.accent }} />}
+            </div>
+          </button>
+        ))}
+      </div>
+
+      {composing === 'new' && (
+        <ModalComporEmail initialTo="" initialSubject="" onSend={enviar} onClose={() => setComposing(null)} />
       )}
     </div>
   )
@@ -1222,6 +1590,7 @@ const TABS = [
   { id: 'matriz',   label: 'Matriz',  Icon: LayoutGrid },
   { id: 'notas',    label: 'Notas',   Icon: FileText },
   { id: 'drive',    label: 'Drive',   Icon: HardDrive },
+  { id: 'email',    label: 'E-mail',  Icon: Mail },
 ]
 
 export default function CerebroApp({ usuario, onVoltarHub, onLogout }) {
@@ -1341,6 +1710,7 @@ export default function CerebroApp({ usuario, onVoltarHub, onLogout }) {
             {aba === 'matriz'   && <AbaMatriz />}
             {aba === 'notas'    && <AbaNotas />}
             {aba === 'drive'    && <AbaDrive />}
+            {aba === 'email'    && <AbaEmail />}
           </>}
       </main>
     </div>
