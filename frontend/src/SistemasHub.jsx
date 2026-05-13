@@ -2,13 +2,13 @@ import React, { useState, useEffect, useCallback } from 'react'
 import api from './api.js'
 
 // Versão atual do sistema MRSys (atualizada a cada release)
-export const MRSYS_VERSION = 'v1.0.2'
+export const MRSYS_VERSION = 'v1.0.4'
 
 // Versão atual do Pare Certo (atualizada a cada release)
-export const PARECETO_VERSION = 'v0.1'
+export const PARECETO_VERSION = 'v0.1.1'
 
 // Versão atual do Cérebro
-export const CEREBRO_VERSION = 'v1.0'
+export const CEREBRO_VERSION = 'v1.1.0'
 
 const SISTEMAS = [
   {
