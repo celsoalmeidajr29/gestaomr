@@ -5,7 +5,7 @@ import api from './api.js'
 export const MRSYS_VERSION = 'v1.0.4'
 
 // Versão atual do Pare Certo (atualizada a cada release)
-export const PARECETO_VERSION = 'v0.1.1'
+export const PARECETO_VERSION = 'v0.1.2'
 
 // Versão atual do Cérebro
 export const CEREBRO_VERSION = 'v1.1.0'
