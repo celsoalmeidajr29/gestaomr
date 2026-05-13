@@ -7918,11 +7918,18 @@ function ModalDiaria({ dados, funcionarios, categoriasFolha = [], onSalvar, onFe
   );
 }
 
-// ============ GERAÇÃO DE PDF DE PROPOSTA COMERCIAL ============
+// ============ GERAÇÃO DE PDF DE PROPOSTA COMERCIAL — layout Grupo MR ============
 async function gerarPropostaPDF(proposta) {
+  // Paleta Grupo MR
+  const PRETO   = [10, 10, 10];
+  const PRETO3  = [26, 26, 26];
+  const OURO    = [201, 168, 76];
+  const BRANCO  = [255, 255, 255];
+  const CINZA   = [136, 136, 136];
+  const CINZA2  = [204, 204, 204];
+
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-  const pageW = 210;
-  const margin = 14;
+  const W = 210, H = 297, M = 14;
   const fmtVal = (v) => Number(v || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   const fmtData = (s) => s ? new Date(s).toLocaleDateString('pt-BR') : '';
 
@@ -7935,130 +7942,293 @@ async function gerarPropostaPDF(proposta) {
       itens = json?.data?.itens || json?.itens || [];
     } catch (_) { /* usa array vazio */ }
   }
-
   const valorTotal = itens.reduce((s, it) => s + Number(it.valor_total || 0), 0);
   const numero = proposta.numero_formatado || `P-${String(proposta.numero || '').padStart(4, '0')}`;
-
-  // ── Cabeçalho ────────────────────────────────────────────────────────────
-  doc.setFillColor(30, 58, 138); // Navy #1E3A8A
-  doc.rect(0, 0, pageW, 28, 'F');
-  doc.setTextColor(255, 255, 255);
-  doc.setFontSize(18); doc.setFont(undefined, 'bold');
-  doc.text('PROPOSTA COMERCIAL', pageW / 2, 12, { align: 'center' });
-  doc.setFontSize(10); doc.setFont(undefined, 'normal');
-  doc.text('GRUPO MR — Segurança e Escolta Armada', pageW / 2, 20, { align: 'center' });
-
-  // ── Número, data, status, categoria ──────────────────────────────────────
-  doc.setTextColor(30, 30, 30);
-  let y = 36;
-  doc.setFontSize(11); doc.setFont(undefined, 'bold');
-  doc.text(`Proposta: ${numero}`, margin, y);
-  doc.setFont(undefined, 'normal'); doc.setFontSize(10);
-  const dataEmissao = proposta.criado_em ? fmtData(proposta.criado_em) : fmtData(new Date().toISOString());
-  doc.text(`Emissão: ${dataEmissao}`, margin + 70, y);
-  if (proposta.vencimento) doc.text(`Vencimento: ${proposta.vencimento}`, margin + 130, y);
-  y += 7;
-
-  const catBadge = proposta.categoria || '';
-  doc.setFontSize(10);
-  doc.text(`Categoria: ${catBadge}`, margin, y);
-  if (proposta.status) doc.text(`Status: ${proposta.status}`, margin + 70, y);
-  y += 10;
-
-  // ── Tomador ──────────────────────────────────────────────────────────────
-  doc.setFillColor(241, 245, 249);
-  doc.rect(margin, y, pageW - 2 * margin, 20, 'F');
-  doc.setFontSize(9); doc.setFont(undefined, 'bold');
-  doc.text('TOMADOR DO SERVIÇO', margin + 2, y + 5);
-  doc.setFont(undefined, 'normal');
   const nomeCliente = proposta.cliente_razao || proposta.cliente_nome || '—';
-  doc.text(`Razão social: ${nomeCliente}`, margin + 2, y + 11);
-  const cnpj = String(proposta.cliente_cnpj || '').replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5');
-  doc.text(`CNPJ: ${cnpj}`, margin + 2, y + 16);
-  if (proposta.cliente_email) doc.text(`E-mail: ${proposta.cliente_email}`, margin + 80, y + 16);
-  y += 25;
 
-  // ── Prestador ────────────────────────────────────────────────────────────
+  // ── Helpers ──────────────────────────────────────────────────────────────
+  const fillPage = (c = PRETO) => { doc.setFillColor(...c); doc.rect(0, 0, W, H, 'F'); };
+  const innerHeader = () => {
+    fillPage();
+    doc.setDrawColor(...OURO); doc.setLineWidth(0.4);
+    doc.line(M, 12, W - M, 12);
+    doc.setFontSize(9); doc.setFont(undefined, 'bold');
+    doc.setTextColor(...BRANCO); doc.text('GRUPO ', M, 9);
+    doc.setTextColor(...OURO); doc.text('MR', M + 16, 9);
+    doc.setFontSize(7.5); doc.setFont(undefined, 'normal');
+    doc.setTextColor(...CINZA); doc.text('grupomr.seg.br', W - M, 9, { align: 'right' });
+  };
+  const sectionTitle = (text, y) => {
+    doc.setFillColor(...OURO); doc.rect(M, y, 3, 9, 'F');
+    doc.setFontSize(11); doc.setFont(undefined, 'bold');
+    doc.setTextColor(...OURO); doc.text(text.toUpperCase(), M + 6, y + 7);
+    return y + 14;
+  };
+
+  // ════════════════════════════════════════════════════════════════════════════
+  // PÁGINA 1 — CAPA
+  // ════════════════════════════════════════════════════════════════════════════
+  fillPage();
+
+  // "PROPOSTA COMERCIAL" topo direita
+  doc.setFontSize(13); doc.setFont(undefined, 'bold');
+  doc.setTextColor(...OURO);
+  doc.text('PROPOSTA COMERCIAL', W - M, 20, { align: 'right' });
+  doc.setDrawColor(...OURO); doc.setLineWidth(0.5);
+  doc.line(W - M - 74, 23, W - M, 23);
+
+  // "GRUPO MR" centralizado
+  const logoY = 138;
+  doc.setFontSize(36); doc.setFont(undefined, 'bold');
+  doc.setTextColor(...BRANCO); doc.text('GRUPO ', W / 2, logoY, { align: 'center', charSpace: 1.5 });
+  // "MR" dourado — calcula posição após GRUPO
+  doc.setTextColor(...OURO);
+  doc.text('MR', W / 2 + 26, logoY);
+
+  // Linha separadora dourada
+  doc.setDrawColor(...OURO); doc.setLineWidth(0.6);
+  doc.line(W / 2 - 38, logoY + 8, W / 2 + 38, logoY + 8);
+
+  // Subtítulo
+  doc.setFontSize(10); doc.setFont(undefined, 'normal');
+  doc.setTextColor(...CINZA);
+  doc.text('Segurança, Facilities & Consultoria', W / 2, logoY + 17, { align: 'center' });
+
+  // Card "Aos Cuidados de"
+  const cardW = 140, cardH = 46, cardX = (W - cardW) / 2, cardY = H - 96;
+  doc.setFillColor(13, 13, 0);
+  doc.roundedRect(cardX, cardY, cardW, cardH, 4, 4, 'F');
+  doc.setDrawColor(...OURO); doc.setLineWidth(0.6);
+  doc.roundedRect(cardX, cardY, cardW, cardH, 4, 4, 'S');
+  doc.setFillColor(...OURO); doc.rect(cardX, cardY, 3, cardH, 'F');
+
+  doc.setFontSize(7); doc.setFont(undefined, 'normal');
+  doc.setTextColor(...CINZA);
+  doc.text('Aos Cuidados de', W / 2, cardY + 11, { align: 'center' });
+  doc.setFontSize(13); doc.setFont(undefined, 'bold');
+  doc.setTextColor(...OURO);
+  doc.text(nomeCliente, W / 2, cardY + 24, { align: 'center' });
+  if (proposta.cliente_nome && proposta.cliente_nome !== nomeCliente) {
+    doc.setFontSize(10); doc.setFont(undefined, 'normal');
+    doc.setTextColor(...CINZA2);
+    doc.text(proposta.cliente_nome, W / 2, cardY + 36, { align: 'center' });
+  }
+
+  // Linha inferior
+  doc.setDrawColor(...OURO); doc.setLineWidth(0.4);
+  doc.line(M, H - 20, W - M, H - 20);
+
+  // ════════════════════════════════════════════════════════════════════════════
+  // PÁGINA 2 — QUEM SOMOS + ECOSSISTEMA
+  // ════════════════════════════════════════════════════════════════════════════
+  doc.addPage(); innerHeader();
+  let y = 22;
+
+  y = sectionTitle('Quem Somos', y);
+  doc.setFontSize(9.5); doc.setFont(undefined, 'normal'); doc.setTextColor(...CINZA2);
+  const t1 = doc.splitTextToSize('Fundado em 2016, o Grupo MR é formado por profissionais com mais de 20 anos de experiência nos setores de segurança pública e privada. Nascemos com a visão de ser um ecossistema completo de soluções em segurança, facilities e inteligência operacional.', W - 2 * M);
+  doc.text(t1, M, y); y += t1.length * 5 + 5;
+  const t2 = doc.splitTextToSize('Nossa abordagem combina tecnologia de ponta com expertise humana, garantindo proteção real e mensurada para nossos clientes em todo o Brasil.', W - 2 * M);
+  doc.text(t2, M, y); y += t2.length * 5 + 10;
+
+  y = sectionTitle('Nosso Ecossistema', y);
+  const ecoItems = [
+    { nome: 'UP Vigilância', desc: 'Segurança patrimonial, escolta armada e eventos. Autorizada pela Polícia Federal.' },
+    { nome: 'MR Assessoria', desc: 'Gestão de Facilities, portaria, controle de acesso e consultoria estratégica.' },
+    { nome: 'MR Tracker', desc: 'Rastreamento veicular e inteligência para recuperação de ativos em tempo real.' },
+  ];
+  const ecoColW = (W - 2 * M - 8) / 3;
+  ecoItems.forEach((item, i) => {
+    const cx = M + i * (ecoColW + 4), ch = 46;
+    doc.setFillColor(...PRETO3); doc.roundedRect(cx, y, ecoColW, ch, 3, 3, 'F');
+    doc.setDrawColor(42, 42, 42); doc.setLineWidth(0.3);
+    doc.roundedRect(cx, y, ecoColW, ch, 3, 3, 'S');
+    doc.setFontSize(9.5); doc.setFont(undefined, 'bold'); doc.setTextColor(...OURO);
+    doc.text(item.nome, cx + ecoColW / 2, y + 12, { align: 'center' });
+    doc.setFontSize(7.5); doc.setFont(undefined, 'normal'); doc.setTextColor(...CINZA);
+    const dl = doc.splitTextToSize(item.desc, ecoColW - 6);
+    doc.text(dl, cx + ecoColW / 2, y + 20, { align: 'center' });
+  });
+  y += 54;
+
+  // ── Serviço proposto (se há prestador) ──
   if (proposta.prestador) {
     const prestInfo = PRESTADORES_PROPOSTA.find(p => p.nome === proposta.prestador);
-    doc.setFillColor(224, 231, 255);
-    doc.rect(margin, y, pageW - 2 * margin, 14, 'F');
-    doc.setFontSize(9); doc.setFont(undefined, 'bold');
-    doc.text('PRESTADOR DO SERVIÇO', margin + 2, y + 5);
-    doc.setFont(undefined, 'normal');
-    doc.text(proposta.prestador, margin + 2, y + 10);
-    if (prestInfo) doc.text(`CNPJ: ${prestInfo.cnpj}`, margin + 100, y + 10);
-    y += 18;
+    doc.setFillColor(17, 17, 4); doc.roundedRect(M, y, W - 2 * M, 20, 3, 3, 'F');
+    doc.setDrawColor(201, 168, 76, 0.4); doc.setLineWidth(0.3);
+    doc.roundedRect(M, y, W - 2 * M, 20, 3, 3, 'S');
+    doc.setFontSize(7); doc.setFont(undefined, 'normal'); doc.setTextColor(...CINZA);
+    doc.text('PRESTADOR DO SERVIÇO', M + 6, y + 6);
+    doc.setFontSize(10); doc.setFont(undefined, 'bold'); doc.setTextColor(...OURO);
+    doc.text(proposta.prestador, M + 6, y + 14);
+    if (prestInfo) { doc.setFontSize(8); doc.setFont(undefined, 'normal'); doc.setTextColor(...CINZA2); doc.text(`CNPJ: ${prestInfo.cnpj}`, M + 100, y + 14); }
+    y += 26;
   }
 
-  // ── Campos de texto ────────────────────────────────────────────────────────
+  // ════════════════════════════════════════════════════════════════════════════
+  // PÁGINA 3 — CLIENTES + NÚMEROS
+  // ════════════════════════════════════════════════════════════════════════════
+  doc.addPage(); innerHeader();
+  y = 22;
+
+  y = sectionTitle('Principais Clientes', y);
+  const cliList = ['Avon', 'Natura', 'Sinqia', 'MD Delivery', 'Col. Santa Maria', 'iTracker', 'BRK / Alpargatas', 'AMAB', 'Spring Park', 'M. Rocha Engenharia', 'Grupo Tombini', 'Escoltech', 'Assai Atacadista', 'Vivere'];
+  const badgeCols = 5, badgeW = (W - 2 * M - (badgeCols - 1) * 2) / badgeCols, badgeH = 11;
+  cliList.forEach((cli, i) => {
+    const col = i % badgeCols, row = Math.floor(i / badgeCols);
+    const bx = M + col * (badgeW + 2), by = y + row * (badgeH + 3);
+    doc.setFillColor(...PRETO3); doc.roundedRect(bx, by, badgeW, badgeH, 2, 2, 'F');
+    doc.setFontSize(7.5); doc.setFont(undefined, 'normal'); doc.setTextColor(...CINZA2);
+    doc.text(cli, bx + badgeW / 2, by + badgeH / 2 + 1.2, { align: 'center' });
+  });
+  y += Math.ceil(cliList.length / badgeCols) * (badgeH + 3) + 12;
+
+  y = sectionTitle('Nossa Experiência em Números', y);
+  const nums = [
+    { val: '50k+', label: 'Rotas Acompanhadas' },
+    { val: '1200+', label: 'Acoes Pronta Resposta' },
+    { val: '200+', label: 'Cargas Recuperadas' },
+    { val: '7', label: 'Estados Atendidos' },
+  ];
+  const numColW = (W - 2 * M - 6) / 4;
+  nums.forEach((n, i) => {
+    const nx = M + i * (numColW + 2), numH = 38;
+    doc.setFillColor(...PRETO3); doc.roundedRect(nx, y, numColW, numH, 3, 3, 'F');
+    doc.setFontSize(22); doc.setFont(undefined, 'bold'); doc.setTextColor(...OURO);
+    doc.text(n.val, nx + numColW / 2, y + 18, { align: 'center' });
+    doc.setFontSize(7); doc.setFont(undefined, 'normal'); doc.setTextColor(...CINZA);
+    doc.text(n.label.toUpperCase(), nx + numColW / 2, y + 29, { align: 'center' });
+  });
+  y += 48;
+
+  // ════════════════════════════════════════════════════════════════════════════
+  // PÁGINA 4 — PROPOSTA COMERCIAL (dados reais)
+  // ════════════════════════════════════════════════════════════════════════════
+  doc.addPage(); innerHeader();
+  y = 22;
+
+  y = sectionTitle('Proposta Comercial', y);
+
+  // Meta info
+  const dataEmissao = proposta.criado_em ? fmtData(proposta.criado_em) : fmtData(new Date().toISOString());
+  doc.setFontSize(9); doc.setFont(undefined, 'bold'); doc.setTextColor(...OURO);
+  doc.text(`Proposta: ${numero}`, M, y);
+  doc.setFont(undefined, 'normal'); doc.setTextColor(...CINZA2);
+  doc.text(`Emissao: ${dataEmissao}`, M + 60, y);
+  if (proposta.vencimento) doc.text(`Vencimento: ${proposta.vencimento}`, M + 118, y);
+  y += 5;
+  doc.text(`Categoria: ${proposta.categoria || ''}`, M, y);
+  if (proposta.status) doc.text(`Status: ${proposta.status}`, M + 60, y);
+  y += 10;
+
+  // Tomador
+  doc.setFillColor(...PRETO3); doc.roundedRect(M, y, W - 2 * M, 22, 3, 3, 'F');
+  doc.setFillColor(...OURO); doc.rect(M, y, 3, 22, 'F');
+  doc.setFontSize(7); doc.setFont(undefined, 'normal'); doc.setTextColor(...CINZA);
+  doc.text('TOMADOR DO SERVICO', M + 6, y + 6);
+  doc.setFontSize(10); doc.setFont(undefined, 'bold'); doc.setTextColor(...OURO);
+  doc.text(nomeCliente, M + 6, y + 14);
+  const cnpjFmt = String(proposta.cliente_cnpj || '').replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5');
+  doc.setFontSize(8.5); doc.setFont(undefined, 'normal'); doc.setTextColor(...CINZA2);
+  doc.text(`CNPJ: ${cnpjFmt}`, M + 6, y + 20);
+  if (proposta.cliente_email) doc.text(`E-mail: ${proposta.cliente_email}`, M + 85, y + 20);
+  y += 28;
+
+  // Campos de texto
   const camposTexto = [
-    ['Objeto da proposta', proposta.condicoes_comerciais],
-    ['Condições de faturamento', proposta.condicoes_faturamento],
-    ['Prazos', proposta.prazos],
-    ['Observações', proposta.observacoes],
+    ['OBJETO DA PROPOSTA', proposta.condicoes_comerciais],
+    ['CONDICOES DE FATURAMENTO', proposta.condicoes_faturamento],
+    ['PRAZOS', proposta.prazos],
+    ['OBSERVACOES', proposta.observacoes],
   ].filter(([, v]) => v?.trim());
 
-  if (camposTexto.length) {
-    for (const [label, valor] of camposTexto) {
-      doc.setFontSize(9); doc.setFont(undefined, 'bold');
-      doc.text(`${label}:`, margin, y);
-      doc.setFont(undefined, 'normal');
-      const linhas = doc.splitTextToSize(valor, pageW - 2 * margin - 40);
-      doc.text(linhas, margin + 40, y);
-      y += Math.max(5, linhas.length * 4.5);
-      if (y > 260) { doc.addPage(); y = 20; }
-    }
-    y += 3;
+  for (const [label, valor] of camposTexto) {
+    if (y > 258) { doc.addPage(); innerHeader(); y = 22; }
+    doc.setFontSize(7); doc.setFont(undefined, 'normal'); doc.setTextColor(...OURO);
+    doc.text(label, M, y); y += 4;
+    doc.setFontSize(9); doc.setTextColor(...CINZA2);
+    const linhas = doc.splitTextToSize(valor, W - 2 * M);
+    doc.text(linhas, M, y);
+    y += linhas.length * 4.5 + 6;
   }
 
-  // ── Itens ─────────────────────────────────────────────────────────────────
-  const isFacilities = catBadge === 'FACILITIES';
-  const head = isFacilities
-    ? [['Descrição', 'Efetivo', 'Escala', 'Qtd', 'Unit. (R$)', 'Total (R$)']]
-    : [['Descrição', 'Qtd', 'Unit. (R$)', 'Total (R$)']];
+  if (y > 200) { doc.addPage(); innerHeader(); y = 22; }
 
-  const body = itens.map(it => isFacilities
+  // Tabela de itens
+  const isFacilities = proposta.categoria === 'FACILITIES';
+  const tHead = isFacilities
+    ? [['Descricao', 'Efetivo', 'Escala', 'Qtd', 'Unit. (R$)', 'Total (R$)']]
+    : [['Descricao', 'Qtd', 'Unit. (R$)', 'Total (R$)']];
+  const tBody = itens.map(it => isFacilities
     ? [it.descricao || '', String(it.efetivo ?? ''), it.escala || '', String(it.quantidade || 1), fmtVal(it.valor_unitario), fmtVal(it.valor_total)]
     : [it.descricao || '', String(it.quantidade || 1), fmtVal(it.valor_unitario), fmtVal(it.valor_total)]
   );
-
-  const colStyles = isFacilities
-    ? { 1: { halign: 'center' }, 2: { cellWidth: 30 }, 3: { halign: 'center' }, 4: { halign: 'right' }, 5: { halign: 'right' } }
+  const tColStyles = isFacilities
+    ? { 1: { halign: 'center' }, 2: { cellWidth: 28 }, 3: { halign: 'center' }, 4: { halign: 'right' }, 5: { halign: 'right' } }
     : { 1: { halign: 'center' }, 2: { halign: 'right' }, 3: { halign: 'right' } };
 
   autoTable(doc, {
     startY: y,
-    head,
-    body,
-    columnStyles: colStyles,
-    headStyles: { fillColor: [30, 58, 138], textColor: 255, fontStyle: 'bold', fontSize: 9 },
-    bodyStyles: { fontSize: 9 },
-    alternateRowStyles: { fillColor: [248, 250, 252] },
-    margin: { left: margin, right: margin },
-    didDrawPage: (data) => { y = data.cursor.y; },
+    head: tHead,
+    body: tBody,
+    columnStyles: tColStyles,
+    headStyles: { fillColor: OURO, textColor: PRETO, fontStyle: 'bold', fontSize: 9 },
+    bodyStyles: { fontSize: 9, textColor: CINZA2, fillColor: PRETO3 },
+    alternateRowStyles: { fillColor: [22, 22, 22] },
+    tableLineColor: [42, 42, 42],
+    tableLineWidth: 0.2,
+    margin: { left: M, right: M },
   });
-
   y = doc.lastAutoTable.finalY + 5;
 
-  // ── Rodapé com total ──────────────────────────────────────────────────────
-  doc.setFillColor(30, 58, 138);
-  doc.rect(margin, y, pageW - 2 * margin, 10, 'F');
-  doc.setTextColor(255, 255, 255);
-  doc.setFontSize(11); doc.setFont(undefined, 'bold');
-  doc.text('VALOR TOTAL DA PROPOSTA', margin + 4, y + 6.5);
-  doc.text(`R$ ${fmtVal(valorTotal)}`, pageW - margin - 4, y + 6.5, { align: 'right' });
-  doc.setTextColor(30, 30, 30);
+  // Rodapé total
+  if (y > 272) { doc.addPage(); innerHeader(); y = 22; }
+  doc.setFillColor(...OURO);
+  doc.rect(M, y, W - 2 * M, 12, 'F');
+  doc.setTextColor(...PRETO);
+  doc.setFontSize(10.5); doc.setFont(undefined, 'bold');
+  doc.text('VALOR TOTAL DA PROPOSTA', M + 5, y + 8);
+  doc.text(`R$ ${fmtVal(valorTotal)}`, W - M - 5, y + 8, { align: 'right' });
+  y += 18;
 
-  // ── Rodapé de página ────────────────────────────────────────────────────
-  y += 20;
-  if (y > 260) { doc.addPage(); y = 20; }
-  doc.setFontSize(8); doc.setFont(undefined, 'normal');
-  doc.setTextColor(120, 120, 120);
-  doc.text('Proposta gerada pelo sistema MRSys — Grupo MR', margin, y);
-  doc.text(`Emitida em ${new Date().toLocaleString('pt-BR')}`, pageW - margin, y, { align: 'right' });
+  // ════════════════════════════════════════════════════════════════════════════
+  // ÚLTIMA PÁGINA — CONTATO
+  // ════════════════════════════════════════════════════════════════════════════
+  doc.addPage(); innerHeader();
+  y = 22;
+  y = sectionTitle('Estamos a Disposicao', y);
 
-  doc.save(`Proposta_${numero}_${(nomeCliente).replace(/[^a-zA-Z0-9]/g, '_')}.pdf`);
+  const ctH = 68, ctX = M + 20, ctW = W - 2 * M - 40;
+  doc.setFillColor(...PRETO3); doc.roundedRect(ctX, y, ctW, ctH, 5, 5, 'F');
+  doc.setDrawColor(...OURO); doc.setLineWidth(0.8);
+  doc.roundedRect(ctX, y, ctW, ctH, 5, 5, 'S');
+  doc.setFillColor(...OURO); doc.roundedRect(ctX, y, 4, ctH, 3, 3, 'F');
+
+  doc.setFontSize(7); doc.setFont(undefined, 'normal'); doc.setTextColor(...CINZA);
+  doc.text('PLANTAO COMERCIAL', W / 2, y + 12, { align: 'center' });
+  doc.setFontSize(16); doc.setFont(undefined, 'bold'); doc.setTextColor(...OURO);
+  doc.text('Celso Almeida', W / 2, y + 25, { align: 'center' });
+  doc.setFontSize(9.5); doc.setFont(undefined, 'normal'); doc.setTextColor(...CINZA2);
+  doc.text('celso.almeida@grupomr.seg.br', W / 2, y + 36, { align: 'center' });
+  doc.text('(21) 96914-4872  |  (21) 2751-3930', W / 2, y + 44, { align: 'center' });
+  doc.setFontSize(8); doc.setTextColor(...CINZA);
+  doc.text('Rua Americo de Souza, 53 - Vila Sao Joao | Sao Joao de Meriti - RJ', W / 2, y + 52, { align: 'center' });
+  if (proposta.vencimento) {
+    doc.setFontSize(9); doc.setFont(undefined, 'bold'); doc.setTextColor(...OURO);
+    doc.text(`Validade da proposta: ${proposta.vencimento}`, W / 2, y + 62, { align: 'center' });
+  }
+  y += ctH + 22;
+
+  // Rodapé logo final
+  doc.setDrawColor(...OURO); doc.setLineWidth(0.4);
+  doc.line(M, y, W - M, y); y += 8;
+  doc.setFontSize(14); doc.setFont(undefined, 'bold');
+  doc.setTextColor(...BRANCO); doc.text('GRUPO ', W / 2, y, { align: 'center' });
+  doc.setTextColor(...OURO); doc.text('MR', W / 2 + 14, y);
+  doc.setFontSize(8); doc.setFont(undefined, 'normal'); doc.setTextColor(...CINZA);
+  doc.text('grupomr.seg.br', W / 2, y + 8, { align: 'center' });
+
+  doc.save(`Proposta_${numero}_${nomeCliente.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`);
 }
 
 // ============ GERAÇÃO DE PDF DE MEDIÇÃO (resumo do fechamento) ============
