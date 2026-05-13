@@ -11,8 +11,17 @@ ALTER TABLE cerebro_tokens
     COMMENT 'E-mail da conta Google conectada'
     AFTER slot;
 
+-- Precisa dropar a FK antes de dropar o índice que ela referencia
+ALTER TABLE cerebro_tokens
+  DROP FOREIGN KEY fk_ct_usuario;
+
 ALTER TABLE cerebro_tokens
   DROP INDEX uq_usuario;
 
 ALTER TABLE cerebro_tokens
   ADD UNIQUE KEY uq_usuario_slot (usuario_id, slot);
+
+-- Recria a FK apontando para o novo índice composto
+ALTER TABLE cerebro_tokens
+  ADD CONSTRAINT fk_ct_usuario
+    FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE;

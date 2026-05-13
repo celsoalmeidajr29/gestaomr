@@ -4,7 +4,7 @@ import {
   RefreshCw, AlertCircle, ExternalLink, X, Brain, Wifi, WifiOff,
   Clock, Search, Plus, Trash2, Save, Edit2, Check, Play, Pause,
   RotateCcw, Timer, LayoutGrid, Home, Folder, ChevronRight, Bell,
-  Mail, Send, Archive, Eye,
+  Mail, Send, Archive, Eye, BookOpen, PenLine, PlusCircle,
 } from 'lucide-react'
 
 const API = '/api/cerebro'
@@ -869,6 +869,233 @@ function AbaMatriz() {
 }
 
 // ============================================================
+// ============================================================
+// ---- AbaNotionNotas (integração Notion) ----
+// ============================================================
+const NOTION_CSS = `
+  .notion-body { font-family: 'Outfit', sans-serif; font-size: 0.875rem; line-height: 1.75; color: #dde1f0; }
+  .notion-body h1 { font-size: 1.5rem; font-weight: 700; margin: 1.25rem 0 0.5rem; color: #fff; }
+  .notion-body h2 { font-size: 1.2rem; font-weight: 600; margin: 1rem 0 0.4rem; color: #e2e8f0; }
+  .notion-body h3 { font-size: 1rem; font-weight: 600; margin: 0.75rem 0 0.3rem; color: #c4b5fd; }
+  .notion-body p  { margin: 0.35rem 0; }
+  .notion-body ul, .notion-body ol { padding-left: 1.4rem; margin: 0.4rem 0; }
+  .notion-body li { margin: 0.2rem 0; }
+  .notion-body blockquote { border-left: 3px solid #4f55f7; padding-left: 0.85rem; color: #94a3b8; margin: 0.6rem 0; }
+  .notion-body pre  { background: rgba(0,0,0,0.45); border-radius: 8px; padding: 0.85rem 1rem; overflow-x: auto; }
+  .notion-body code { font-family: 'DM Mono', monospace; font-size: 0.78em; color: #86efac; }
+  .notion-body hr   { border: none; border-top: 1px solid rgba(79,85,247,0.2); margin: 1rem 0; }
+  .notion-body .notion-callout { background: rgba(79,85,247,0.08); border: 1px solid rgba(79,85,247,0.2); border-radius: 8px; padding: 0.75rem 1rem; display: flex; gap: 0.5rem; align-items: flex-start; }
+  .notion-body .notion-todo { display: flex; align-items: center; gap: 0.5rem; margin: 0.25rem 0; }
+  .notion-body .notion-todo input { accent-color: #4f55f7; width: 15px; height: 15px; }
+  .notion-body a { color: #4f55f7; text-decoration: underline; }
+  .notion-body img { max-width: 100%; border-radius: 8px; }
+  .notion-body figure { margin: 0.75rem 0; }
+  .notion-body figcaption { font-size: 0.75em; color: #3d4470; text-align: center; margin-top: 0.25rem; }
+  .notion-body .notion-child-page { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.3rem 0.75rem; border-radius: 8px; background: rgba(79,85,247,0.1); color: #4f55f7; font-size: 0.82rem; text-decoration: none; }
+`
+
+function AbaNotionNotas() {
+  const [pages,   setPages]   = useState(null)
+  const [loading, setLoading] = useState(false)
+  const [erro,    setErro]    = useState(null)
+  const [busca,   setBusca]   = useState('')
+  const [pagina,  setPagina]  = useState(null) // página aberta
+  const [appending, setAppending] = useState(false)
+  const [appendText, setAppendText] = useState('')
+  const [editBlock, setEditBlock] = useState(null) // { id, type, text }
+  const [savingBlock, setSavingBlock] = useState(false)
+  const [creating, setCreating] = useState(false)
+  const [newTitle, setNewTitle] = useState('')
+
+  async function buscarPaginas(q = '') {
+    setLoading(true); setErro(null); setPagina(null)
+    try {
+      const url = q.trim() ? `/notion.php?action=search&q=${encodeURIComponent(q)}` : '/notion.php?action=search'
+      setPages(await apiFetch(url))
+    } catch (e) { setErro(e.message) }
+    finally { setLoading(false) }
+  }
+
+  useEffect(() => { buscarPaginas() }, []) // eslint-disable-line
+
+  async function abrirPagina(pg) {
+    setLoading(true); setErro(null); setPagina(null)
+    try {
+      const data = await apiFetch(`/notion.php?action=page&id=${pg.id}`)
+      setPagina(data); setEditBlock(null); setAppendText('')
+    } catch (e) { setErro(e.message) }
+    finally { setLoading(false) }
+  }
+
+  async function salvarBloco() {
+    if (!editBlock) return
+    setSavingBlock(true)
+    try {
+      await apiFetch(`/notion.php?action=update&id=${editBlock.id}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ id: editBlock.id, type: editBlock.type, text: editBlock.text }),
+      })
+      // Recarrega a página para refletir mudança
+      const data = await apiFetch(`/notion.php?action=page&id=${pagina.id}`)
+      setPagina(data); setEditBlock(null)
+    } catch (e) { alert('Erro ao salvar: ' + e.message) }
+    finally { setSavingBlock(false) }
+  }
+
+  async function appendarBloco() {
+    if (!appendText.trim()) return
+    setAppending(true)
+    try {
+      await apiFetch(`/notion.php?action=append&id=${pagina.id}`, {
+        method: 'POST',
+        body: JSON.stringify({ text: appendText }),
+      })
+      const data = await apiFetch(`/notion.php?action=page&id=${pagina.id}`)
+      setPagina(data); setAppendText('')
+    } catch (e) { alert('Erro ao adicionar: ' + e.message) }
+    finally { setAppending(false) }
+  }
+
+  async function criarPagina() {
+    if (!newTitle.trim()) return
+    setLoading(true)
+    try {
+      await apiFetch('/notion.php?action=create', { method: 'POST', body: JSON.stringify({ title: newTitle }) })
+      setCreating(false); setNewTitle(''); await buscarPaginas()
+    } catch (e) { alert('Erro ao criar: ' + e.message) }
+    finally { setLoading(false) }
+  }
+
+  // ---- Vista de página aberta ----
+  if (pagina) {
+    return (
+      <div>
+        <div className="flex flex-wrap items-center gap-2 mb-4">
+          <Btn variant="ghost" onClick={() => setPagina(null)}><ArrowLeft className="w-4 h-4" /> Voltar</Btn>
+          <span className="text-sm font-medium truncate flex-1 min-w-0" style={{ color: C.text }}>
+            {pagina.icon && <span className="mr-1">{pagina.icon}</span>}
+            {pagina.title}
+          </span>
+          {pagina.url && (
+            <a href={pagina.url} target="_blank" rel="noreferrer">
+              <Btn variant="default"><ExternalLink className="w-3.5 h-3.5" /> Abrir</Btn>
+            </a>
+          )}
+        </div>
+
+        <style>{NOTION_CSS}</style>
+        <Card style={{ padding: '1.5rem 1.75rem', maxHeight: '55vh', overflowY: 'auto' }}>
+          <div className="notion-body" dangerouslySetInnerHTML={{ __html: pagina.html || '<p style="color:#3d4470">(página vazia)</p>' }} />
+        </Card>
+
+        {/* Editar bloco existente */}
+        {editBlock && (
+          <div className="mt-4 rounded-xl p-4" style={{ background: C.card, border: `1px solid ${C.accent}44` }}>
+            <p className="text-xs mb-2" style={{ color: C.accent }}>Editando bloco <code style={{ color: C.accent2 }}>{editBlock.type}</code></p>
+            <textarea value={editBlock.text} onChange={e => setEditBlock(b => ({ ...b, text: e.target.value }))}
+              className="w-full rounded-lg px-3 py-2 text-sm outline-none resize-none"
+              rows={3}
+              style={{ background: 'rgba(0,0,0,0.3)', border: `1px solid ${C.border}`, color: C.text, fontFamily: "'DM Mono',monospace" }} />
+            <div className="flex gap-2 mt-2">
+              <Btn variant="accent" disabled={savingBlock} onClick={salvarBloco}>
+                {savingBlock ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />} Salvar
+              </Btn>
+              <Btn variant="ghost" onClick={() => setEditBlock(null)}><X className="w-3.5 h-3.5" /></Btn>
+            </div>
+          </div>
+        )}
+
+        {/* Blocos editáveis como lista */}
+        {!editBlock && pagina.editable?.length > 0 && (
+          <details className="mt-3">
+            <summary className="cursor-pointer text-xs px-2 py-1 rounded-lg" style={{ color: C.muted, background: C.card }}>
+              <PenLine className="w-3 h-3 inline mr-1" />Editar blocos ({pagina.editable.length})
+            </summary>
+            <div className="mt-2 space-y-1">
+              {pagina.editable.map(b => (
+                <button key={b.id} onClick={() => setEditBlock({ ...b })}
+                  className="w-full text-left px-3 py-2 rounded-lg text-xs truncate transition hover:opacity-80"
+                  style={{ background: 'rgba(0,0,0,0.2)', border: `1px solid ${C.border}`, color: C.muted }}>
+                  <span style={{ color: C.accent2 }}>{b.type}: </span>{b.text || '(vazio)'}
+                </button>
+              ))}
+            </div>
+          </details>
+        )}
+
+        {/* Append novo bloco */}
+        <div className="mt-4 rounded-xl p-4" style={{ background: C.card, border: `1px solid ${C.border}` }}>
+          <p className="text-xs mb-2" style={{ color: C.muted }}><PlusCircle className="w-3 h-3 inline mr-1" />Adicionar parágrafo</p>
+          <textarea value={appendText} onChange={e => setAppendText(e.target.value)}
+            placeholder="Escreva aqui..."
+            className="w-full rounded-lg px-3 py-2 text-sm outline-none resize-none"
+            rows={3}
+            style={{ background: 'rgba(0,0,0,0.3)', border: `1px solid ${C.border}`, color: C.text }} />
+          <Btn variant="accent" disabled={appending || !appendText.trim()} onClick={appendarBloco} className="mt-2">
+            {appending ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Plus className="w-3.5 h-3.5" />} Adicionar
+          </Btn>
+        </div>
+
+        {pagina.lastEdited && (
+          <p className="text-xs mt-2 text-right" style={{ color: C.muted }}>Editado: {fmtDT(pagina.lastEdited)}</p>
+        )}
+      </div>
+    )
+  }
+
+  return (
+    <div>
+      {/* Busca + nova página */}
+      <div className="flex items-center gap-2 mb-4 flex-wrap">
+        <input value={busca} onChange={e => setBusca(e.target.value)}
+          onKeyDown={e => e.key === 'Enter' && buscarPaginas(busca)}
+          placeholder="Buscar páginas no Notion..."
+          className="flex-1 min-w-0 rounded-xl px-4 py-2 text-sm outline-none"
+          style={{ background: C.card, border: `1px solid ${C.border}`, color: C.text }} />
+        <Btn onClick={() => buscarPaginas(busca)} disabled={loading} variant="accent">
+          {loading ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Search className="w-3.5 h-3.5" />}
+        </Btn>
+        {busca && <Btn variant="ghost" onClick={() => { setBusca(''); buscarPaginas() }}><X className="w-3.5 h-3.5" /></Btn>}
+        <Btn variant="default" onClick={() => setCreating(c => !c)}><Plus className="w-3.5 h-3.5" /> Nova página</Btn>
+      </div>
+
+      {creating && (
+        <div className="mb-4 flex gap-2 items-center">
+          <input value={newTitle} onChange={e => setNewTitle(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && criarPagina()}
+            placeholder="Título da nova página..."
+            className="flex-1 rounded-xl px-4 py-2 text-sm outline-none"
+            style={{ background: C.card, border: `1px solid ${C.accent}55`, color: C.text }}
+            autoFocus />
+          <Btn variant="accent" disabled={!newTitle.trim() || loading} onClick={criarPagina}>Criar</Btn>
+          <Btn variant="ghost" onClick={() => { setCreating(false); setNewTitle('') }}><X className="w-3.5 h-3.5" /></Btn>
+        </div>
+      )}
+
+      {loading && <Spinner />}
+      {erro && <Erro msg={erro} onRetry={() => buscarPaginas(busca)} />}
+      {!loading && !erro && pages !== null && pages.length === 0 && <Empty msg="Nenhuma página encontrada." />}
+
+      {pages && pages.length > 0 && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          {pages.map(pg => (
+            <button key={pg.id} onClick={() => abrirPagina(pg)}
+              className="group text-left rounded-2xl p-4 transition hover:scale-[1.01]"
+              style={{ background: C.card, border: `1px solid ${C.border}` }}>
+              <div className="flex items-start gap-2 mb-2">
+                <span className="text-base flex-shrink-0">{pg.icon || '📄'}</span>
+                <p className="text-sm font-medium truncate flex-1" style={{ color: C.text }}>{pg.title || '(sem título)'}</p>
+              </div>
+              <p className="text-[11px]" style={{ color: C.muted }}>{pg.lastEdited ? fmtDT(pg.lastEdited) : '—'}</p>
+              <p className="text-xs mt-1.5 opacity-0 group-hover:opacity-100 transition" style={{ color: C.accent }}>Abrir →</p>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 // ---- Aba Notas (Brain → Notas Atômicas + tags/filtros) ----
 // ============================================================
 function Breadcrumb({ stack, onNavigate, rootLabel = '🧠 Brain' }) {
@@ -888,6 +1115,7 @@ function Breadcrumb({ stack, onNavigate, rootLabel = '🧠 Brain' }) {
 }
 
 function AbaNotas() {
+  const [source, setSource]       = useState('drive') // 'drive' | 'notion'
   const [stack, setStack]         = useState([])
   const [items, setItems]         = useState(null)
   const [loading, setLoading]     = useState(false)
@@ -1047,8 +1275,42 @@ function AbaNotas() {
 
   const rootLabel = notasRootRef.current ? `📚 ${notasRootRef.current.name}` : '📚 Notas Atômicas'
 
+  if (source === 'notion') {
+    return (
+      <div>
+        <div className="flex items-center gap-2 mb-5">
+          <button onClick={() => setSource('drive')}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition"
+            style={{ background: 'rgba(0,0,0,0.2)', border: `1px solid ${C.border}`, color: C.muted }}>
+            <HardDrive className="w-3.5 h-3.5" /> Drive
+          </button>
+          <button
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition"
+            style={{ background: C.accent + '22', border: `1px solid ${C.accent}55`, color: C.accent }}>
+            <BookOpen className="w-3.5 h-3.5" /> Notion
+          </button>
+        </div>
+        <AbaNotionNotas />
+      </div>
+    )
+  }
+
   return (
     <div>
+      {/* Switcher Drive / Notion */}
+      <div className="flex items-center gap-2 mb-5">
+        <button
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition"
+          style={{ background: C.accent + '22', border: `1px solid ${C.accent}55`, color: C.accent }}>
+          <HardDrive className="w-3.5 h-3.5" /> Drive
+        </button>
+        <button onClick={() => setSource('notion')}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition"
+          style={{ background: 'rgba(0,0,0,0.2)', border: `1px solid ${C.border}`, color: C.muted }}>
+          <BookOpen className="w-3.5 h-3.5" /> Notion
+        </button>
+      </div>
+
       <Breadcrumb stack={stack} onNavigate={navigateBreadcrumb} rootLabel={rootLabel} />
 
       {/* Barra de busca */}
