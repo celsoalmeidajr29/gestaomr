@@ -5,8 +5,10 @@ require_once __DIR__ . '/../../../_bootstrap.php';
 require_permission('pareceto');
 $method = $_SERVER['REQUEST_METHOD'];
 
-// ---- GET: retorna registros do banco ----
+// ---- GET: retorna registros do banco (paginado) ----
 if ($method === 'GET') {
+    @ini_set('memory_limit', '512M');
+
     $tblExists = db()->query("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES
         WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'pc_irregularidades'")->fetchColumn();
     if (!$tblExists) {
@@ -19,10 +21,24 @@ if ($method === 'GET') {
     if (!empty($_GET['ate']))     { $where[] = 'dt_emissao <= :ate';     $params[':ate']     = $_GET['ate'] . ' 23:59:59'; }
     if (!empty($_GET['trecho']))  { $where[] = 'trecho = :trecho';       $params[':trecho']  = $_GET['trecho']; }
     if (!empty($_GET['emissor'])) { $where[] = 'emissor = :emissor';     $params[':emissor'] = $_GET['emissor']; }
-    $wc   = $where ? 'WHERE ' . implode(' AND ', $where) : '';
-    $stmt = db()->prepare("SELECT * FROM pc_irregularidades {$wc} ORDER BY dt_emissao DESC LIMIT 30000");
+    $wc = $where ? 'WHERE ' . implode(' AND ', $where) : '';
+
+    $perPage = 20000;
+    $page    = max(1, (int)($_GET['page'] ?? 1));
+    $offset  = ($page - 1) * $perPage;
+
+    $cntStmt = db()->prepare("SELECT COUNT(*) FROM pc_irregularidades {$wc}");
+    $cntStmt->execute($params);
+    $total = (int)$cntStmt->fetchColumn();
+
+    $stmt = db()->prepare("SELECT * FROM pc_irregularidades {$wc} ORDER BY dt_emissao ASC LIMIT {$perPage} OFFSET {$offset}");
     $stmt->execute($params);
-    json_response($stmt->fetchAll());
+    $rows = $stmt->fetchAll();
+
+    header('X-Total-Count: ' . $total);
+    header('X-Page: ' . $page);
+    header('X-Has-More: ' . ($offset + count($rows) < $total ? '1' : '0'));
+    json_response($rows);
 }
 
 if ($method !== 'POST') json_error('Metodo nao permitido', 405);
