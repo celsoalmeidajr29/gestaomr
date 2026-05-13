@@ -1,6 +1,6 @@
-// Versão ativa: v1.0.8 — Propostas: itens no PDF/modal/fatura + campo Prestador + Objeto da proposta
+// Versão ativa: v1.0.9 — PDF proposta: capa premium, imagem clientes, paginação, colunas itens
 // Versões anteriores em src/versions/
-import MRSysApp from './versions/MRSys_v1.0.8.jsx'
+import MRSysApp from './versions/MRSys_v1.0.9.jsx'
 
 export default function App(props) {
   return <MRSysApp {...props} />

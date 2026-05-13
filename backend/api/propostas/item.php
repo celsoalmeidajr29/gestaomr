@@ -66,8 +66,8 @@ if ($method === 'PUT') {
     if (empty($d['categoria']))    json_error('Campo obrigatório: categoria', 422);
 
     $categoria = strtoupper(trim((string) $d['categoria']));
-    if (!in_array($categoria, ['ESCOLTA', 'FACILITIES', 'OUTROS'], true)) {
-        json_error("categoria inválida ('ESCOLTA', 'FACILITIES' ou 'OUTROS')", 422);
+    if (!in_array($categoria, ['ESCOLTA', 'FACILITIES', 'EVENTOS', 'OUTROS'], true)) {
+        json_error("categoria inválida ('ESCOLTA', 'FACILITIES', 'EVENTOS' ou 'OUTROS')", 422);
     }
 
     $novoStatus = $d['status'] ?? $current['status'];
