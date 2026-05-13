@@ -870,10 +870,11 @@ function AbaMatriz() {
 // ============================================================
 // ---- Aba Notas (Brain → Notas Atômicas + tags/filtros) ----
 // ============================================================
-function Breadcrumb({ stack, onNavigate }) {
+function Breadcrumb({ stack, onNavigate, rootLabel = '🧠 Brain' }) {
   return (
     <div className="flex items-center gap-1 flex-wrap text-xs mb-4" style={{ color: C.muted }}>
-      <button onClick={() => onNavigate(-1)} className="hover:opacity-80">🧠 Brain</button>
+      <button onClick={() => onNavigate(-1)} className="hover:opacity-80"
+        style={{ color: stack.length === 0 ? C.text : C.muted }}>{rootLabel}</button>
       {stack.map((f, i) => (
         <React.Fragment key={f.id}>
           <ChevronRight className="w-3 h-3 opacity-40" />
@@ -907,25 +908,32 @@ function AbaNotas() {
     finally { setLoading(false) }
   }, [])
 
-  // Auto-detecta Brain → Notas Atômicas
+  const notasRootRef = useRef(null) // pasta Notas Atômicas — raiz fixa da aba
+
+  // Navega sempre para Notas Atômicas (raiz fixa)
+  const goRoot = useCallback(async () => {
+    if (!notasRootRef.current) return
+    setStack([]); setNota(null); setEditMode(false); setTagFiltro(null)
+    await loadFolder(notasRootRef.current.id)
+  }, [loadFolder])
+
+  // Localiza Brain → Notas Atômicas na montagem
   useEffect(() => {
     (async () => {
       setLoading(true)
       try {
         const brainFolders = await apiFetch('/drive.php?q=Brain&type=folder')
         if (!brainFolders.length) {
-          setItems(await apiFetch('/drive.php?type=notas')); return
+          setErro('Pasta "Brain" não encontrada no Google Drive.'); return
         }
         const brain = brainFolders[0]
         const brainItems = await apiFetch(`/drive.php?folder=${encodeURIComponent(brain.id)}&type=notas`)
         const notasFolder = brainItems.find(f => f.isFolder && /notas.at/i.test(f.name))
-        if (notasFolder) {
-          setStack([notasFolder])
-          setItems(await apiFetch(`/drive.php?folder=${encodeURIComponent(notasFolder.id)}&type=notas`))
-        } else {
-          setStack([brain])
-          setItems(brainItems)
+        if (!notasFolder) {
+          setErro('Pasta "Notas Atômicas" não encontrada dentro de Brain.'); return
         }
+        notasRootRef.current = notasFolder
+        setItems(await apiFetch(`/drive.php?folder=${encodeURIComponent(notasFolder.id)}&type=notas`))
       } catch (e) { setErro(e.message) }
       finally { setLoading(false) }
     })()
@@ -934,7 +942,7 @@ function AbaNotas() {
   function navigateTo(folder) { setStack(s => [...s, folder]); loadFolder(folder.id) }
 
   function navigateBreadcrumb(idx) {
-    if (idx === -1) { setStack([]); setItems(null); setNota(null); return }
+    if (idx === -1) { goRoot(); return }
     const ns = stack.slice(0, idx + 1); setStack(ns); loadFolder(ns[ns.length - 1].id)
   }
 
@@ -1036,9 +1044,11 @@ function AbaNotas() {
     return true
   })
 
+  const rootLabel = notasRootRef.current ? `📚 ${notasRootRef.current.name}` : '📚 Notas Atômicas'
+
   return (
     <div>
-      <Breadcrumb stack={stack} onNavigate={navigateBreadcrumb} />
+      <Breadcrumb stack={stack} onNavigate={navigateBreadcrumb} rootLabel={rootLabel} />
 
       {/* Barra de busca */}
       <div className="flex items-center gap-2 mb-4">
@@ -1051,12 +1061,14 @@ function AbaNotas() {
           {loading ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Search className="w-3.5 h-3.5" />}
         </Btn>
         {busca && (
-          <Btn variant="ghost" onClick={() => { setBusca(''); currentFolder && loadFolder(currentFolder.id) }}>
+          <Btn variant="ghost" onClick={() => { setBusca(''); stack.length ? loadFolder(currentFolder.id) : goRoot() }}>
             <X className="w-3.5 h-3.5" />
           </Btn>
         )}
-        {currentFolder && !loading && (
-          <Btn variant="default" onClick={() => loadFolder(currentFolder.id)}><RefreshCw className="w-3.5 h-3.5" /></Btn>
+        {!loading && (
+          <Btn variant="default" onClick={() => stack.length ? loadFolder(currentFolder.id) : goRoot()}>
+            <RefreshCw className="w-3.5 h-3.5" />
+          </Btn>
         )}
       </div>
 
