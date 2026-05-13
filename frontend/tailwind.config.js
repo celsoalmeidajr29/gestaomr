@@ -19,5 +19,10 @@ export default {
       },
     },
   },
+  safelist: [
+    // Badges de categoria das propostas — garante geração mesmo em ternários longos
+    'bg-sky-500/20', 'text-sky-300', 'border-sky-500/30',
+    'bg-amber-500/20', 'text-amber-300', 'border-amber-500/30',
+  ],
   plugins: [],
 }
