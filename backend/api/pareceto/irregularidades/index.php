@@ -5,8 +5,14 @@ require_once __DIR__ . '/../../../_bootstrap.php';
 require_permission('pareceto');
 $method = $_SERVER['REQUEST_METHOD'];
 
-// ---- GET: retorna todos os registros do banco ----
+// ---- GET: retorna registros do banco ----
 if ($method === 'GET') {
+    $tblExists = db()->query("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES
+        WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'pc_irregularidades'")->fetchColumn();
+    if (!$tblExists) {
+        json_error('Tabela pc_irregularidades nao encontrada. Execute a migration 016 no phpMyAdmin.', 503);
+    }
+
     $where  = [];
     $params = [];
     if (!empty($_GET['de']))      { $where[] = 'dt_emissao >= :de';      $params[':de']      = $_GET['de']; }
@@ -14,7 +20,7 @@ if ($method === 'GET') {
     if (!empty($_GET['trecho']))  { $where[] = 'trecho = :trecho';       $params[':trecho']  = $_GET['trecho']; }
     if (!empty($_GET['emissor'])) { $where[] = 'emissor = :emissor';     $params[':emissor'] = $_GET['emissor']; }
     $wc   = $where ? 'WHERE ' . implode(' AND ', $where) : '';
-    $stmt = db()->prepare("SELECT * FROM pc_irregularidades {$wc} ORDER BY dt_emissao DESC LIMIT 500000");
+    $stmt = db()->prepare("SELECT * FROM pc_irregularidades {$wc} ORDER BY dt_emissao DESC LIMIT 200000");
     $stmt->execute($params);
     json_response($stmt->fetchAll());
 }
