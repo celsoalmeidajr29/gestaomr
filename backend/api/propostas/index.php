@@ -83,7 +83,25 @@ if ($method === 'GET') {
 
     $stmt = db()->prepare($sql);
     $stmt->execute($params);
-    json_response($stmt->fetchAll());
+    $rows = $stmt->fetchAll();
+
+    // Carrega itens de todas as propostas numa única query (evita N+1)
+    if ($rows) {
+        $ids = implode(',', array_map('intval', array_column($rows, 'id')));
+        $allItens = db()->query(
+            "SELECT * FROM proposta_itens WHERE proposta_id IN ({$ids}) ORDER BY proposta_id, ordem ASC, id ASC"
+        )->fetchAll();
+        $itensPorProposta = [];
+        foreach ($allItens as $it) {
+            $itensPorProposta[(int)$it['proposta_id']][] = $it;
+        }
+        foreach ($rows as &$r) {
+            $r['itens'] = $itensPorProposta[(int)$r['id']] ?? [];
+        }
+        unset($r);
+    }
+
+    json_response($rows);
 }
 
 /* ----------------------------------------------------------------------
@@ -125,11 +143,11 @@ if ($method === 'POST') {
         $stmt = db()->prepare(
             'INSERT INTO propostas
              (numero, cliente_id, cliente_nome, cliente_cnpj, cliente_email,
-              categoria, status, condicoes_comerciais, condicoes_faturamento,
+              categoria, prestador, status, condicoes_comerciais, condicoes_faturamento,
               prazos, vencimento, observacoes, valor_total, criado_por)
              VALUES
              (:num, :cid, :cnome, :ccnpj, :cmail,
-              :cat, :st, :cond, :condf,
+              :cat, :prest, :st, :cond, :condf,
               :prazos, :venc, :obs, :total, :uid)'
         );
 
@@ -145,6 +163,7 @@ if ($method === 'POST') {
             ':ccnpj'  => $d['cliente_cnpj'],
             ':cmail'  => $d['cliente_email'] ?? null,
             ':cat'    => $categoria,
+            ':prest'  => $d['prestador'] ?? null,
             ':st'     => 'Criada',
             ':cond'   => $d['condicoes_comerciais']  ?? null,
             ':condf'  => $d['condicoes_faturamento'] ?? null,
