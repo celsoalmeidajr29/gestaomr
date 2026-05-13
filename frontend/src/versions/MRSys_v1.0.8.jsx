@@ -8231,38 +8231,87 @@ async function gerarPropostaPDF(proposta) {
   doc.save(`Proposta_${numero}_${nomeCliente.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`);
 }
 
-// ============ GERAÇÃO DE PDF DE MEDIÇÃO (resumo do fechamento) ============
+// ============ GERAÇÃO DE PDF DE MEDIÇÃO (resumo do fechamento) — layout Grupo MR ============
 function gerarMedicaoPDFBlob(fechamento, lancamentos, servicos) {
+  // Paleta Grupo MR
+  const PRETO   = [10, 10, 10];
+  const PRETO3  = [26, 26, 26];
+  const OURO    = [201, 168, 76];
+  const BRANCO  = [255, 255, 255];
+  const CINZA   = [136, 136, 136];
+  const CINZA2  = [204, 204, 204];
+
   const isNatura = ['NATURA_NOTURNA', 'NATURA_MOTOLINK'].includes(fechamento.template)
     || (fechamento.templates || []).some(t => ['NATURA_NOTURNA', 'NATURA_MOTOLINK'].includes(t));
   const orientation = isNatura ? 'portrait' : 'landscape';
   const doc = new jsPDF({ orientation, unit: 'mm', format: 'a4' });
-  const pageW = orientation === 'landscape' ? 297 : 210;
+  const W = orientation === 'landscape' ? 297 : 210;
+  const H = orientation === 'landscape' ? 210 : 297;
+  const M = 14;
+
   const cliente = fechamento.cliente || '';
   const periodo = fechamento.periodo || '';
-  const numero = fechamento.numeroFmt || '';
-  const lancs = (fechamento.lancamentos || []).map(lid => lancamentos.find(l => String(l.id) === String(lid))).filter(Boolean);
+  const numero  = fechamento.numeroFmt || '';
+  const lancs   = (fechamento.lancamentos || []).map(lid => lancamentos.find(l => String(l.id) === String(lid))).filter(Boolean);
   const fmtHora = (dt) => { const m = String(dt || '').match(/T?(\d{2}:\d{2})/); return m ? m[1] : (dt ? String(dt) : ''); };
+  const fmtVal  = (v) => Number(v || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-  // Cabeçalho
-  doc.setFontSize(16); doc.setFont(undefined, 'bold');
-  doc.text('MEDIÇÃO DE SERVIÇOS', pageW / 2, 20, { align: 'center' });
-  doc.setFontSize(11); doc.setFont(undefined, 'normal');
-  doc.text(`Cliente: ${cliente}`, 14, 32);
-  doc.text(`Competência: ${periodo}`, 14, 38);
-  if (numero) doc.text(`Fatura: ${numero}`, 14, 44);
-  if (fechamento.dataInicio && fechamento.dataFim) doc.text(`Período: ${fechamento.dataInicio.split('-').reverse().join('/')} a ${fechamento.dataFim.split('-').reverse().join('/')}`, 14, 50);
+  // ── Helpers ──────────────────────────────────────────────────────────────
+  const fillPage = () => { doc.setFillColor(...PRETO); doc.rect(0, 0, W, H, 'F'); };
+  const pageHeader = () => {
+    fillPage();
+    // Linha dourada topo
+    doc.setDrawColor(...OURO); doc.setLineWidth(0.4);
+    doc.line(M, 12, W - M, 12);
+    // Logo GRUPO MR
+    doc.setFontSize(9); doc.setFont(undefined, 'bold');
+    doc.setTextColor(...BRANCO); doc.text('GRUPO ', M, 9);
+    doc.setTextColor(...OURO); doc.text('MR', M + 16, 9);
+    // Site
+    doc.setFontSize(7.5); doc.setFont(undefined, 'normal');
+    doc.setTextColor(...CINZA); doc.text('grupomr.seg.br', W - M, 9, { align: 'right' });
+  };
 
-  // Tabela de lançamentos
+  // ── Página única ─────────────────────────────────────────────────────────
+  pageHeader();
+  let y = 18;
+
+  // Título centralizado
+  doc.setFontSize(14); doc.setFont(undefined, 'bold'); doc.setTextColor(...OURO);
+  doc.text('MEDICAO DE SERVICOS', W / 2, y, { align: 'center' });
+  y += 8;
+  doc.setDrawColor(...OURO); doc.setLineWidth(0.5);
+  doc.line(W / 2 - 40, y, W / 2 + 40, y);
+  y += 6;
+
+  // Card cabeçalho (cliente + período + fatura)
+  const cardH = fechamento.dataInicio && fechamento.dataFim ? 24 : 20;
+  doc.setFillColor(...PRETO3); doc.roundedRect(M, y, W - 2 * M, cardH, 3, 3, 'F');
+  doc.setFillColor(...OURO); doc.rect(M, y, 3, cardH, 'F');
+
+  doc.setFontSize(9); doc.setFont(undefined, 'bold'); doc.setTextColor(...OURO);
+  doc.text(cliente, M + 6, y + 7);
+  doc.setFontSize(8); doc.setFont(undefined, 'normal'); doc.setTextColor(...CINZA2);
+  const periodoFmt = periodo ? periodo.slice(0, 7).split('-').reverse().join('/') : '';
+  let metaTexto = `Competencia: ${periodoFmt}`;
+  if (numero) metaTexto += `   |   Fatura: ${numero}`;
+  doc.text(metaTexto, M + 6, y + 13);
+  if (fechamento.dataInicio && fechamento.dataFim) {
+    doc.setTextColor(...CINZA);
+    doc.text(`Periodo: ${fechamento.dataInicio.split('-').reverse().join('/')} a ${fechamento.dataFim.split('-').reverse().join('/')}`, M + 6, y + 20);
+  }
+  y += cardH + 6;
+
+  // ── Tabela de lançamentos ─────────────────────────────────────────────────
   let head, rows, colStyles;
   if (isNatura) {
     rows = lancs.map(l => [
       l.os || '',
       l.data ? l.data.split('-').reverse().join('/') : '',
       l.descricao || '',
-      Number(l.totalFatura || 0).toFixed(2).replace('.', ','),
+      fmtVal(l.totalFatura),
     ]);
-    head = [['OS', 'Data', 'Serviço', 'Valor (R$)']];
+    head = [['OS', 'Data', 'Servico', 'Valor (R$)']];
     colStyles = { 3: { halign: 'right' } };
   } else {
     rows = lancs.map(l => [
@@ -8277,32 +8326,46 @@ function gerarMedicaoPDFBlob(fechamento, lancamentos, servicos) {
       fmtHora(l.extras?.termino),
       Number(l.horasTrabalhadas || 0) || '',
       Number(l.extraHorasFatura || 0) || '',
-      Number(l.totalFatura || 0).toFixed(2).replace('.', ','),
+      fmtVal(l.totalFatura),
     ]);
-    head = [['OS', 'Data', 'Serviço', 'KM Ini.', 'KM Fin.', 'KM Rod.', 'KM Ext.', 'H. Início', 'H. Fim', 'H. Trab.', 'H. Extra', 'Valor (R$)']];
+    head = [['OS', 'Data', 'Servico', 'KM Ini.', 'KM Fin.', 'KM Rod.', 'KM Ext.', 'H. Inicio', 'H. Fim', 'H. Trab.', 'H. Extra', 'Valor (R$)']];
     colStyles = { 11: { halign: 'right' } };
   }
 
   autoTable(doc, {
     head,
     body: rows,
-    startY: 58,
-    styles: { fontSize: 7, cellPadding: 1.5 },
-    headStyles: { fillColor: [30, 58, 138], textColor: 255 },
+    startY: y,
+    styles: { fontSize: 7, cellPadding: 1.8, textColor: CINZA2, fillColor: PRETO3 },
+    headStyles: { fillColor: OURO, textColor: PRETO, fontStyle: 'bold', fontSize: 7.5 },
+    alternateRowStyles: { fillColor: [22, 22, 22] },
+    tableLineColor: [42, 42, 42],
+    tableLineWidth: 0.2,
     columnStyles: colStyles,
+    margin: { left: M, right: M },
   });
 
   // v99 — PDF de medição não exibe impostos (alíquota/ISS/retenções/líquido).
   // É um demonstrativo dos serviços prestados + valor bruto faturado. Cliente não recebe info tributária.
-  const finalY = doc.lastAutoTable.finalY || 80;
-  doc.setFontSize(10); doc.setFont(undefined, 'bold');
-  doc.text(`Quantidade de lançamentos: ${lancs.length}`, 14, finalY + 10);
-  doc.text(`Total faturado: R$ ${Number(fechamento.totalFatura || 0).toFixed(2).replace('.', ',')}`, 14, finalY + 16);
+  const finalY = doc.lastAutoTable.finalY + 4;
+
+  // Barra de total dourada
+  if (finalY < H - 22) {
+    doc.setFillColor(...OURO);
+    doc.rect(M, finalY, W - 2 * M, 11, 'F');
+    doc.setTextColor(...PRETO);
+    doc.setFontSize(9); doc.setFont(undefined, 'bold');
+    doc.text(`${lancs.length} lancamentos`, M + 4, finalY + 7.5);
+    doc.text(`TOTAL: R$ ${fmtVal(fechamento.totalFatura)}`, W - M - 4, finalY + 7.5, { align: 'right' });
+  }
 
   // Rodapé
-  doc.setFontSize(8); doc.setFont(undefined, 'italic');
-  const footerY = orientation === 'landscape' ? 200 : 285;
-  doc.text(`Documento gerado em ${new Date().toLocaleString('pt-BR')} por MRSys`, pageW / 2, footerY, { align: 'center' });
+  const footerY = H - 8;
+  doc.setDrawColor(...OURO); doc.setLineWidth(0.3);
+  doc.line(M, footerY - 4, W - M, footerY - 4);
+  doc.setFontSize(7); doc.setFont(undefined, 'normal'); doc.setTextColor(...CINZA);
+  doc.text('GRUPO MR — Seguranca, Facilities & Consultoria', M, footerY);
+  doc.text(`Gerado em ${new Date().toLocaleString('pt-BR')}`, W - M, footerY, { align: 'right' });
 
   return doc.output('blob');
 }
