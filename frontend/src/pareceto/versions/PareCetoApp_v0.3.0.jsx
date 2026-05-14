@@ -1,6 +1,6 @@
 ﻿// v0.2.0 — Tema claro corporativo (header branco, bg-slate-50, cards brancos)
 import React, { useState, useEffect, useRef, useMemo } from 'react'
-import { ArrowLeft, LogOut, Upload, Users, BarChart3, AlertTriangle, Clock, Plus, Edit2, Trash2, Download, FileText, RefreshCw, X, Check, Search, Settings, Bell, Shield, Target, ChevronDown, ChevronUp, Activity, TrendingUp, TrendingDown, Minus, Filter } from 'lucide-react'
+import { ArrowLeft, LogOut, Upload, Users, BarChart3, AlertTriangle, Clock, Plus, Edit2, Trash2, Download, FileText, RefreshCw, X, Check, Search, Settings, Bell, Shield, Target, ChevronDown, ChevronUp, Activity, TrendingUp, TrendingDown, Minus, Filter, Moon, Sun } from 'lucide-react'
 import * as XLSX from 'xlsx'
 import {
   AreaChart, Area, BarChart, Bar, LineChart, Line,
@@ -596,7 +596,6 @@ function MiniScoreBar({ score, nivel }) {
         <div className={`h-full rounded-full ${c.bar} transition-all`} style={{ width: `${score}%` }} />
       </div>
       <span className={`text-xs font-bold w-6 text-right ${c.text}`}>{score}</span>
-    </div>
     </div>
   )
 }
