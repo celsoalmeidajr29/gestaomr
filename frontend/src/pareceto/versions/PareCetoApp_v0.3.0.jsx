@@ -1,4 +1,4 @@
-﻿// v0.2.0 — Tema claro corporativo (header branco, bg-slate-50, cards brancos)
+﻿// v0.3.0 — Dark mode toggle Sol/Lua
 import React, { useState, useEffect, useRef, useMemo } from 'react'
 import { ArrowLeft, LogOut, Upload, Users, BarChart3, AlertTriangle, Clock, Plus, Edit2, Trash2, Download, FileText, RefreshCw, X, Check, Search, Settings, Bell, Shield, Target, ChevronDown, ChevronUp, Activity, TrendingUp, TrendingDown, Minus, Filter, Moon, Sun } from 'lucide-react'
 import * as XLSX from 'xlsx'
@@ -639,7 +639,6 @@ function KpiComparRow({ label, valA, valB, fmt, inverso }) {
         {valA !== null && valB !== null ? <DeltaBadge valA={valA} valB={valB} inverso={inverso} /> : <span className="text-xs text-slate-600">—</span>}
       </div>
     </div>
-    </div>
   )
 }
 
@@ -671,7 +670,6 @@ function RankingCompar({ title, listA, listB, nameKey, valueKey, fmtVal }) {
         </div>
       ))}
       {allNames.length === 0 && <div className="text-slate-500 text-xs py-2">Sem dados</div>}
-    </div>
     </div>
   )
 }
@@ -806,7 +804,6 @@ function ComparacaoPeriodos({ records, tipo }) {
           )}
         </div>
       )}
-    </div>
     </div>
   )
 }
@@ -1022,7 +1019,6 @@ function RelatorioSemanal({ records, scorePlacas }) {
           )}
         </>
       )}
-    </div>
     </div>
   )
 }
@@ -1278,7 +1274,6 @@ function AbaInadimplencia({ records, scorePlacas }) {
         </div>
       )}
     </div>
-    </div>
   )
 }
 
@@ -1415,7 +1410,6 @@ function ComparacaoTrechos({ records, tipo }) {
           </div>
         </>
       )}
-    </div>
     </div>
   )
 }
@@ -1611,7 +1605,6 @@ function StatCard({ label, value, sub }) {
       <div className="text-2xl font-bold text-slate-900 leading-tight">{value}</div>
       {sub && <div className="text-xs text-slate-500 mt-1">{sub}</div>}
     </div>
-    </div>
   )
 }
 
@@ -1631,7 +1624,6 @@ function ConvBar({ pct }) {
       </div>
       <span className="text-xs">{fmtNum(pct || 0)}%</span>
     </div>
-    </div>
   )
 }
 
@@ -1646,7 +1638,6 @@ function DropZone({ onFile, label }) {
       <Upload className="w-12 h-12 mx-auto mb-3 text-slate-600" />
       <div className="text-slate-400 text-sm">{label || 'Arraste o(s) CSV aqui ou '}<span className="text-emerald-600">clique para selecionar</span></div>
       <input ref={ref} type="file" accept=".csv,.txt" multiple className="hidden" onChange={e => e.target.files?.length && onFile(e.target.files)} />
-    </div>
     </div>
   )
 }
@@ -1699,7 +1690,6 @@ function ModalFuncionario({ data, mode, onSalvar, onFechar }) {
           </button>
         </div>
       </div>
-    </div>
     </div>
   )
 }
@@ -1786,7 +1776,6 @@ function AbaFuncionarios({ funcionarios, todos, loading, busca, setBusca, filtro
         </div>
       )}
     </div>
-    </div>
   )
 }
 
@@ -1822,7 +1811,6 @@ function FilterBar({ meses, agentes, trechos, filtroMes, setFiltroMes, filtroDe,
       )}
       {temFiltro && <span className="text-xs bg-amber-500/20 text-amber-700 px-2 py-0.5 rounded-full font-medium">Filtro ativo</span>}
     </div>
-    </div>
   )
 }
 
@@ -1836,7 +1824,6 @@ function SubTabs({ tabs, aba, setAba }) {
           {label}
         </button>
       ))}
-    </div>
     </div>
   )
 }
@@ -1875,7 +1862,6 @@ function ActionBar({ titulo, sub, sub2, onNovoArquivo, onExportTXT, onExportXLSX
           </button>
         )}
       </div>
-    </div>
     </div>
   )
 }
@@ -2040,7 +2026,6 @@ function VendasHoraExtra({ a }) {
         </table>
       </div>
     </div>
-    </div>
   )
 }
 
@@ -2169,7 +2154,6 @@ function VendasFuncionarioDetalhe({ nome, cargo, records, analise, onVoltar }) {
         </div>
       )}
     </div>
-    </div>
   )
 }
 
@@ -2229,7 +2213,6 @@ function PeriodoDBSelector({ periodo, onRecarregar, loading, label = 'Período d
           )}
         </div>
       )}
-    </div>
     </div>
   )
 }
@@ -2354,7 +2337,6 @@ function AbaVendas({ funcionarios, dados, premissas, analise, jornada, subAba, s
       {subAba === 'comparar' && <ComparacaoPeriodos records={recordsFiltrados} tipo="vendas" />}
       {subAba === 'trechos-comp' && <ComparacaoTrechos records={recordsFiltrados} tipo="vendas" />}
     </div>
-    </div>
   )
 }
 
@@ -2372,7 +2354,6 @@ function RankingRow({ label, count, total, valor, alert }) {
         </div>
         <span className="text-xs text-emerald-600">{fmtBRL(valor)}</span>
       </div>
-    </div>
     </div>
   )
 }
@@ -2407,7 +2388,6 @@ function VendasKPIs({ a }) {
           <RankingRow key={t} label={t} count={d.count} total={a.totalTrans} valor={d.valor} alert={t.includes('ALERTA')} />)}
       </div>
     </div>
-    </div>
   )
 }
 
@@ -2437,7 +2417,6 @@ function VendasAgentes({ a }) {
         </tbody>
       </table>
     </div>
-    </div>
   )
 }
 
@@ -2463,7 +2442,6 @@ function VendasTrechos({ a }) {
           ))}
         </tbody>
       </table>
-    </div>
     </div>
   )
 }
@@ -2498,7 +2476,6 @@ function VendasJornada({ jornada }) {
         </tbody>
       </table>
     </div>
-    </div>
   )
 }
 
@@ -2519,7 +2496,6 @@ function ChartCard({ title, children, height = 240 }) {
       {title && <div className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-3">{title}</div>}
       <div style={{ height }}>{children}</div>
     </div>
-    </div>
   )
 }
 
@@ -2537,7 +2513,6 @@ function FaixaCards({ porFaixa, totalTrans }) {
           <div className="text-xs text-slate-600">{totalTrans > 0 ? fmtNum(f.count/totalTrans*100) : 0}%</div>
         </div>
       ))}
-    </div>
     </div>
   )
 }
@@ -2633,7 +2608,6 @@ function VendasTemporal({ a }) {
         </ChartCard>
       )}
     </div>
-    </div>
   )
 }
 
@@ -2696,7 +2670,6 @@ function VendasPagamentos({ a }) {
         </table>
       </div>
     </div>
-    </div>
   )
 }
 
@@ -2752,7 +2725,6 @@ function VendasAgentesChart({ a, onSelectAgente }) {
         </table>
       </div>
     </div>
-    </div>
   )
 }
 
@@ -2792,7 +2764,6 @@ function VendasTrechosChart({ a }) {
           </tbody>
         </table>
       </div>
-    </div>
     </div>
   )
 }
@@ -2906,7 +2877,6 @@ function AbaIrregularidades({ funcionarios, dados, premissas, analise, subAba, s
       {subAba === 'trechos-comp' && <ComparacaoTrechos records={recordsFiltrados} tipo="irregularidades" />}
       {subAba === 'relatorio' && <RelatorioSemanal records={recordsFiltrados} scorePlacas={scorePlacas} />}
     </div>
-    </div>
   )
 }
 
@@ -2954,7 +2924,6 @@ function IrregKPIs({ a }) {
         </div>
       </div>
     </div>
-    </div>
   )
 }
 
@@ -2986,7 +2955,6 @@ function IrregSemanas({ a }) {
         </tbody>
       </table>
     </div>
-    </div>
   )
 }
 
@@ -3016,7 +2984,6 @@ function IrregEmissores({ a }) {
         </tbody>
       </table>
     </div>
-    </div>
   )
 }
 
@@ -3044,7 +3011,6 @@ function IrregTrechos({ a }) {
           ))}
         </tbody>
       </table>
-    </div>
     </div>
   )
 }
@@ -3088,7 +3054,6 @@ function IrregPlacas({ a, scorePlacas }) {
           })}
         </tbody>
       </table>
-    </div>
     </div>
   )
 }
@@ -3174,7 +3139,6 @@ function IrregRisco({ scorePlacas, config }) {
         </table>
       </div>
     </div>
-    </div>
   )
 }
 
@@ -3210,7 +3174,6 @@ function AlertasPanel({ scorePlacas, onDismiss }) {
           {reincidentes.length > 20 && <span className="text-xs text-slate-500 self-center">+{reincidentes.length - 20} mais</span>}
         </div>
       )}
-    </div>
     </div>
   )
 }
@@ -3268,7 +3231,6 @@ function AbaHistorico({ historico, loading, onExcluir, onRecarregar }) {
         </div>
       )}
     </div>
-    </div>
   )
 }
 
@@ -3286,7 +3248,6 @@ function InsightBadge({ text, tipo }) {
       <Icon className="w-3.5 h-3.5 mt-0.5 flex-shrink-0"/>
       <span>{text}</span>
     </div>
-    </div>
   )
 }
 
@@ -3300,7 +3261,6 @@ function DashKpi({ label, value, sub, cor, icon: Icon }) {
       </div>
       <div className={`text-2xl font-bold leading-tight truncate ${corText}`}>{value}</div>
       {sub && <div className="text-xs text-slate-500 truncate">{sub}</div>}
-    </div>
     </div>
   )
 }
@@ -3602,7 +3562,6 @@ function AbaDashboard({ recordsVendas, recordsIrreg, scorePlacas, scoreConfig })
         </div>
       )}
     </div>
-    </div>
   )
 }
 
@@ -3865,7 +3824,6 @@ function AbaConfiguracoes({ scoreConfig, onSaveScore, metas, onSaveMeta, onDelet
         </div>
       )}
     </div>
-    </div>
   )
 }
 
@@ -3907,13 +3865,13 @@ function dbRowsToIrreg(rows) {
 
 // ---- ROOT ----
 export default function PareCetoApp({ usuario, onVoltarHub, onLogout }) {
-  const [darkMode, setDarkMode] = useState(() => localStorage.getItem('mr-theme') === 'dark')
-  useEffect(() => { localStorage.setItem('mr-theme', darkMode ? 'dark' : 'light') }, [darkMode])
-
   useEffect(() => {
     const t = document.title; document.title = 'Pare Certo - Análises'
     return () => { document.title = t }
   }, [])
+
+  const [darkMode, setDarkMode] = useState(() => localStorage.getItem('mr-theme') === 'dark')
+  useEffect(() => { localStorage.setItem('mr-theme', darkMode ? 'dark' : 'light') }, [darkMode])
 
   const [aba, setAba] = useState('dashboard')
   const [toast, setToast] = useState(null)
@@ -4282,7 +4240,7 @@ export default function PareCetoApp({ usuario, onVoltarHub, onLogout }) {
 
   return (
     <div className={darkMode ? 'dark' : ''}>
-      <div className="min-h-screen bg-slate-50 text-slate-900">
+    <div className="min-h-screen bg-slate-50 text-slate-900">
       <header className="border-b border-slate-200 bg-white sticky top-0 z-10 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3 min-w-0">
@@ -4306,8 +4264,9 @@ export default function PareCetoApp({ usuario, onVoltarHub, onLogout }) {
                 <span className="w-1.5 h-1.5 rounded-full bg-amber-500 inline-block"/>Não salvo
               </span>
             )}
-            <button onClick={() => setDarkMode(v => !v)} title={darkMode ? 'Modo claro' : 'Modo escuro'} className="p-2 rounded-lg hover:bg-slate-100 text-slate-500 hover:text-slate-900 transition">
-              {darkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+            <button onClick={() => setDarkMode(v => !v)} title={darkMode ? 'Modo claro' : 'Modo escuro'}
+              className="flex items-center justify-center w-7 h-7 rounded-lg bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-500 hover:text-slate-900 transition">
+              {darkMode ? <Sun className="w-3.5 h-3.5" /> : <Moon className="w-3.5 h-3.5" />}
             </button>
             <button onClick={onLogout} className="text-sm text-slate-500 hover:text-slate-900 px-3 py-1.5 rounded hover:bg-slate-100 transition flex items-center gap-1">
               <LogOut className="w-4 h-4" />Sair
