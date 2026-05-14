@@ -37,9 +37,9 @@ Gestor/usuário principal: **Celso Almeida** (`celso.almeida@grupomr.seg.br`)
 
 ### Versão ativa do monolito
 
-**`MRSys_v1.0.18.jsx`** — `frontend/src/App.jsx` é wrapper que repassa props para o monolito:
+**`MRSys_v1.0.20.jsx`** — `frontend/src/App.jsx` é wrapper que repassa props para o monolito:
 ```jsx
-import MRSysApp from './versions/MRSys_v1.0.18.jsx'
+import MRSysApp from './versions/MRSys_v1.0.20.jsx'
 export default function App(props) { return <MRSysApp {...props} /> }
 ```
 
@@ -53,6 +53,8 @@ Histórico recente de versões (renomeação a partir de v1.0.x):
 - **v1.0.16** — fix status folha não salvava (ID mismatch `F1` vs `F001` em `apiToFolha` no storage-shim) + import Natura: coluna INÍCIO mapeada para campo `convocacao`
 - **v1.0.17** — Propostas ESCOLTA: valores excedentes sempre visíveis no modal + sub-linha no PDF com franquia/h.extra/km.extra/adic.dom.
 - **v1.0.18** — PDF ESCOLTA: números sem decimais desnecessários (`3h` não `3.00h`) + Adic.dom. sempre visível mesmo quando zero
+- **v1.0.19** — Tema claro corporativo (header branco, sidebar slate-900, conteúdo claro)
+- **v1.0.20** — Dark mode toggle Sol/Lua no header + sidebar light/dark (`dark:` variants) + CSS overrides em `index.css` + `tailwind.config.js` com `darkMode: 'class'`; tema persiste em `localStorage` chave `mr-theme` compartilhada entre todos os sistemas
 
 **UI corporativa (2026-05-14) — não é versão do monolito:**
 - `Login.jsx` reescrito: layout split-screen (painel esquerdo slate-900 com logo/tagline + painel direito branco com form)
@@ -71,12 +73,14 @@ Histórico recente de versões (renomeação a partir de v1.0.x):
 - `fmtN(v)`: helper que retorna inteiro sem casas decimais quando `n === Math.floor(n)`, ou `toFixed(2)` com vírgula. Substitui interpolação direta `${v}h` nas sub-linhas do PDF.
 - `Adic.dom.` sempre incluído na sub-linha (condição `> 0` removida) — exibe `R$ 0,00` quando zero.
 
-**Cérebro v1.2.0** (versão ativa — `frontend/src/cerebro/versions/CerebroApp_v1.2.0.jsx`):
-- Gmail: assuntos de e-mails agora aparecem na lista (fix `metadataHeaders` como params separados na URL)
-- Notion: criação de página exige `parent_id` (integração interna não pode criar no workspace raiz)
+**Cérebro v1.4.0** (versão ativa — `frontend/src/cerebro/versions/CerebroApp_v1.4.0.jsx`):
+- Dark mode toggle Sol/Lua no header (antes do botão Sair); tema compartilhado via `localStorage` `mr-theme`
+- `let C` declarado no nível do módulo (inicializado com valores dark) + `Object.assign(C, darkMode ? dark : light)` dentro do componente a cada render — garante que helpers de módulo (`renderMd`, `iMd`, `Field`, `FInput`, `FTA`) sempre leem o tema atual sem precisar receber `C` como prop
+- `POMO_MODES.work.color` hardcoded `'#6366f1'` (não referencia `C` diretamente, evita crash de módulo)
 
-**Pare Certo v0.1.5** (versão ativa — `frontend/src/pareceto/versions/PareCetoApp_v0.1.5.jsx`):
-- Auto-registro de funcionários ao importar CSV corrigido (catch silencioso substituído por `console.warn` + toast)
+**Pare Certo v0.3.0** (versão ativa — `frontend/src/pareceto/versions/PareCetoApp_v0.3.0.jsx`):
+- Dark mode toggle Sol/Lua no header; tema compartilhado via `localStorage` `mr-theme`
+- Rebuild limpo a partir do v0.2.0 (versão anterior com tema claro corporativo)
 
 Novidade v99 (PDF medição sem impostos + conversão de despesa/vale em parcelamento + Resumo/Export com parcelamentos consolidados):
 - **PDF de medição enviado por e-mail não exibe mais impostos** — a linha "Imposto: R$ X" foi removida do `gerarMedicaoPDFBlob`. O documento que chega ao cliente mostra apenas serviços prestados e valor bruto faturado. Alíquota/ISS/retenções/líquido continuam visíveis internamente nos resumos e exports, mas não no PDF enviado ao cliente
@@ -449,7 +453,7 @@ Se eu (Celso) der uma instrução que conflita com algo nas Decisões já tomada
 
 ---
 
-*Última atualização: 2026-05-14. MRSys em produção na v1.0.18. UI corporativa deployada (Login split-screen, SistemasHub cards limpos, Layout.jsx criado). Pare Certo v0.1.5 deployado. Cérebro v1.2.0 deployado. Migrations 019 e 020 pendentes de execução no phpMyAdmin. Pendentes MRSys:*
+*Última atualização: 2026-05-14. MRSys em produção na v1.0.20. Dark mode toggle Sol/Lua deployado em todos os sistemas (MRSys v1.0.20, Pare Certo v0.3.0, Cérebro v1.4.0). Tema persiste em `localStorage` chave `mr-theme`. Migrations 019 e 020 pendentes de execução no phpMyAdmin. Pendentes MRSys:*
 - *Rodar migration 013 (`database/migrations/013_proposta_itens_operacionais.sql`) no phpMyAdmin antes de testar v98.*
 - *Rodar migration 012 (`database/migrations/012_parcelas.sql`) no phpMyAdmin antes de testar v96/v97.*
 - *Após rodar migration 012, **rodar uma vez** o botão "Migrar parcelas" em cada uma das 3 abas (Despesas, Desp. Chefia, Vales) para inferir os grupos existentes e criar as parcelas faltantes. Conferir relatório no console + alert. Apagar o botão depois (linhas 3317, 3413, 3481 no v96 + helper `migrarParcelasExistentes`).*
