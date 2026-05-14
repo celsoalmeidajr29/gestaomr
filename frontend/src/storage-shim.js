@@ -297,12 +297,14 @@ function toApiDiaria(v) {
 
 function apiToFolha(r) {
   _idMap.set(`FO${r.id}`, r.id)
-  // Frontend usa funcionarioId (id v13 do funcionário, formato F{n}) e periodo (alias de competencia)
-  const funcVid = `F${r.funcionario_id}`
+  // Usa o mesmo ID v13 que apiToFuncionario (codigo_externo ou F{padded}) para que
+  // folhasPorFunc.find() consiga casar funcionarioId com g.funcionario.id.
+  const cachedFunc = (_cache['funcionarios'] || []).find(f => f._apiId === r.funcionario_id)
+  const funcVid = cachedFunc?.id || `F${String(r.funcionario_id).padStart(3, '0')}`
   return {
     _apiId: r.id,
     id: `FO${r.id}`,
-    funcionarioId: funcVid,        // ID v13 (string F{n})
+    funcionarioId: funcVid,        // ID v13 — mesmo formato de apiToFuncionario
     funcionarioApiId: r.funcionario_id, // ID DB (int)
     funcionarioNome: r.funcionario_nome,
     periodo: r.competencia,         // alias usado pelo frontend
