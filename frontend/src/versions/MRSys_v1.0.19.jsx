@@ -125,21 +125,21 @@ const CENTROS_CUSTO = ['Cora', 'Itaú', 'Santander', 'Carrefour', 'Celso', 'RICA
 const TIPOS_VALE = ['VALE', 'COMBUSTÍVEL - GALOP', 'COMBUSTÍVEL - MARRAKESH'];
 const CATEGORIAS_SERVICO = ['MOTOLINK RJ', 'VELADA RJ', 'VELADA SP', 'ARMADA', 'FACILITIES'];
 const CORES_CATEGORIA_SERVICO = {
-  'MOTOLINK RJ':    { bg: 'bg-cyan-500/20',    text: 'text-cyan-300',    border: 'border-cyan-500/40' },
-  'VELADA RJ':      { bg: 'bg-blue-500/20',     text: 'text-blue-300',    border: 'border-blue-500/40' },
-  'VELADA SP':      { bg: 'bg-violet-500/20',   text: 'text-violet-300',  border: 'border-violet-500/40' },
+  'MOTOLINK RJ':    { bg: 'bg-cyan-500/20',    text: 'text-cyan-600',    border: 'border-cyan-500/40' },
+  'VELADA RJ':      { bg: 'bg-blue-500/20',     text: 'text-blue-600',    border: 'border-blue-500/40' },
+  'VELADA SP':      { bg: 'bg-violet-500/20',   text: 'text-violet-600',  border: 'border-violet-500/40' },
   'ARMADA':         { bg: 'bg-red-500/20',      text: 'text-red-300',     border: 'border-red-500/40' },
   'FACILITIES':     { bg: 'bg-emerald-500/20',  text: 'text-emerald-300', border: 'border-emerald-500/40' },
   // aliases para dados anteriores (mantidos como fallback visual)
-  'VELADA':         { bg: 'bg-blue-500/20',     text: 'text-blue-300',    border: 'border-blue-500/40' },
-  'MOTOLINK':       { bg: 'bg-cyan-500/20',     text: 'text-cyan-300',    border: 'border-cyan-500/40' },
+  'VELADA':         { bg: 'bg-blue-500/20',     text: 'text-blue-600',    border: 'border-blue-500/40' },
+  'MOTOLINK':       { bg: 'bg-cyan-500/20',     text: 'text-cyan-600',    border: 'border-cyan-500/40' },
   'PRONTA RESPOSTA':{ bg: 'bg-amber-500/20',    text: 'text-amber-300',   border: 'border-amber-500/40' },
 };
 const STATUS_FATURA = ['Enviada', 'Aprovada', 'NF-emitida', 'Paga', 'Vencida'];
 const CORES_STATUS_FATURA = {
-  'Enviada': { bg: 'bg-blue-500/20', text: 'text-blue-300', border: 'border-blue-500/40' },
+  'Enviada': { bg: 'bg-blue-500/20', text: 'text-blue-600', border: 'border-blue-500/40' },
   'Aprovada': { bg: 'bg-indigo-500/20', text: 'text-indigo-600', border: 'border-indigo-500/40' },
-  'NF-emitida': { bg: 'bg-purple-500/20', text: 'text-purple-300', border: 'border-purple-500/40' },
+  'NF-emitida': { bg: 'bg-purple-500/20', text: 'text-purple-600', border: 'border-purple-500/40' },
   'Paga': { bg: 'bg-emerald-500/20', text: 'text-emerald-300', border: 'border-emerald-500/40' },
   'Vencida': { bg: 'bg-red-500/20', text: 'text-red-300', border: 'border-red-500/40' },
 };
@@ -3285,38 +3285,50 @@ export default function App({ onVoltarHub, onLogout } = {}) {
       </header>
 
       <div className="max-w-7xl mx-auto flex print:block print:max-w-none">
-        {/* Sidebar lateral (md+) — menu de módulos com ícones */}
-        <aside className="hidden md:flex flex-col bg-slate-900 border-r border-slate-800 sticky top-[57px] self-start gap-0.5 px-1.5 py-2 print:hidden" style={{ height: 'calc(100vh - 57px)', width: sidebarExpandida ? '164px' : '52px', flexShrink: 0, overflowY: 'auto', transition: 'width 0.2s' }}>
-          {/* Botão recolher/expandir */}
-          <button onClick={() => setSidebarExpandida(v => !v)} title={sidebarExpandida ? 'Recolher menu' : 'Expandir menu'} className="w-full rounded-lg flex items-center justify-center gap-1.5 px-2 py-2 text-slate-500 hover:text-white hover:bg-white/10 transition mb-0.5">
-            {sidebarExpandida ? <><ChevronLeft className="w-4 h-4 flex-shrink-0" /><span className="text-[10px] font-medium">Recolher</span></> : <ChevronRight className="w-4 h-4 flex-shrink-0" />}
+        {/* Sidebar lateral (md+) — slate-900 igual ao Layout.jsx */}
+        <aside className="hidden md:flex flex-col bg-slate-900 relative print:hidden" style={{ height: 'calc(100vh - 57px)', width: sidebarExpandida ? '164px' : '52px', flexShrink: 0, overflowY: 'auto', transition: 'width 0.2s ease-in-out', position: 'sticky', top: '57px', alignSelf: 'flex-start' }}>
+          {/* Brand section */}
+          <div className={`flex items-center border-b border-white/10 flex-shrink-0 overflow-hidden ${sidebarExpandida ? 'px-3 gap-2.5 h-12' : 'justify-center h-12'}`}>
+            <div className="w-7 h-7 rounded-md bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0">MR</div>
+            {sidebarExpandida && <span className="text-sm font-semibold text-white truncate">MRSys</span>}
+          </div>
+          {/* Nav items */}
+          <nav className="flex-1 py-2 px-1.5 flex flex-col gap-0.5">
+            {[
+              { id: 'dashboard', l: 'Dashboard', i: BarChart3 },
+              { id: 'resumo', l: 'Resumo', i: ClipboardList },
+              { id: 'lancamentos', l: 'Lançamentos', i: FileText },
+              { id: 'propostas', l: 'Propostas', i: FileSignature },
+              { id: 'fechamentos', l: 'Faturas', i: Archive },
+              { id: 'despesas', l: 'Despesas', i: TrendingDown },
+              { id: 'despChefia', l: 'Desp. Chefia', i: Briefcase },
+              { id: 'descontos', l: 'Vales', i: MinusCircle },
+              { id: 'diarias', l: 'Lanç. Avulsos', i: Calendar },
+              { id: 'clientes', l: 'Clientes', i: Building2 },
+              { id: 'funcionarios', l: 'Funcionários', i: Users },
+              { id: 'folha', l: 'Folha', i: Wallet },
+              { id: 'catFolha', l: 'Cat. Folha', i: Tag },
+              { id: 'catalogo', l: 'Catálogo', i: Package },
+            ].map(t => { const I = t.i; const ativo = aba === t.id; return (
+              <button
+                key={t.id}
+                onClick={() => setAba(t.id)}
+                title={!sidebarExpandida ? t.l : undefined}
+                className={`w-full rounded-lg flex flex-row items-center gap-2.5 px-2.5 py-2 transition text-left ${ativo ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:bg-white/5 hover:text-slate-200'}`}
+              >
+                <I className="w-4 h-4 flex-shrink-0" />
+                {sidebarExpandida && <span className="text-xs font-medium leading-tight whitespace-nowrap overflow-hidden">{t.l}</span>}
+              </button>
+            ); })}
+          </nav>
+          {/* Toggle flutuante (igual Layout.jsx) */}
+          <button
+            onClick={() => setSidebarExpandida(v => !v)}
+            title={sidebarExpandida ? 'Recolher' : 'Expandir'}
+            className="absolute -right-3 top-14 w-6 h-6 rounded-full bg-slate-700 border border-slate-600 text-slate-400 hover:text-white flex items-center justify-center transition shadow z-10"
+          >
+            <ChevronLeft className={`w-3 h-3 transition-transform duration-200 ${!sidebarExpandida ? 'rotate-180' : ''}`} />
           </button>
-          {[
-            { id: 'dashboard', l: 'Dashboard', i: BarChart3 },
-            { id: 'resumo', l: 'Resumo', i: ClipboardList },
-            { id: 'lancamentos', l: 'Lançamentos', i: FileText },
-            { id: 'propostas', l: 'Propostas', i: FileSignature },
-            { id: 'fechamentos', l: 'Faturas', i: Archive },
-            { id: 'despesas', l: 'Despesas', i: TrendingDown },
-            { id: 'despChefia', l: 'Desp. Chefia', i: Briefcase },
-            { id: 'descontos', l: 'Vales', i: MinusCircle },
-            { id: 'diarias', l: 'Lanç. Avulsos', i: Calendar },
-            { id: 'clientes', l: 'Clientes', i: Building2 },
-            { id: 'funcionarios', l: 'Funcionários', i: Users },
-            { id: 'folha', l: 'Folha', i: Wallet },
-            { id: 'catFolha', l: 'Cat. Folha', i: Tag },
-            { id: 'catalogo', l: 'Catálogo', i: Package },
-          ].map(t => { const I = t.i; const ativo = aba === t.id; return (
-            <button
-              key={t.id}
-              onClick={() => setAba(t.id)}
-              title={!sidebarExpandida ? t.l : undefined}
-              className={`w-full rounded-lg flex flex-row items-center gap-2.5 px-2.5 py-2.5 transition text-left ${ativo ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/30' : 'text-slate-400 hover:bg-white/10 hover:text-white'}`}
-            >
-              <I className="w-4 h-4 flex-shrink-0" />
-              {sidebarExpandida && <span className="text-xs font-medium leading-tight whitespace-nowrap overflow-hidden">{t.l}</span>}
-            </button>
-          ); })}
         </aside>
 
         <main className="flex-1 min-w-0 px-3 sm:px-5 py-3 sm:py-6 print:p-0">
@@ -3328,7 +3340,7 @@ export default function App({ onVoltarHub, onLogout } = {}) {
                 <option value="">Todos os clientes</option>{clientesUnicos.map(c => <option key={c} value={c}>{c}</option>)}
               </select>
               <input type="month" value={filtroMesDashboard} onChange={e => setFiltroMesDashboard(e.target.value)} title="Filtrar por competência" className="bg-white border border-slate-300 rounded-lg text-slate-900 px-3 py-2 text-sm" />
-              {(filtroCliente || filtroMesDashboard) && <button onClick={() => { setFiltroCliente(''); setFiltroMesDashboard(''); }} className="text-xs text-slate-400 hover:text-white px-2 py-1">Limpar</button>}
+              {(filtroCliente || filtroMesDashboard) && <button onClick={() => { setFiltroCliente(''); setFiltroMesDashboard(''); }} className="text-xs text-slate-400 hover:text-slate-900 px-2 py-1">Limpar</button>}
               <span className="text-[11px] text-slate-500 ml-auto"><Receipt className="w-3 h-3 inline mr-1" />Baseado em <b className="text-indigo-600">{totais.qtd}</b> fatura(s){filtroCliente ? ` · ${filtroCliente}` : ''}{filtroMesDashboard ? ` · ${fmtMesCurto(filtroMesDashboard)}` : ''}</span>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3">
@@ -3348,7 +3360,7 @@ export default function App({ onVoltarHub, onLogout } = {}) {
               </div>
             )}
             {lancamentos.length === 0 ? (
-              <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-12 text-center">
+              <div className="bg-slate-900/50 border border-slate-200 rounded-xl p-12 text-center">
                 <FileText className="w-12 h-12 text-slate-600 mx-auto mb-3" />
                 <p className="text-slate-400 mb-4">Nenhum lançamento ainda.</p>
                 <button onClick={() => { setAba('lancamentos'); setModal({ tipo: 'lancamento', dados: null }); }} className="bg-indigo-600 hover:bg-indigo-500 px-4 py-2 rounded-lg text-sm font-medium inline-flex items-center gap-2"><Plus className="w-4 h-4" />Adicionar lançamento</button>
@@ -3372,9 +3384,9 @@ export default function App({ onVoltarHub, onLogout } = {}) {
                 <Painel titulo="Resumo por Cliente">
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm">
-                      <thead className="text-xs text-slate-400 border-b border-slate-800"><tr><th className="text-left py-2 px-3">Cliente</th><th className="text-center px-3">Lanç.</th><th className="text-right px-3">Faturado</th><th className="text-right px-3">Pago</th><th className="text-right px-3">Imposto</th><th className="text-right px-3">Lucro</th><th className="text-right px-3">Margem</th></tr></thead>
+                      <thead className="text-xs text-slate-400 border-b border-slate-200"><tr><th className="text-left py-2 px-3">Cliente</th><th className="text-center px-3">Lanç.</th><th className="text-right px-3">Faturado</th><th className="text-right px-3">Pago</th><th className="text-right px-3">Imposto</th><th className="text-right px-3">Lucro</th><th className="text-right px-3">Margem</th></tr></thead>
                       <tbody>
-                        {dadosPorCliente.map(c => <tr key={c.cliente} className="border-b border-slate-800/50">
+                        {dadosPorCliente.map(c => <tr key={c.cliente} className="border-b border-slate-200/50">
                           <td className="py-2 px-3">{c.cliente}</td><td className="text-center px-3">{c.qtd}</td>
                           <td className="text-right px-3">{fmt(c.faturado)}</td><td className="text-right px-3 text-orange-400">{fmt(c.pago)}</td>
                           <td className="text-right px-3 text-amber-600">{fmt(c.imposto)}</td>
@@ -3450,14 +3462,14 @@ export default function App({ onVoltarHub, onLogout } = {}) {
               <input type="date" value={filtroDataInicioLanc} onChange={e => setFiltroDataInicioLanc(e.target.value)} title="Data início" className="bg-white border border-slate-300 rounded-lg text-slate-900 px-3 py-2 text-sm" />
               <input type="date" value={filtroDataFimLanc} onChange={e => setFiltroDataFimLanc(e.target.value)} title="Data fim" className="bg-white border border-slate-300 rounded-lg text-slate-900 px-3 py-2 text-sm" />
               {(filtroCategoriaLanc || filtroPrestadorLanc || filtroOsLanc || filtroDataInicioLanc || filtroDataFimLanc) && (
-                <button onClick={() => { setFiltroCategoriaLanc(''); setFiltroPrestadorLanc(''); setFiltroOsLanc(''); setFiltroDataInicioLanc(''); setFiltroDataFimLanc(''); }} className="text-xs text-slate-400 hover:text-white px-3 py-2 rounded bg-white hover:bg-slate-100 whitespace-nowrap">Limpar filtros</button>
+                <button onClick={() => { setFiltroCategoriaLanc(''); setFiltroPrestadorLanc(''); setFiltroOsLanc(''); setFiltroDataInicioLanc(''); setFiltroDataFimLanc(''); }} className="text-xs text-slate-400 hover:text-slate-900 px-3 py-2 rounded bg-white hover:bg-slate-100 whitespace-nowrap">Limpar filtros</button>
               )}
             </div>
             <div className="flex flex-col sm:flex-row gap-1.5 sm:gap-2">
               <select value={filtroCategoriaFolhaLanc} onChange={e => setFiltroCategoriaFolhaLanc(e.target.value)} className="flex-1 bg-white border border-slate-300 rounded-lg text-slate-900 px-3 py-2 text-sm"><option value="">Todas categorias de folha</option><option value="__sem__">(sem categoria)</option>{categoriasFolha.map(c => <option key={c.id} value={c.nome}>{c.nome}</option>)}</select>
               <input type="month" value={filtroCompetenciaLanc} onChange={e => setFiltroCompetenciaLanc(e.target.value)} title="Competência" className="bg-white border border-slate-300 rounded-lg text-slate-900 px-3 py-2 text-sm" />
               {(filtroCategoriaFolhaLanc || filtroCompetenciaLanc) && (
-                <button onClick={() => { setFiltroCategoriaFolhaLanc(''); setFiltroCompetenciaLanc(''); }} className="text-xs text-slate-400 hover:text-white px-3 py-2 rounded bg-white hover:bg-slate-100 whitespace-nowrap">Limpar folha</button>
+                <button onClick={() => { setFiltroCategoriaFolhaLanc(''); setFiltroCompetenciaLanc(''); }} className="text-xs text-slate-400 hover:text-slate-900 px-3 py-2 rounded bg-white hover:bg-slate-100 whitespace-nowrap">Limpar folha</button>
               )}
             </div>
             {(() => {
@@ -3467,16 +3479,16 @@ export default function App({ onVoltarHub, onLogout } = {}) {
                 <div className="bg-orange-500/10 border border-orange-500/30 rounded-lg px-3 py-2 text-xs text-orange-700 flex items-center gap-2">
                   <AlertCircle className="w-4 h-4 flex-shrink-0" />
                   <span><b>{semPrestador}</b> lançamento(s) sem prestador atribuído (agente1, agente2, agente ou motorista vazios). Estes lançamentos não geram folha para nenhum funcionário.</span>
-                  <button onClick={() => setFiltroPrestadorLanc('__sem__')} className="ml-auto text-orange-300 hover:text-orange-700 underline whitespace-nowrap">Ver todos</button>
+                  <button onClick={() => setFiltroPrestadorLanc('__sem__')} className="ml-auto text-orange-600 hover:text-orange-700 underline whitespace-nowrap">Ver todos</button>
                 </div>
               );
             })()}
             <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-2 text-xs">
-              <div className="bg-slate-900/60 border border-slate-800 rounded px-3 py-2"><div className="text-slate-500 text-[10px] uppercase">Lançamentos</div><div className="font-bold text-slate-700">{lancFiltrados.length}</div></div>
-              <div className="bg-slate-900/60 border border-slate-800 rounded px-3 py-2"><div className="text-slate-500 text-[10px] uppercase">Hr trab.</div><div className="font-bold text-slate-700">{tot.qtdHrTrab.toFixed(2)}h</div></div>
-              <div className="bg-slate-900/60 border border-slate-800 rounded px-3 py-2"><div className="text-slate-500 text-[10px] uppercase">Hr extras</div><div className="font-bold text-emerald-300">{tot.qtdHrExtra.toFixed(2)}h</div></div>
-              <div className="bg-slate-900/60 border border-slate-800 rounded px-3 py-2"><div className="text-slate-500 text-[10px] uppercase">Km total</div><div className="font-bold text-slate-700">{tot.qtdKmTotal.toFixed(0)} km</div></div>
-              <div className="bg-slate-900/60 border border-slate-800 rounded px-3 py-2"><div className="text-slate-500 text-[10px] uppercase">Km extras</div><div className="font-bold text-emerald-300">{tot.qtdKmExtra.toFixed(0)} km</div></div>
+              <div className="bg-slate-900/60 border border-slate-200 rounded px-3 py-2"><div className="text-slate-500 text-[10px] uppercase">Lançamentos</div><div className="font-bold text-slate-700">{lancFiltrados.length}</div></div>
+              <div className="bg-slate-900/60 border border-slate-200 rounded px-3 py-2"><div className="text-slate-500 text-[10px] uppercase">Hr trab.</div><div className="font-bold text-slate-700">{tot.qtdHrTrab.toFixed(2)}h</div></div>
+              <div className="bg-slate-900/60 border border-slate-200 rounded px-3 py-2"><div className="text-slate-500 text-[10px] uppercase">Hr extras</div><div className="font-bold text-emerald-300">{tot.qtdHrExtra.toFixed(2)}h</div></div>
+              <div className="bg-slate-900/60 border border-slate-200 rounded px-3 py-2"><div className="text-slate-500 text-[10px] uppercase">Km total</div><div className="font-bold text-slate-700">{tot.qtdKmTotal.toFixed(0)} km</div></div>
+              <div className="bg-slate-900/60 border border-slate-200 rounded px-3 py-2"><div className="text-slate-500 text-[10px] uppercase">Km extras</div><div className="font-bold text-emerald-300">{tot.qtdKmExtra.toFixed(0)} km</div></div>
               <div className="bg-orange-500/10 border border-orange-500/30 rounded px-3 py-2"><div className="text-slate-500 text-[10px] uppercase">Total Pago</div><div className="font-bold text-orange-400">{fmt(tot.pag)}</div></div>
             </div>
             {/* Barra de ações em massa */}
@@ -3525,18 +3537,18 @@ export default function App({ onVoltarHub, onLogout } = {}) {
                   onClick={() => setModal({ tipo: 'massaLancExcluir', ids: selEditaveisIds })}
                   className="bg-red-700/60 hover:bg-red-600 disabled:opacity-40 disabled:cursor-not-allowed px-3 py-1.5 rounded text-xs flex items-center gap-1.5 text-red-700"
                 ><Trash2 className="w-3.5 h-3.5" />Excluir</button>
-                <button onClick={() => setSelLancs(new Set())} className="text-slate-400 hover:text-white p-1.5 rounded hover:bg-slate-100"><X className="w-3.5 h-3.5" /></button>
+                <button onClick={() => setSelLancs(new Set())} className="text-slate-400 hover:text-slate-900 p-1.5 rounded hover:bg-slate-100"><X className="w-3.5 h-3.5" /></button>
               </div>
             )}
             {lancFiltrados.length === 0 ? (
-              <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-12 text-center"><p className="text-slate-400">Nenhum lançamento encontrado.</p></div>
+              <div className="bg-slate-900/50 border border-slate-200 rounded-xl p-12 text-center"><p className="text-slate-400">Nenhum lançamento encontrado.</p></div>
             ) : (
-              <div className="bg-slate-900/50 border border-slate-800 rounded-xl overflow-hidden">
+              <div className="bg-slate-900/50 border border-slate-200 rounded-xl overflow-hidden">
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
-                    <thead className="text-xs bg-slate-900 border-b border-slate-800">
+                    <thead className="text-xs bg-slate-50 border-b border-slate-200">
                       {/* Linha 1: grupos */}
-                      <tr className="text-slate-500 text-[10px] uppercase font-semibold border-b border-slate-800/60">
+                      <tr className="text-slate-500 text-[10px] uppercase font-semibold border-b border-slate-200/60">
                         <th rowSpan={2} className="px-3 py-2 w-8">
                           <input type="checkbox" checked={todosSelLancs} onChange={toggleTodosLancs} className="w-3.5 h-3.5 accent-indigo-500 cursor-pointer" />
                         </th>
@@ -3571,7 +3583,7 @@ export default function App({ onVoltarHub, onLogout } = {}) {
                       const outP = num(l.adicDomPago) + num(l.pedagioReembolso);
                       const selecionado = selLancs.has(l.id);
                       return (
-                      <tr key={l.id} className={`border-b border-slate-800/50 hover:bg-slate-50 text-xs ${selecionado ? 'bg-indigo-900/20' : ''}`}>
+                      <tr key={l.id} className={`border-b border-slate-200/50 hover:bg-slate-50 text-xs ${selecionado ? 'bg-indigo-900/20' : ''}`}>
                         <td className="px-3 py-2 w-8">
                           <input type="checkbox" checked={selecionado} onChange={() => toggleSelLanc(l.id)} className="w-3.5 h-3.5 accent-indigo-500 cursor-pointer" />
                         </td>
@@ -3580,18 +3592,18 @@ export default function App({ onVoltarHub, onLogout } = {}) {
                           <div>{fmtData(l.data)}</div>
                           {l.isFeriado && <div className="text-[10px] text-amber-600 leading-tight truncate max-w-[90px]" title={l.nomeFeriado || 'Feriado'}>🎉 {l.nomeFeriado || 'Feriado'}</div>}
                         </td>
-                        <td className="px-3"><div className="font-medium text-sm">{l.descricao}</div><div className="text-slate-500">#{l.codServico} · {l.cliente}</div>{(() => { const ag = [l.extras?.agente1, l.extras?.agente2, l.extras?.agente, l.extras?.motorista].filter(Boolean); return ag.length > 0 ? <div className="text-[11px] text-cyan-400 mt-0.5 truncate max-w-[260px]" title={ag.join(' · ')}>👤 {ag.join(' · ')}</div> : null; })()}{(l.categoriaFolha || l.competencia) && (<div className="text-[10px] mt-0.5 flex flex-wrap gap-1">{l.categoriaFolha && <span className="px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-300 font-medium">📋 {l.categoriaFolha}</span>}{l.competencia && l.competencia !== (l.data || '').slice(0, 7) && <span className="px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 font-medium" title={`Data ${fmtData(l.data)} · Competência ${l.competencia}`}>📅 {fmtMesCurto(l.competencia)}</span>}</div>)}</td>
+                        <td className="px-3"><div className="font-medium text-sm">{l.descricao}</div><div className="text-slate-500">#{l.codServico} · {l.cliente}</div>{(() => { const ag = [l.extras?.agente1, l.extras?.agente2, l.extras?.agente, l.extras?.motorista].filter(Boolean); return ag.length > 0 ? <div className="text-[11px] text-cyan-400 mt-0.5 truncate max-w-[260px]" title={ag.join(' · ')}>👤 {ag.join(' · ')}</div> : null; })()}{(l.categoriaFolha || l.competencia) && (<div className="text-[10px] mt-0.5 flex flex-wrap gap-1">{l.categoriaFolha && <span className="px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-600 font-medium">📋 {l.categoriaFolha}</span>}{l.competencia && l.competencia !== (l.data || '').slice(0, 7) && <span className="px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 font-medium" title={`Data ${fmtData(l.data)} · Competência ${l.competencia}`}>📅 {fmtMesCurto(l.competencia)}</span>}</div>)}</td>
                         {/* FATURADO */}
-                        <td className="text-right px-2 text-slate-600 border-l border-slate-800">{fmt(bFat(l))}</td>
+                        <td className="text-right px-2 text-slate-600 border-l border-slate-200">{fmt(bFat(l))}</td>
                         {temHxFat  && <td className={`text-right px-2 ${hxF > 0 ? 'text-emerald-300' : 'text-slate-600'}`}>{hxF > 0 ? <><div className="text-[10px] opacity-75 leading-tight">{fmtHorasHHMM(num(l.horasExtras))}</div><div>{fmt(hxF)}</div></> : '—'}</td>}
                         {temKmFat  && <td className={`text-right px-2 ${kmF > 0 ? 'text-emerald-300' : 'text-slate-600'}`}>{kmF > 0 ? <><div className="text-[10px] opacity-75 leading-tight">{num(l.kmExtras)} km</div><div>{fmt(kmF)}</div></> : '—'}</td>}
                         {temOutFat && <td className={`text-right px-2 ${outF > 0 ? 'text-emerald-300' : 'text-slate-600'}`}>{outF > 0 ? fmt(outF) : '—'}</td>}
                         <td className="text-right px-2 font-bold text-emerald-600">{fmt(l.totalFatura)}</td>
                         {/* PAGO */}
-                        <td className="text-right px-2 text-slate-600 border-l border-slate-800">{fmt(bPago(l))}</td>
-                        {temHxPago  && <td className={`text-right px-2 ${hxP > 0 ? 'text-orange-300' : 'text-slate-600'}`}>{hxP > 0 ? fmt(hxP) : '—'}</td>}
-                        {temKmPago  && <td className={`text-right px-2 ${kmP > 0 ? 'text-orange-300' : 'text-slate-600'}`}>{kmP > 0 ? fmt(kmP) : '—'}</td>}
-                        {temOutPago && <td className={`text-right px-2 ${outP > 0 ? 'text-orange-300' : 'text-slate-600'}`}>{outP > 0 ? fmt(outP) : '—'}</td>}
+                        <td className="text-right px-2 text-slate-600 border-l border-slate-200">{fmt(bPago(l))}</td>
+                        {temHxPago  && <td className={`text-right px-2 ${hxP > 0 ? 'text-orange-600' : 'text-slate-600'}`}>{hxP > 0 ? fmt(hxP) : '—'}</td>}
+                        {temKmPago  && <td className={`text-right px-2 ${kmP > 0 ? 'text-orange-600' : 'text-slate-600'}`}>{kmP > 0 ? fmt(kmP) : '—'}</td>}
+                        {temOutPago && <td className={`text-right px-2 ${outP > 0 ? 'text-orange-600' : 'text-slate-600'}`}>{outP > 0 ? fmt(outP) : '—'}</td>}
                         <td className="text-right px-2 font-bold text-orange-400">{fmt(l.totalPago)}</td>
                         {/* STATUS + AÇÕES */}
                         <td className="text-center px-3"><Badge status={l.status} /></td>
@@ -3613,9 +3625,9 @@ export default function App({ onVoltarHub, onLogout } = {}) {
                         {temOutFat && <td className="text-right px-2 text-emerald-300">{fmt(tot.outFat)}</td>}
                         <td className="text-right px-2 text-emerald-600 text-sm">{fmt(tot.fat)}</td>
                         <td className="text-right px-2 border-l border-slate-200 text-slate-700">{fmt(tot.bPago)}</td>
-                        {temHxPago  && <td className="text-right px-2 text-orange-300">{fmt(tot.hxPago)}</td>}
-                        {temKmPago  && <td className="text-right px-2 text-orange-300">{fmt(tot.kmPago)}</td>}
-                        {temOutPago && <td className="text-right px-2 text-orange-300">{fmt(tot.outPago)}</td>}
+                        {temHxPago  && <td className="text-right px-2 text-orange-600">{fmt(tot.hxPago)}</td>}
+                        {temKmPago  && <td className="text-right px-2 text-orange-600">{fmt(tot.kmPago)}</td>}
+                        {temOutPago && <td className="text-right px-2 text-orange-600">{fmt(tot.outPago)}</td>}
                         <td className="text-right px-2 text-orange-400 text-sm">{fmt(tot.pag)}</td>
                         <td colSpan={2}></td>
                       </tr>
@@ -3667,7 +3679,7 @@ export default function App({ onVoltarHub, onLogout } = {}) {
               const origens = Object.entries(origemMap).sort((a, b) => b[1] - a[1]);
               if (origens.length === 0) return null;
               return (
-                <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-3">
+                <div className="bg-slate-900/50 border border-slate-200 rounded-xl p-3">
                   <div className="text-xs font-semibold text-slate-400 uppercase mb-2">Por Origem</div>
                   <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
                     {origens.map(([orig, val]) => (
@@ -3686,16 +3698,16 @@ export default function App({ onVoltarHub, onLogout } = {}) {
               <select value={filtroCategoria} onChange={e => setFiltroCategoria(e.target.value)} className="bg-white border border-slate-300 rounded-lg text-slate-900 px-3 py-2 text-sm"><option value="">Todos tipos</option>{TIPOS_DESPESA.map(c => <option key={c} value={c}>{c}</option>)}</select>
               <select value={filtroStatus} onChange={e => setFiltroStatus(e.target.value)} className="bg-white border border-slate-300 rounded-lg text-slate-900 px-3 py-2 text-sm"><option value="">Todos status</option><option value="pago">Pago</option><option value="pendente">Pendente</option></select>
             </div>
-            {despesasFiltradas.length === 0 ? <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-12 text-center"><TrendingDown className="w-12 h-12 text-slate-600 mx-auto mb-3" /><p className="text-slate-400">Nenhuma despesa encontrada.</p></div> : (
-              <div className="bg-slate-900/50 border border-slate-800 rounded-xl overflow-hidden">
+            {despesasFiltradas.length === 0 ? <div className="bg-slate-900/50 border border-slate-200 rounded-xl p-12 text-center"><TrendingDown className="w-12 h-12 text-slate-600 mx-auto mb-3" /><p className="text-slate-400">Nenhuma despesa encontrada.</p></div> : (
+              <div className="bg-slate-900/50 border border-slate-200 rounded-xl overflow-hidden">
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
-                    <thead className="text-xs text-slate-400 bg-slate-900 border-b border-slate-800"><tr><th className="text-left py-3 px-3">Compet.</th><th className="text-left px-3">Lançamento</th><th className="text-center px-3">Tipo</th><th className="text-center px-3">Parcela</th><th className="hidden sm:table-cell text-left px-3">Origem</th><th className="text-right px-3">Valor</th><th className="text-center px-3">Status</th><th className="text-right px-3">Ações</th></tr></thead>
+                    <thead className="text-xs text-slate-400 bg-slate-50 border-b border-slate-200"><tr><th className="text-left py-3 px-3">Compet.</th><th className="text-left px-3">Lançamento</th><th className="text-center px-3">Tipo</th><th className="text-center px-3">Parcela</th><th className="hidden sm:table-cell text-left px-3">Origem</th><th className="text-right px-3">Valor</th><th className="text-center px-3">Status</th><th className="text-right px-3">Ações</th></tr></thead>
                     <tbody>{despesasFiltradas.map(d => (
-                      <tr key={d.id} className="border-b border-slate-800/50 hover:bg-slate-50">
+                      <tr key={d.id} className="border-b border-slate-200/50 hover:bg-slate-50">
                         <td className="px-3 text-xs whitespace-nowrap text-slate-600">{fmtMesCurto(d.competencia)}</td>
                         <td className="px-3 font-medium">{d.descricao}</td>
-                        <td className="text-center px-3"><span className={`text-[10px] px-2 py-0.5 rounded-full ${d.tipo === 'FIXA' ? 'bg-blue-500/20 text-blue-300' : d.tipo === 'PARCELA' ? 'bg-purple-500/20 text-purple-300' : 'bg-slate-700/60 text-slate-600'}`}>{d.tipo === 'PARCELA' ? 'PARCELA' : (d.tipo || 'AVULSA')}</span></td>
+                        <td className="text-center px-3"><span className={`text-[10px] px-2 py-0.5 rounded-full ${d.tipo === 'FIXA' ? 'bg-blue-500/20 text-blue-600' : d.tipo === 'PARCELA' ? 'bg-purple-500/20 text-purple-600' : 'bg-slate-100 text-slate-600'}`}>{d.tipo === 'PARCELA' ? 'PARCELA' : (d.tipo || 'AVULSA')}</span></td>
                         <td className="text-center px-3 text-xs text-slate-400">{d.tipo === 'PARCELA' && d.parcelaAtual && d.parcelaTotal ? `${d.parcelaAtual}/${d.parcelaTotal}` : '—'}</td>
                         <td className="hidden sm:table-cell px-3 text-xs text-slate-400">{d.origem || '—'}</td>
                         <td className="text-right px-3 text-red-600 font-medium">{fmt(d.valor)}</td>
@@ -3706,7 +3718,7 @@ export default function App({ onVoltarHub, onLogout } = {}) {
                         </div></td>
                       </tr>
                     ))}</tbody>
-                    <tfoot className="bg-slate-900 border-t border-slate-800 font-medium"><tr><td colSpan={4} className="py-2.5 px-3 text-slate-400">Total ({despesasFiltradas.length})</td><td className="hidden sm:table-cell"></td><td className="text-right px-3 text-red-600">{fmt(totaisDespesas)}</td><td colSpan={2}></td></tr></tfoot>
+                    <tfoot className="bg-slate-900 border-t border-slate-200 font-medium"><tr><td colSpan={4} className="py-2.5 px-3 text-slate-400">Total ({despesasFiltradas.length})</td><td className="hidden sm:table-cell"></td><td className="text-right px-3 text-red-600">{fmt(totaisDespesas)}</td><td colSpan={2}></td></tr></tfoot>
                   </table>
                 </div>
               </div>
@@ -3748,12 +3760,12 @@ export default function App({ onVoltarHub, onLogout } = {}) {
                 const origens = Object.entries(origemMap).sort((a, b) => b[1] - a[1]);
                 if (origens.length === 0) return null;
                 return (
-                  <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-3">
+                  <div className="bg-slate-900/50 border border-slate-200 rounded-xl p-3">
                     <div className="text-xs font-semibold text-slate-400 uppercase mb-2">Por Origem</div>
                     <div className="flex flex-wrap gap-2">
                       {origens.map(([orig, val]) => (
                         <div key={orig} className="flex items-center gap-2 bg-violet-500/10 border border-violet-500/30 rounded px-3 py-1.5">
-                          <span className="text-xs font-semibold text-violet-300">{orig}</span>
+                          <span className="text-xs font-semibold text-violet-600">{orig}</span>
                           <span className="text-xs font-medium text-violet-400">{fmt(val)}</span>
                         </div>
                       ))}
@@ -3765,18 +3777,18 @@ export default function App({ onVoltarHub, onLogout } = {}) {
                 <div className="relative flex-1"><Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" /><input value={busca} onChange={e => setBusca(e.target.value)} placeholder="Buscar..." className="w-full bg-white border border-slate-300 rounded-lg text-slate-900 pl-9 pr-3 py-2 text-sm" /></div>
                 <select value={filtroCompetencia} onChange={e => setFiltroCompetencia(e.target.value)} className="bg-white border border-slate-300 rounded-lg text-slate-900 px-3 py-2 text-sm"><option value="">Todas competências</option>{compsChefia.map(c => <option key={c} value={c}>{fmtMes(c)}</option>)}</select>
               </div>
-              {despChefiaFiltradas.length === 0 ? <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-12 text-center"><Briefcase className="w-12 h-12 text-slate-600 mx-auto mb-3" /><p className="text-slate-400">Nenhuma despesa da chefia encontrada.</p></div> : (
-                <div className="bg-slate-900/50 border border-slate-800 rounded-xl overflow-hidden">
+              {despChefiaFiltradas.length === 0 ? <div className="bg-slate-900/50 border border-slate-200 rounded-xl p-12 text-center"><Briefcase className="w-12 h-12 text-slate-600 mx-auto mb-3" /><p className="text-slate-400">Nenhuma despesa da chefia encontrada.</p></div> : (
+                <div className="bg-slate-900/50 border border-slate-200 rounded-xl overflow-hidden">
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm">
-                      <thead className="text-xs text-slate-400 bg-slate-900 border-b border-slate-800"><tr><th className="text-left py-3 px-3">Compet.</th><th className="text-left px-3">Lançamento</th><th className="text-center px-3">Tipo</th><th className="text-center px-3">Parcela</th><th className="text-center px-3">Origem</th><th className="text-right px-3">Valor</th><th className="text-center px-3">Status</th><th className="text-right px-3">Ações</th></tr></thead>
+                      <thead className="text-xs text-slate-400 bg-slate-50 border-b border-slate-200"><tr><th className="text-left py-3 px-3">Compet.</th><th className="text-left px-3">Lançamento</th><th className="text-center px-3">Tipo</th><th className="text-center px-3">Parcela</th><th className="text-center px-3">Origem</th><th className="text-right px-3">Valor</th><th className="text-center px-3">Status</th><th className="text-right px-3">Ações</th></tr></thead>
                       <tbody>{despChefiaFiltradas.map(d => (
-                        <tr key={d.id} className="border-b border-slate-800/50 hover:bg-slate-50">
+                        <tr key={d.id} className="border-b border-slate-200/50 hover:bg-slate-50">
                           <td className="px-3 text-xs whitespace-nowrap text-slate-600">{fmtMesCurto(d.competencia)}</td>
                           <td className="px-3 font-medium">{d.descricao}</td>
-                          <td className="text-center px-3"><span className={`text-[10px] px-2 py-0.5 rounded-full ${d.tipo === 'FIXA' ? 'bg-blue-500/20 text-blue-300' : d.tipo === 'PARCELA' ? 'bg-purple-500/20 text-purple-300' : 'bg-slate-700/60 text-slate-600'}`}>{d.tipo === 'PARCELA' ? 'PARCELA' : (d.tipo || 'AVULSA')}</span></td>
+                          <td className="text-center px-3"><span className={`text-[10px] px-2 py-0.5 rounded-full ${d.tipo === 'FIXA' ? 'bg-blue-500/20 text-blue-600' : d.tipo === 'PARCELA' ? 'bg-purple-500/20 text-purple-600' : 'bg-slate-100 text-slate-600'}`}>{d.tipo === 'PARCELA' ? 'PARCELA' : (d.tipo || 'AVULSA')}</span></td>
                           <td className="text-center px-3 text-xs text-slate-400">{d.tipo === 'PARCELA' && d.parcelaAtual && d.parcelaTotal ? `${d.parcelaAtual}/${d.parcelaTotal}` : '—'}</td>
-                          <td className="text-center px-3"><span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${d.origem === 'MANHÃES' ? 'bg-emerald-500/20 text-emerald-300' : 'bg-blue-500/20 text-blue-300'}`}>{d.origem || 'MANHÃES'}</span></td>
+                          <td className="text-center px-3"><span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${d.origem === 'MANHÃES' ? 'bg-emerald-500/20 text-emerald-300' : 'bg-blue-500/20 text-blue-600'}`}>{d.origem || 'MANHÃES'}</span></td>
                           <td className="text-right px-3 text-violet-400 font-medium">{fmt(d.valor)}</td>
                           <td className="text-center px-3"><Badge status={d.status} /></td>
                           <td className="text-right px-3"><div className="flex justify-end gap-1">
@@ -3785,7 +3797,7 @@ export default function App({ onVoltarHub, onLogout } = {}) {
                           </div></td>
                         </tr>
                       ))}</tbody>
-                      <tfoot className="bg-slate-900 border-t border-slate-800 font-medium"><tr><td colSpan={4} className="py-2.5 px-3 text-slate-400">Total ({despChefiaFiltradas.length})</td><td></td><td className="text-right px-3 text-violet-400">{fmt(totalChefia)}</td><td colSpan={2}></td></tr></tfoot>
+                      <tfoot className="bg-slate-900 border-t border-slate-200 font-medium"><tr><td colSpan={4} className="py-2.5 px-3 text-slate-400">Total ({despChefiaFiltradas.length})</td><td></td><td className="text-right px-3 text-violet-400">{fmt(totalChefia)}</td><td colSpan={2}></td></tr></tfoot>
                     </table>
                   </div>
                 </div>
@@ -3816,16 +3828,16 @@ export default function App({ onVoltarHub, onLogout } = {}) {
               <select value={filtroCompetencia} onChange={e => setFiltroCompetencia(e.target.value)} className="bg-white border border-slate-300 rounded-lg text-slate-900 px-3 py-2 text-sm"><option value="">Todas competências</option>{competenciasUsadas.map(c => <option key={c} value={c}>{fmtMes(c)}</option>)}</select>
               <select value={filtroCategoria} onChange={e => setFiltroCategoria(e.target.value)} className="bg-white border border-slate-300 rounded-lg text-slate-900 px-3 py-2 text-sm"><option value="">Todos tipos</option>{TIPOS_VALE.map(c => <option key={c} value={c}>{c}</option>)}</select>
             </div>
-            {descontosFiltrados.length === 0 ? <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-12 text-center"><MinusCircle className="w-12 h-12 text-slate-600 mx-auto mb-3" /><p className="text-slate-400">Nenhum vale encontrado.</p></div> : (
-              <div className="bg-slate-900/50 border border-slate-800 rounded-xl overflow-hidden">
+            {descontosFiltrados.length === 0 ? <div className="bg-slate-900/50 border border-slate-200 rounded-xl p-12 text-center"><MinusCircle className="w-12 h-12 text-slate-600 mx-auto mb-3" /><p className="text-slate-400">Nenhum vale encontrado.</p></div> : (
+              <div className="bg-slate-900/50 border border-slate-200 rounded-xl overflow-hidden">
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
-                    <thead className="text-xs text-slate-400 bg-slate-900 border-b border-slate-800"><tr><th className="text-left py-3 px-3">Compet.</th><th className="text-left px-3">Beneficiário</th><th className="text-left px-3">Tipo</th><th className="text-center px-3">Parcela</th><th className="hidden sm:table-cell text-left px-3">Forma Pgto</th><th className="text-right px-3">Valor</th><th className="text-right px-3">Ações</th></tr></thead>
+                    <thead className="text-xs text-slate-400 bg-slate-50 border-b border-slate-200"><tr><th className="text-left py-3 px-3">Compet.</th><th className="text-left px-3">Beneficiário</th><th className="text-left px-3">Tipo</th><th className="text-center px-3">Parcela</th><th className="hidden sm:table-cell text-left px-3">Forma Pgto</th><th className="text-right px-3">Valor</th><th className="text-right px-3">Ações</th></tr></thead>
                     <tbody>{descontosFiltrados.map(d => (
-                      <tr key={d.id} className="border-b border-slate-800/50 hover:bg-slate-50">
+                      <tr key={d.id} className="border-b border-slate-200/50 hover:bg-slate-50">
                         <td className="px-3 text-xs whitespace-nowrap text-slate-600">{fmtMesCurto(d.competencia)}</td>
                         <td className="px-3 font-medium">{d.alvoNome}</td>
-                        <td className="px-3"><span className={`text-[10px] px-2 py-0.5 rounded-full ${d.tipoVale === 'VALE' ? 'bg-amber-500/20 text-amber-300' : d.tipoVale?.includes('GALOP') ? 'bg-orange-500/20 text-orange-300' : d.tipoVale?.includes('MARRAKESH') ? 'bg-rose-500/20 text-rose-300' : 'bg-slate-700/60'}`}>{d.tipo === 'PARCELA' ? 'PARCELA' : (d.tipoVale || 'VALE')}</span></td>
+                        <td className="px-3"><span className={`text-[10px] px-2 py-0.5 rounded-full ${d.tipoVale === 'VALE' ? 'bg-amber-500/20 text-amber-300' : d.tipoVale?.includes('GALOP') ? 'bg-orange-500/20 text-orange-600' : d.tipoVale?.includes('MARRAKESH') ? 'bg-rose-500/20 text-rose-600' : 'bg-slate-700/60'}`}>{d.tipo === 'PARCELA' ? 'PARCELA' : (d.tipoVale || 'VALE')}</span></td>
                         <td className="text-center px-3 text-xs text-slate-400">{d.tipo === 'PARCELA' && d.parcelaAtual && d.parcelaTotal ? `${d.parcelaAtual}/${d.parcelaTotal}` : '—'}</td>
                         <td className="hidden sm:table-cell px-3 text-xs text-slate-400">{d.formaPagamento || '—'}</td>
                         <td className="text-right px-3 text-amber-600 font-medium">{fmt(d.valor)}</td>
@@ -3835,7 +3847,7 @@ export default function App({ onVoltarHub, onLogout } = {}) {
                         </div></td>
                       </tr>
                     ))}</tbody>
-                    <tfoot className="bg-slate-900 border-t border-slate-800 font-medium"><tr><td colSpan={4} className="py-2.5 px-3 text-slate-400">Total ({descontosFiltrados.length})</td><td className="hidden sm:table-cell"></td><td className="text-right px-3 text-amber-600">{fmt(totaisDescontos)}</td><td></td></tr></tfoot>
+                    <tfoot className="bg-slate-900 border-t border-slate-200 font-medium"><tr><td colSpan={4} className="py-2.5 px-3 text-slate-400">Total ({descontosFiltrados.length})</td><td className="hidden sm:table-cell"></td><td className="text-right px-3 text-amber-600">{fmt(totaisDescontos)}</td><td></td></tr></tfoot>
                   </table>
                 </div>
               </div>
@@ -3912,20 +3924,20 @@ export default function App({ onVoltarHub, onLogout } = {}) {
                 <select value={filtroCliente} onChange={e => setFiltroCliente(e.target.value)} className="bg-white border border-slate-300 rounded-lg text-slate-900 px-3 py-2 text-sm"><option value="">Todos clientes</option>{clientesDiarias.map(c => <option key={c} value={c}>{c}</option>)}</select>
               </div>
               {diariasFiltradas.length === 0
-                ? <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-12 text-center"><Calendar className="w-12 h-12 text-slate-600 mx-auto mb-3" /><p className="text-slate-400">Nenhuma diária encontrada. Importe um arquivo ou adicione manualmente.</p></div>
+                ? <div className="bg-slate-900/50 border border-slate-200 rounded-xl p-12 text-center"><Calendar className="w-12 h-12 text-slate-600 mx-auto mb-3" /><p className="text-slate-400">Nenhuma diária encontrada. Importe um arquivo ou adicione manualmente.</p></div>
                 : (
-                  <div className="bg-slate-900/50 border border-slate-800 rounded-xl overflow-hidden">
+                  <div className="bg-slate-900/50 border border-slate-200 rounded-xl overflow-hidden">
                     <div className="overflow-x-auto">
                       <table className="w-full text-sm">
-                        <thead className="text-xs text-slate-400 bg-slate-900 border-b border-slate-800">
+                        <thead className="text-xs text-slate-400 bg-slate-50 border-b border-slate-200">
                           <tr><th className="text-left py-3 px-3">Data</th><th className="hidden sm:table-cell text-left px-3">Compet.</th><th className="text-left px-3">Funcionário</th><th className="hidden sm:table-cell text-left px-3">Tipo de Folha / Cliente</th><th className="text-right px-3">Valor</th><th className="text-right px-3">Ações</th></tr>
                         </thead>
                         <tbody>{diariasFiltradas.map(d => (
-                          <tr key={d.id} className="border-b border-slate-800/50 hover:bg-slate-50">
+                          <tr key={d.id} className="border-b border-slate-200/50 hover:bg-slate-50">
                             <td className="py-2.5 px-3 text-xs whitespace-nowrap">{d.data ? d.data.split('-').reverse().join('/') : '—'}</td>
                             <td className="hidden sm:table-cell px-3 text-xs text-slate-600">{fmtMesCurto(d.competencia)}</td>
                             <td className="px-3 font-medium">{d.nome}</td>
-                            <td className="hidden sm:table-cell px-3 text-xs text-slate-400">{d.folhaGrupo ? <span className="text-blue-300 font-medium">{d.folhaGrupo}</span> : (d.clienteNome || '—')}</td>
+                            <td className="hidden sm:table-cell px-3 text-xs text-slate-400">{d.folhaGrupo ? <span className="text-blue-600 font-medium">{d.folhaGrupo}</span> : (d.clienteNome || '—')}</td>
                             <td className="text-right px-3 text-orange-400 font-medium">{fmt(d.valor)}</td>
                             <td className="text-right px-3"><div className="flex justify-end gap-1">
                               <button onClick={() => setModal({ tipo: 'diaria', dados: d })} className="p-1.5 hover:bg-slate-100 rounded"><Edit2 className="w-4 h-4" /></button>
@@ -3933,7 +3945,7 @@ export default function App({ onVoltarHub, onLogout } = {}) {
                             </div></td>
                           </tr>
                         ))}</tbody>
-                        <tfoot className="bg-slate-900 border-t border-slate-800 font-medium"><tr><td colSpan={2} className="py-2.5 px-3 text-slate-400">Total ({diariasFiltradas.length})</td><td className="hidden sm:table-cell"></td><td className="hidden sm:table-cell"></td><td className="text-right px-3 text-orange-400">{fmt(totalDiarias)}</td><td></td></tr></tfoot>
+                        <tfoot className="bg-slate-900 border-t border-slate-200 font-medium"><tr><td colSpan={2} className="py-2.5 px-3 text-slate-400">Total ({diariasFiltradas.length})</td><td className="hidden sm:table-cell"></td><td className="hidden sm:table-cell"></td><td className="text-right px-3 text-orange-400">{fmt(totalDiarias)}</td><td></td></tr></tfoot>
                       </table>
                     </div>
                   </div>
@@ -3995,7 +4007,7 @@ export default function App({ onVoltarHub, onLogout } = {}) {
                 <select value={filtroStatus} onChange={e => setFiltroStatus(e.target.value)} className="bg-white border border-slate-300 rounded-lg text-slate-900 px-3 py-2 text-sm"><option value="">Todos status</option><option value="ATIVO">Ativo</option><option value="INATIVO">Inativo</option></select>
               </div>
               {clientesFiltrados.length === 0 ? (
-                <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-12 text-center"><Building2 className="w-12 h-12 text-slate-600 mx-auto mb-3" /><p className="text-slate-400">Nenhum cliente encontrado.</p></div>
+                <div className="bg-slate-900/50 border border-slate-200 rounded-xl p-12 text-center"><Building2 className="w-12 h-12 text-slate-600 mx-auto mb-3" /><p className="text-slate-400">Nenhum cliente encontrado.</p></div>
               ) : (
                 <div className="grid md:grid-cols-2 gap-3">
                   {clientesFiltrados.map(c => (
@@ -4021,7 +4033,7 @@ export default function App({ onVoltarHub, onLogout } = {}) {
                         {c.nomeContato && <div className="flex items-center gap-1.5 text-slate-400"><User className="w-3 h-3" />{c.nomeContato}{c.cargoContato ? ` · ${c.cargoContato}` : ''}</div>}
                         {c.aliquota > 0 && <div className="flex items-center gap-1.5 text-amber-600"><Receipt className="w-3 h-3" />Alíquota: {c.aliquota}%</div>}
                       </div>
-                      {c.observacoes && <div className="mt-2 pt-2 border-t border-slate-800 text-xs text-slate-500 italic">{c.observacoes}</div>}
+                      {c.observacoes && <div className="mt-2 pt-2 border-t border-slate-200 text-xs text-slate-500 italic">{c.observacoes}</div>}
                     </div>
                   ))}
                 </div>
@@ -4072,17 +4084,17 @@ export default function App({ onVoltarHub, onLogout } = {}) {
                 <button onClick={() => setSelFuncionarios(new Set())} className="text-xs text-slate-400 hover:text-slate-700 ml-auto">Limpar seleção</button>
               </div>
             )}
-            <div className="bg-slate-900/50 border border-slate-800 rounded-xl overflow-hidden">
+            <div className="bg-slate-900/50 border border-slate-200 rounded-xl overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
-                  <thead className="text-xs text-slate-400 bg-slate-900 border-b border-slate-800">
+                  <thead className="text-xs text-slate-400 bg-slate-50 border-b border-slate-200">
                     <tr>
                       <th className="py-3 px-3 w-8"><input type="checkbox" checked={todosSel} onChange={toggleTodosFunc} className="rounded cursor-pointer" /></th>
                       <th className="text-left px-3">Nome</th><th className="text-left px-3">Categoria</th><th className="hidden sm:table-cell text-left px-3">CPF</th><th className="hidden sm:table-cell text-left px-3">Pix</th><th className="hidden sm:table-cell text-center px-3">Status</th><th className="text-right px-3">Ações</th>
                     </tr>
                   </thead>
                   <tbody>{funcFiltrados.map(f => { const sel = selFuncionarios.has(f.id); return (
-                    <tr key={f.id} className={`border-b border-slate-800/50 hover:bg-slate-50 ${sel ? 'bg-indigo-900/20' : ''}`}>
+                    <tr key={f.id} className={`border-b border-slate-200/50 hover:bg-slate-50 ${sel ? 'bg-indigo-900/20' : ''}`}>
                       <td className="px-3"><input type="checkbox" checked={sel} onChange={() => toggleSelFunc(f.id)} className="rounded cursor-pointer" /></td>
                       <td className="py-2.5 px-3 font-medium">{f.nome}</td>
                       <td className="px-3"><span className="text-xs px-2 py-0.5 rounded-full bg-slate-700/60 text-slate-700">{f.categoria}</span></td>
@@ -4147,7 +4159,7 @@ export default function App({ onVoltarHub, onLogout } = {}) {
                   <span><b className="text-slate-700">{idsComFolha.size}</b> funcionário(s) com folha {periodoAlvo ? `em ${fmtMesCurto(periodoAlvo)}` : 'no histórico'} · <b className="text-slate-700">{ativos.length}</b> ATIVO(s) no total</span>
                   {semPixUnicos.length > 0 && (
                     <button onClick={() => alert(`Funcionários com folha no filtro atual mas SEM chave PIX cadastrada:\n\n${semPixUnicos.map(f => `• ${f.nome}${f.folhaGrupo ? ` (${f.folhaGrupo})` : ''}`).join('\n')}\n\nEstas folhas não podem ser transferidas via Cora — cadastre a chave PIX em Funcionários antes de iniciar a transferência.`)}
-                      className="text-rose-400 hover:text-rose-300 underline">
+                      className="text-rose-400 hover:text-rose-600 underline">
                       ⚠ {semPixUnicos.length} sem PIX
                     </button>
                   )}
@@ -4161,7 +4173,7 @@ export default function App({ onVoltarHub, onLogout } = {}) {
               );
             })()}
 
-            {folhasFiltradas.length === 0 ? <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-12 text-center"><Wallet className="w-12 h-12 text-slate-600 mx-auto mb-3" /><p className="text-slate-400">Nenhuma folha encontrada.</p></div> : (
+            {folhasFiltradas.length === 0 ? <div className="bg-slate-900/50 border border-slate-200 rounded-xl p-12 text-center"><Wallet className="w-12 h-12 text-slate-600 mx-auto mb-3" /><p className="text-slate-400">Nenhuma folha encontrada.</p></div> : (
               <>
                 <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 text-xs">
                   <Stat label="Folhas" valor={folhasFiltradas.length} />
@@ -4200,14 +4212,14 @@ export default function App({ onVoltarHub, onLogout } = {}) {
                         onClick={() => setModal({ tipo: 'transferirCora', folhas: elegíveis })}
                         className="bg-blue-600 hover:bg-blue-500 disabled:opacity-40 disabled:cursor-not-allowed px-3 py-1.5 rounded text-xs font-semibold flex items-center gap-1.5 text-white"
                       ><Send className="w-3.5 h-3.5" />Transferir via Cora ({elegíveis.length})</button>
-                      <button onClick={() => setSelFolhas(new Set())} className="text-slate-400 hover:text-white p-1.5 rounded hover:bg-slate-100" title="Limpar seleção"><X className="w-3.5 h-3.5" /></button>
+                      <button onClick={() => setSelFolhas(new Set())} className="text-slate-400 hover:text-slate-900 p-1.5 rounded hover:bg-slate-100" title="Limpar seleção"><X className="w-3.5 h-3.5" /></button>
                     </div>
                   );
                 })()}
-                <div className="bg-slate-900/50 border border-slate-800 rounded-xl overflow-hidden">
+                <div className="bg-slate-900/50 border border-slate-200 rounded-xl overflow-hidden">
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm">
-                      <thead className="text-xs text-slate-400 bg-slate-900 border-b border-slate-800"><tr>
+                      <thead className="text-xs text-slate-400 bg-slate-50 border-b border-slate-200"><tr>
                         <th className="px-3 py-3 w-8"><input type="checkbox" checked={todosSelFolha} onChange={toggleTodosFolha} className="w-3.5 h-3.5 accent-blue-500 cursor-pointer" /></th>
                         <th className="text-left py-3 px-3">Funcionário</th>
                         <th className="hidden sm:table-cell text-left px-3">Cat. Folha</th>
@@ -4221,11 +4233,11 @@ export default function App({ onVoltarHub, onLogout } = {}) {
                         <th className="text-right px-3">Ações</th>
                       </tr></thead>
                       <tbody>{folhasFiltradas.map(f => { const k = folhaKey(f); const sel = selFolhas.has(k); return (
-                        <tr key={k} className={`border-b border-slate-800/50 hover:bg-slate-50 ${sel ? 'bg-blue-900/20' : ''}`}>
+                        <tr key={k} className={`border-b border-slate-200/50 hover:bg-slate-50 ${sel ? 'bg-blue-900/20' : ''}`}>
                           <td className="px-3 py-2.5 w-8"><input type="checkbox" checked={sel} onChange={() => toggleSelFolha(k)} className="w-3.5 h-3.5 accent-blue-500 cursor-pointer" /></td>
                           <td className="py-2.5 px-3 font-medium"><div>{f.funcionario.nome}</div><div className="sm:hidden text-[10px] text-slate-400">{fmtMesCurto(f.periodoExibicao)}</div></td>
                           <td className="hidden sm:table-cell px-3 text-xs">
-                            {f.categoriaFolha ? <span className="font-medium text-blue-300" title="Derivada dos lançamentos. Para alterar, edite os lançamentos.">{f.categoriaFolha}</span> : <span className="text-slate-500 italic" title="Nenhum lançamento desta folha tem categoria definida.">—</span>}
+                            {f.categoriaFolha ? <span className="font-medium text-blue-600" title="Derivada dos lançamentos. Para alterar, edite os lançamentos.">{f.categoriaFolha}</span> : <span className="text-slate-500 italic" title="Nenhum lançamento desta folha tem categoria definida.">—</span>}
                           </td>
                           <td className="hidden md:table-cell px-3 text-xs text-slate-500">{f.funcionario.categoria}</td>
                           <td className="hidden sm:table-cell px-3 whitespace-nowrap text-xs">
@@ -4235,7 +4247,7 @@ export default function App({ onVoltarHub, onLogout } = {}) {
                           <td className="text-right px-3 text-xs">{fmt(f.bruto)}</td>
                           <td className="text-right px-3 text-xs">{f.adicionais > 0 && <span className="text-emerald-600">+{fmt(f.adicionais)}</span>}{f.adicionais > 0 && f.descontos > 0 && ' / '}{f.descontos > 0 && <span className="text-red-600">-{fmt(f.descontos)}</span>}{f.adicionais === 0 && f.descontos === 0 && <span className="text-slate-500">—</span>}</td>
                           <td className="text-right px-3 font-bold text-amber-600">{fmt(f.liquido)}</td>
-                          <td className="text-center px-3"><span className={`text-xs px-2 py-0.5 rounded-full ${f.status === 'pago' ? 'bg-emerald-500/20 text-emerald-600' : f.status === 'transferido' ? 'bg-blue-500/20 text-blue-300' : f.status === 'cancelada' ? 'bg-red-500/20 text-red-300 line-through' : 'bg-amber-500/20 text-amber-600'}`}>{f.status}</span></td>
+                          <td className="text-center px-3"><span className={`text-xs px-2 py-0.5 rounded-full ${f.status === 'pago' ? 'bg-emerald-500/20 text-emerald-600' : f.status === 'transferido' ? 'bg-blue-500/20 text-blue-600' : f.status === 'cancelada' ? 'bg-red-500/20 text-red-300 line-through' : 'bg-amber-500/20 text-amber-600'}`}>{f.status}</span></td>
                           <td className="text-right px-3"><div className="flex justify-end gap-1">
                             {f.status !== 'pago' ? (
                               <button onClick={() => atualizarStatusFolhasMassa([folhaKey(f)], 'pago')} className="text-xs bg-emerald-700/60 hover:bg-emerald-600 px-2 py-1 rounded flex items-center gap-1 text-emerald-100" title="Marcar como pago"><CheckCircle2 className="w-3.5 h-3.5" /></button>
@@ -4269,7 +4281,7 @@ export default function App({ onVoltarHub, onLogout } = {}) {
                 <button onClick={() => setModal({ tipo: 'categoriaFolha', dados: null })} className="bg-indigo-600 hover:bg-indigo-500 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium flex items-center gap-1.5 sm:gap-2 min-h-[36px]"><Plus className="w-4 h-4 flex-shrink-0" /><span>Nova categoria</span></button>
               </div>
               {categoriasFolha.length === 0 ? (
-                <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-12 text-center">
+                <div className="bg-slate-900/50 border border-slate-200 rounded-xl p-12 text-center">
                   <ClipboardList className="w-12 h-12 text-slate-600 mx-auto mb-3" />
                   <p className="text-slate-400">Nenhuma categoria cadastrada ainda.</p>
                   <p className="text-xs text-slate-500 mt-2">Categorias controlam o agrupamento da folha de pagamento. Use a mesma para vários colaboradores que pertencem à mesma estrutura de folha (ex: ARMADA, ESCRITÓRIO, MOTOLINK).</p>
@@ -4280,10 +4292,10 @@ export default function App({ onVoltarHub, onLogout } = {}) {
                     const qtdLancs = lancamentos.filter(l => l.categoriaFolha === c.nome).length;
                     const qtdFuncs = funcionarios.filter(f => f.folhaGrupo === c.nome).length;
                     return (
-                      <div key={c.id} className="bg-slate-900/50 border border-slate-800 rounded-xl p-4">
+                      <div key={c.id} className="bg-slate-900/50 border border-slate-200 rounded-xl p-4">
                         <div className="flex items-start justify-between gap-2 mb-2">
                           <div className="flex-1 min-w-0">
-                            <div className="font-bold text-base text-blue-300">{c.nome}</div>
+                            <div className="font-bold text-base text-blue-600">{c.nome}</div>
                             <div className="text-xs text-slate-400 mt-1">{qtdLancs} lançamento(s) · {qtdFuncs} funcionário(s)</div>
                           </div>
                           <div className="flex gap-1">
@@ -4358,17 +4370,17 @@ export default function App({ onVoltarHub, onLogout } = {}) {
                 <button onClick={() => setSelServicos(new Set())} className="text-xs text-slate-400 hover:text-slate-700 ml-auto">Limpar seleção</button>
               </div>
             )}
-            <div className="bg-slate-900/50 border border-slate-800 rounded-xl overflow-hidden">
+            <div className="bg-slate-900/50 border border-slate-200 rounded-xl overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
-                  <thead className="text-xs text-slate-400 bg-slate-900 border-b border-slate-800">
+                  <thead className="text-xs text-slate-400 bg-slate-50 border-b border-slate-200">
                     <tr>
                       <th className="py-3 px-3 w-8"><input type="checkbox" checked={todosSelServicos} onChange={toggleTodosServicos} className="rounded cursor-pointer" /></th>
                       <th className="text-left px-3">Cód.</th><th className="text-left px-3">Descrição</th><th className="text-center px-3">Categoria</th><th className="hidden sm:table-cell text-left px-3">Cliente / Template</th><th className="hidden md:table-cell text-center px-3">Franquia</th><th className="text-right px-3">Diária Pg</th><th className="text-right px-3">Vlr Fatura</th><th className="hidden md:table-cell text-center px-3">Alíquota</th><th className="text-right px-3">Ações</th>
                     </tr>
                   </thead>
                   <tbody>{servicosFiltrados.map(s => { const cat = CATEGORIAS_SERVICO.includes(s.categoriaServico) ? s.categoriaServico : CATEGORIAS_SERVICO[0]; const corC = CORES_CATEGORIA_SERVICO[cat] || CORES_CATEGORIA_SERVICO[CATEGORIAS_SERVICO[0]]; const sel = selServicos.has(s.cod); return (
-                    <tr key={s.cod} className={`border-b border-slate-800/50 hover:bg-slate-50 ${sel ? 'bg-indigo-900/20' : ''}`}>
+                    <tr key={s.cod} className={`border-b border-slate-200/50 hover:bg-slate-50 ${sel ? 'bg-indigo-900/20' : ''}`}>
                       <td className="px-3"><input type="checkbox" checked={sel} onChange={() => toggleSelServico(s.cod)} className="rounded cursor-pointer" /></td>
                       <td className="py-2.5 px-3 font-mono text-xs text-slate-400">#{s.cod}</td>
                       <td className="px-3 font-medium">{s.descricao}{s.status === 'INATIVO' && <span className="ml-2 text-[10px] px-1.5 py-0.5 rounded bg-slate-700 text-slate-400">INATIVO</span>}</td>
@@ -4471,9 +4483,9 @@ export default function App({ onVoltarHub, onLogout } = {}) {
                     return (
                       <div className="overflow-x-auto">
                         <table className="w-full text-sm">
-                          <thead className="text-xs text-slate-400 border-b border-slate-800"><tr><th className="text-left py-2 px-2">Cliente</th><th className="text-right px-2">Valor</th></tr></thead>
+                          <thead className="text-xs text-slate-400 border-b border-slate-200"><tr><th className="text-left py-2 px-2">Cliente</th><th className="text-right px-2">Valor</th></tr></thead>
                           <tbody>{consolidado.map(c => (
-                            <tr key={c.key} className="border-b border-slate-800/50">
+                            <tr key={c.key} className="border-b border-slate-200/50">
                               <td className="py-1.5 px-2 font-medium text-xs">{c.cliente}</td>
                               <td className="text-right px-2 text-emerald-600 font-medium">{fmt(c.valor)}</td>
                             </tr>
@@ -4490,11 +4502,11 @@ export default function App({ onVoltarHub, onLogout } = {}) {
                   {resumoFechamento.folhaPorCategoria.length === 0 ? <p className="text-sm text-slate-500 italic">Nenhuma folha nesta competência.</p> : (
                     <div className="overflow-x-auto">
                       <table className="w-full text-sm">
-                        <thead className="text-xs text-slate-400 border-b border-slate-800"><tr><th className="w-8"></th><th className="text-left py-2 px-2">Categoria</th><th className="text-right px-2">Valor</th></tr></thead>
+                        <thead className="text-xs text-slate-400 border-b border-slate-200"><tr><th className="w-8"></th><th className="text-left py-2 px-2">Categoria</th><th className="text-right px-2">Valor</th></tr></thead>
                         <tbody>{resumoFechamento.folhaPorCategoria.map(g => { const excl = isExclResumo('folhaCategoria', g.key); return (
-                          <tr key={g.key} className={`border-b border-slate-800/50 ${excl ? 'opacity-40 line-through' : ''}`}>
+                          <tr key={g.key} className={`border-b border-slate-200/50 ${excl ? 'opacity-40 line-through' : ''}`}>
                             <td className="px-1"><BotaoXResumo excluido={excl} onClick={() => toggleExclResumo('folhaCategoria', g.key)} /></td>
-                            <td className="py-1.5 px-2 font-medium text-blue-300">{g.categoria}</td>
+                            <td className="py-1.5 px-2 font-medium text-blue-600">{g.categoria}</td>
                             <td className="text-right px-2 text-blue-600 font-medium">{fmt(g.total)}</td>
                           </tr>
                         ); })}</tbody>
@@ -4508,9 +4520,9 @@ export default function App({ onVoltarHub, onLogout } = {}) {
                   {resumoFechamento.adiantamentos.length === 0 ? <p className="text-sm text-slate-500 italic">Nenhum adiantamento na competência.</p> : (
                     <div className="overflow-x-auto">
                       <table className="w-full text-sm">
-                        <thead className="text-xs text-slate-400 border-b border-slate-800"><tr><th className="w-8"></th><th className="text-left py-2 px-2">Beneficiário</th><th className="text-left px-2">Tipo</th><th className="text-center px-2">Parcela</th><th className="text-right px-2">Valor</th><th className="text-left px-2">Forma de Pagamento</th></tr></thead>
+                        <thead className="text-xs text-slate-400 border-b border-slate-200"><tr><th className="w-8"></th><th className="text-left py-2 px-2">Beneficiário</th><th className="text-left px-2">Tipo</th><th className="text-center px-2">Parcela</th><th className="text-right px-2">Valor</th><th className="text-left px-2">Forma de Pagamento</th></tr></thead>
                         <tbody>{resumoFechamento.adiantamentos.map((a, i) => { const excl = isExclResumo('adiantamentos', a.id); return (
-                          <tr key={a.id || i} className={`border-b border-slate-800/50 ${excl ? 'opacity-40 line-through' : ''}`}>
+                          <tr key={a.id || i} className={`border-b border-slate-200/50 ${excl ? 'opacity-40 line-through' : ''}`}>
                             <td className="px-1"><BotaoXResumo excluido={excl} onClick={() => toggleExclResumo('adiantamentos', a.id)} /></td>
                             <td className="py-1.5 px-2 font-medium">{a.alvoNome}</td>
                             <td className="px-2 text-xs">{a.tipo === 'PARCELA' ? 'PARCELA' : (a.tipoVale || 'VALE')}</td>
@@ -4530,7 +4542,7 @@ export default function App({ onVoltarHub, onLogout } = {}) {
                     {resumoFechamento.despesasFixas.length === 0 ? <p className="text-sm text-slate-500 italic">Nenhuma despesa fixa.</p> : (
                       <table className="w-full text-xs">
                         <tbody>{resumoFechamento.despesasFixas.map(d => { const excl = isExclResumo('fixas', d.id); return (
-                          <tr key={d.id} className={`border-b border-slate-800/50 ${excl ? 'opacity-40 line-through' : ''}`}>
+                          <tr key={d.id} className={`border-b border-slate-200/50 ${excl ? 'opacity-40 line-through' : ''}`}>
                             <td className="px-1 w-7"><BotaoXResumo excluido={excl} onClick={() => toggleExclResumo('fixas', d.id)} /></td>
                             <td className="py-1.5 px-2 font-medium">{d.descricao}</td>
                             <td className="text-right px-2 text-red-600">{fmt(d.valor)}</td>
@@ -4544,7 +4556,7 @@ export default function App({ onVoltarHub, onLogout } = {}) {
                     {resumoFechamento.despesasAvulsas.length === 0 ? <p className="text-sm text-slate-500 italic">Nenhuma despesa avulsa.</p> : (
                       <table className="w-full text-xs">
                         <tbody>{resumoFechamento.despesasAvulsas.map(d => { const excl = isExclResumo('avulsas', d.id); return (
-                          <tr key={d.id} className={`border-b border-slate-800/50 ${excl ? 'opacity-40 line-through' : ''}`}>
+                          <tr key={d.id} className={`border-b border-slate-200/50 ${excl ? 'opacity-40 line-through' : ''}`}>
                             <td className="px-1 w-7"><BotaoXResumo excluido={excl} onClick={() => toggleExclResumo('avulsas', d.id)} /></td>
                             <td className="py-1.5 px-2 font-medium">{d.descricao}</td>
                             <td className="text-right px-2 text-red-600">{fmt(d.valor)}</td>
@@ -4558,7 +4570,7 @@ export default function App({ onVoltarHub, onLogout } = {}) {
                     {resumoFechamento.parcelamentos.length === 0 ? <p className="text-sm text-slate-500 italic">Nenhum parcelamento.</p> : (
                       <table className="w-full text-xs">
                         <tbody>{resumoFechamento.parcelamentos.map(d => { const excl = isExclResumo('parcelamentos', d.id); return (
-                          <tr key={d.id} className={`border-b border-slate-800/50 ${excl ? 'opacity-40 line-through' : ''}`}>
+                          <tr key={d.id} className={`border-b border-slate-200/50 ${excl ? 'opacity-40 line-through' : ''}`}>
                             <td className="px-1 w-7"><BotaoXResumo excluido={excl} onClick={() => toggleExclResumo('parcelamentos', d.id)} /></td>
                             <td className="py-1.5 px-2 font-medium">{d.descricao}</td>
                             <td className="text-right px-2 text-red-600">{fmt(d.valor)}</td>
@@ -4574,14 +4586,14 @@ export default function App({ onVoltarHub, onLogout } = {}) {
                   {(resumoFechamento.despesasChefia || []).length === 0 ? <p className="text-sm text-slate-500 italic">Nenhuma despesa da chefia nesta competência.</p> : (
                     <div className="overflow-x-auto">
                       <table className="w-full text-xs">
-                        <thead className="text-xs text-slate-400 border-b border-slate-800"><tr><th className="w-8"></th><th className="text-left py-2 px-2">Lançamento</th><th className="text-center px-2">Tipo</th><th className="text-center px-2">Parcela</th><th className="text-center px-2">Origem</th><th className="text-right px-2">Valor</th></tr></thead>
+                        <thead className="text-xs text-slate-400 border-b border-slate-200"><tr><th className="w-8"></th><th className="text-left py-2 px-2">Lançamento</th><th className="text-center px-2">Tipo</th><th className="text-center px-2">Parcela</th><th className="text-center px-2">Origem</th><th className="text-right px-2">Valor</th></tr></thead>
                         <tbody>{resumoFechamento.despesasChefia.map(d => { const excl = isExclResumo('despChefia', d.id); return (
-                          <tr key={d.id} className={`border-b border-slate-800/50 ${excl ? 'opacity-40 line-through' : ''}`}>
+                          <tr key={d.id} className={`border-b border-slate-200/50 ${excl ? 'opacity-40 line-through' : ''}`}>
                             <td className="px-1 w-7"><BotaoXResumo excluido={excl} onClick={() => toggleExclResumo('despChefia', d.id)} /></td>
                             <td className="py-1.5 px-2 font-medium">{d.descricao}</td>
-                            <td className="text-center px-2"><span className={`text-[10px] px-1.5 py-0.5 rounded-full ${d.tipo === 'FIXA' ? 'bg-blue-500/20 text-blue-300' : d.tipo === 'PARCELA' ? 'bg-purple-500/20 text-purple-300' : 'bg-slate-700/60'}`}>{d.tipo === 'PARCELA' ? 'PARCELA' : (d.tipo || 'AVULSA')}</span></td>
+                            <td className="text-center px-2"><span className={`text-[10px] px-1.5 py-0.5 rounded-full ${d.tipo === 'FIXA' ? 'bg-blue-500/20 text-blue-600' : d.tipo === 'PARCELA' ? 'bg-purple-500/20 text-purple-600' : 'bg-slate-700/60'}`}>{d.tipo === 'PARCELA' ? 'PARCELA' : (d.tipo || 'AVULSA')}</span></td>
                             <td className="text-center px-2 text-[10px] text-slate-400">{d.tipo === 'PARCELA' && d.parcelaAtual && d.parcelaTotal ? `${d.parcelaAtual}/${d.parcelaTotal}` : '—'}</td>
-                            <td className="text-center px-2"><span className={`text-[10px] px-1.5 py-0.5 rounded-full font-semibold ${d.origem === 'MANHÃES' ? 'bg-emerald-500/20 text-emerald-300' : 'bg-blue-500/20 text-blue-300'}`}>{d.origem || 'MANHÃES'}</span></td>
+                            <td className="text-center px-2"><span className={`text-[10px] px-1.5 py-0.5 rounded-full font-semibold ${d.origem === 'MANHÃES' ? 'bg-emerald-500/20 text-emerald-300' : 'bg-blue-500/20 text-blue-600'}`}>{d.origem || 'MANHÃES'}</span></td>
                             <td className="text-right px-2 text-violet-400 font-medium">{fmt(d.valor)}</td>
                           </tr>
                         ); })}</tbody>
@@ -4595,12 +4607,12 @@ export default function App({ onVoltarHub, onLogout } = {}) {
                 <Painel titulo={`8. Parcelamentos — visão geral (${fmt(resumoLimpo.totalParcelamentosTodos || 0)})`}>
                   <div className="text-xs text-slate-500 italic mb-2">
                     Inclui despesas operacionais, despesas da chefia e vales parceladas desta competência. Painel informativo — os valores já estão somados em seus blocos de origem.
-                    <span className="block mt-1">Despesa: <b className="text-red-300">{fmt(resumoLimpo.totalParcelasDespesa || 0)}</b> · Chefia: <b className="text-violet-300">{fmt(resumoLimpo.totalParcelasChefia || 0)}</b> · Vale: <b className="text-amber-300">{fmt(resumoLimpo.totalParcelasVale || 0)}</b></span>
+                    <span className="block mt-1">Despesa: <b className="text-red-300">{fmt(resumoLimpo.totalParcelasDespesa || 0)}</b> · Chefia: <b className="text-violet-600">{fmt(resumoLimpo.totalParcelasChefia || 0)}</b> · Vale: <b className="text-amber-300">{fmt(resumoLimpo.totalParcelasVale || 0)}</b></span>
                   </div>
                   {(resumoFechamento.parcelamentosTodos || []).length === 0 ? <p className="text-sm text-slate-500 italic">Nenhum parcelamento ativo nesta competência.</p> : (
                     <div className="overflow-x-auto">
                       <table className="w-full text-xs">
-                        <thead className="text-xs text-slate-400 border-b border-slate-800">
+                        <thead className="text-xs text-slate-400 border-b border-slate-200">
                           <tr>
                             <th className="w-8"></th>
                             <th className="text-center px-2">Origem</th>
@@ -4611,10 +4623,10 @@ export default function App({ onVoltarHub, onLogout } = {}) {
                           </tr>
                         </thead>
                         <tbody>{(resumoFechamento.parcelamentosTodos || []).map(p => { const excl = isExclResumo('parcelamentosTodos', p.key); return (
-                          <tr key={p.key} className={`border-b border-slate-800/50 ${excl ? 'opacity-40 line-through' : ''}`}>
+                          <tr key={p.key} className={`border-b border-slate-200/50 ${excl ? 'opacity-40 line-through' : ''}`}>
                             <td className="px-1 w-7"><BotaoXResumo excluido={excl} onClick={() => toggleExclResumo('parcelamentosTodos', p.key)} /></td>
                             <td className="text-center px-2">
-                              <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-semibold ${p._origem === 'Despesa' ? 'bg-red-500/20 text-red-300' : p._origem === 'Chefia' ? 'bg-violet-500/20 text-violet-300' : 'bg-amber-500/20 text-amber-300'}`}>{p._origem}</span>
+                              <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-semibold ${p._origem === 'Despesa' ? 'bg-red-500/20 text-red-300' : p._origem === 'Chefia' ? 'bg-violet-500/20 text-violet-600' : 'bg-amber-500/20 text-amber-300'}`}>{p._origem}</span>
                             </td>
                             <td className="py-1.5 px-2 font-medium">{p.descricao}</td>
                             <td className="text-center px-2 font-mono text-[11px]">{p.atual && p.total ? `${p.atual}/${p.total}` : '—'}</td>
@@ -4658,11 +4670,11 @@ export default function App({ onVoltarHub, onLogout } = {}) {
                       <div className="overflow-x-auto">
                         <table className="w-full text-sm">
                           <tbody>
-                            <tr className="border-b border-slate-800">
+                            <tr className="border-b border-slate-200">
                               <td className="py-2 px-3 text-slate-600">Folha total (bruto)</td>
-                              <td className="text-right px-3 font-medium text-blue-300">{fmt(totalFolha)}</td>
+                              <td className="text-right px-3 font-medium text-blue-600">{fmt(totalFolha)}</td>
                             </tr>
-                            <tr className="border-b border-slate-800">
+                            <tr className="border-b border-slate-200">
                               <td className="py-2 px-3 text-slate-400 pl-6">(−) Vales / Adiantamentos</td>
                               <td className="text-right px-3 text-red-600">−{fmt(totalVales)}</td>
                             </tr>
@@ -4670,21 +4682,21 @@ export default function App({ onVoltarHub, onLogout } = {}) {
                               <td className="py-2 px-3 font-semibold text-slate-700">= Folha líquida a pagar</td>
                               <td className="text-right px-3 font-bold text-amber-300">{fmt(folhaLiquida)}</td>
                             </tr>
-                            <tr className="border-b border-slate-800">
+                            <tr className="border-b border-slate-200">
                               <td className="py-2 px-3 text-slate-600">(+) Despesas do mês</td>
-                              <td className="text-right px-3 font-medium text-orange-300">{fmt(totalCartaoEmpresa)}</td>
+                              <td className="text-right px-3 font-medium text-orange-600">{fmt(totalCartaoEmpresa)}</td>
                             </tr>
-                            <tr className="border-b border-slate-800">
+                            <tr className="border-b border-slate-200">
                               <td className="py-2 px-3 text-slate-600">(+) Galop (combustível)</td>
-                              <td className="text-right px-3 font-medium text-orange-300">{fmt(totalGalop)}</td>
+                              <td className="text-right px-3 font-medium text-orange-600">{fmt(totalGalop)}</td>
                             </tr>
-                            <tr className="border-b border-slate-800">
+                            <tr className="border-b border-slate-200">
                               <td className="py-2 px-3 text-slate-600">(+) Despesas Manhães</td>
-                              <td className="text-right px-3 font-medium text-violet-300">{fmt(totalManhaes)}</td>
+                              <td className="text-right px-3 font-medium text-violet-600">{fmt(totalManhaes)}</td>
                             </tr>
-                            <tr className="border-b border-slate-800">
+                            <tr className="border-b border-slate-200">
                               <td className="py-2 px-3 text-slate-600">(+) Despesas Ricardo</td>
-                              <td className="text-right px-3 font-medium text-violet-300">{fmt(totalRicardo)}</td>
+                              <td className="text-right px-3 font-medium text-violet-600">{fmt(totalRicardo)}</td>
                             </tr>
                             <tr className="bg-emerald-500/10 border-2 border-emerald-500">
                               <td className="py-3 px-3 font-bold text-emerald-700 uppercase">TOTAL GERAL A PAGAR</td>
@@ -4757,7 +4769,7 @@ export default function App({ onVoltarHub, onLogout } = {}) {
                 })}
               </div>
 
-              {todosItens.length === 0 ? <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-12 text-center"><p className="text-slate-400">Nenhum item encontrado com os filtros aplicados.</p></div> : (
+              {todosItens.length === 0 ? <div className="bg-slate-900/50 border border-slate-200 rounded-xl p-12 text-center"><p className="text-slate-400">Nenhum item encontrado com os filtros aplicados.</p></div> : (
                 <div className="space-y-2">{todosItens.map(item => {
                   const t = TEMPLATES[item.template];
                   if (item.tipo === 'aberta') {
@@ -4796,13 +4808,13 @@ export default function App({ onVoltarHub, onLogout } = {}) {
                             <Lock className="w-4 h-4 text-emerald-600" />
                             {f.numeroFmt && <span className="font-mono text-sm bg-indigo-500/20 text-indigo-600 px-2 py-0.5 rounded">{f.numeroFmt}</span>}
                             <span className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded border ${cor.bg} ${cor.text} ${cor.border}`}>{st}</span>
-                            {f.nfNumero && <span className="text-[10px] font-mono font-semibold bg-purple-500/20 text-purple-300 border border-purple-500/40 px-2 py-0.5 rounded">NF {f.nfNumero}</span>}
-                            {f.empresaFaturante && <span className="text-[10px] bg-slate-700/60 text-slate-600 px-2 py-0.5 rounded">{f.empresaFaturante}</span>}
+                            {f.nfNumero && <span className="text-[10px] font-mono font-semibold bg-purple-500/20 text-purple-600 border border-purple-500/40 px-2 py-0.5 rounded">NF {f.nfNumero}</span>}
+                            {f.empresaFaturante && <span className="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded">{f.empresaFaturante}</span>}
                             {vencido && st !== 'Vencida' && <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded border bg-red-500/20 text-red-300 border-red-500/40">⚠ Em atraso</span>}
                             <span className="font-semibold">{f.cliente}</span>
                             <button onClick={() => setModal({ tipo: 'editarClienteFatura', fechId: f.id, clienteAtual: f.cliente })} title="Editar cliente" className="text-slate-600 hover:text-indigo-400 transition"><Pencil className="w-3 h-3" /></button>
                             <span className="text-xs text-slate-400">· {t?.nome}</span>
-                            {f.custom && <span className="text-[10px] px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-300">CUSTOM</span>}
+                            {f.custom && <span className="text-[10px] px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-600">CUSTOM</span>}
                           </div>
                           <div className="text-xs text-slate-500 flex items-center gap-1.5 flex-wrap">
                             <span>{f.dataInicio && f.dataFim ? `${fmtData(f.dataInicio)} → ${fmtData(f.dataFim)}` : fmtPeriodo(f.periodo, t)}</span>
@@ -4874,14 +4886,14 @@ export default function App({ onVoltarHub, onLogout } = {}) {
             {loadingPropostas ? (
               <div className="text-center text-slate-400 text-sm py-8">Carregando propostas...</div>
             ) : propostas.length === 0 ? (
-              <div className="text-center text-slate-500 text-sm py-12 bg-slate-900/40 border border-slate-800 rounded-xl">
+              <div className="text-center text-slate-500 text-sm py-12 bg-slate-900/40 border border-slate-200 rounded-xl">
                 Nenhuma proposta encontrada. Clique em <b>Nova proposta</b> para criar a primeira.
               </div>
             ) : (
-              <div className="bg-slate-900/40 border border-slate-800 rounded-xl overflow-hidden">
+              <div className="bg-slate-900/40 border border-slate-200 rounded-xl overflow-hidden">
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
-                    <thead className="text-xs text-slate-400 bg-slate-900 border-b border-slate-800">
+                    <thead className="text-xs text-slate-400 bg-slate-50 border-b border-slate-200">
                       <tr>
                         <th className="text-left py-3 px-3">Nº</th>
                         <th className="text-left px-3">Cliente</th>
@@ -4897,21 +4909,21 @@ export default function App({ onVoltarHub, onLogout } = {}) {
                       {propostas.map(p => {
                         const stCor = p.status === 'Aceita' ? 'bg-emerald-500/20 text-emerald-300'
                           : p.status === 'Rejeitada' ? 'bg-red-500/20 text-red-300'
-                          : p.status === 'Enviada' ? 'bg-blue-500/20 text-blue-300'
+                          : p.status === 'Enviada' ? 'bg-blue-500/20 text-blue-600'
                           : p.status === 'Em análise' ? 'bg-amber-500/20 text-amber-300'
-                          : 'bg-slate-700/60 text-slate-600';
+                          : 'bg-slate-100 text-slate-600';
                         const podeEditar = !['Aceita', 'Rejeitada'].includes(p.status);
                         const podeEnviar = !['Aceita', 'Rejeitada'].includes(p.status);
                         const podeAceitar = !['Aceita', 'Rejeitada'].includes(p.status);
                         const podeCriarServicos = p.status === 'Aceita';
                         return (
-                          <tr key={p.id} className="border-b border-slate-800/50 hover:bg-slate-50">
+                          <tr key={p.id} className="border-b border-slate-200/50 hover:bg-slate-50">
                             <td className="px-3 font-mono text-xs whitespace-nowrap">{p.numero_formatado}</td>
                             <td className="px-3 font-medium">
                               <div className="truncate max-w-[200px]" title={p.cliente_razao || p.cliente_nome}>{p.cliente_razao || p.cliente_nome || '—'}</div>
                               <div className="text-[10px] text-slate-500">{p.cliente_cnpj}</div>
                             </td>
-                            <td className="px-3">{(() => { const catCor = p.categoria === 'ESCOLTA' ? 'bg-purple-500/20 text-purple-300 border-purple-500/30' : p.categoria === 'FACILITIES' ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30' : p.categoria === 'EVENTOS' ? 'bg-sky-500/20 text-sky-300 border-sky-500/30' : 'bg-amber-500/20 text-amber-300 border-amber-500/30'; return <span className={`text-[10px] px-2 py-0.5 rounded-full border ${catCor}`}>{p.categoria || '—'}</span>; })()}</td>
+                            <td className="px-3">{(() => { const catCor = p.categoria === 'ESCOLTA' ? 'bg-purple-500/20 text-purple-600 border-purple-500/30' : p.categoria === 'FACILITIES' ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30' : p.categoria === 'EVENTOS' ? 'bg-sky-500/20 text-sky-300 border-sky-500/30' : 'bg-amber-500/20 text-amber-300 border-amber-500/30'; return <span className={`text-[10px] px-2 py-0.5 rounded-full border ${catCor}`}>{p.categoria || '—'}</span>; })()}</td>
                             <td className="px-3"><span className={`text-[10px] px-2 py-0.5 rounded-full ${stCor}`}>{p.status}</span></td>
                             <td className="text-right px-3 text-indigo-600 font-semibold">{fmt(p.valor_total)}</td>
                             <td className="hidden sm:table-cell px-3 text-xs text-slate-400">{p.qtd_itens}</td>
@@ -5119,7 +5131,7 @@ function ModalCliente({ dados, onSave, onClose }) {
 
         {/* Contato */}
         <div>
-          <h4 className="text-xs text-slate-400 font-semibold uppercase pb-1 mb-3 border-b border-slate-800">Contato</h4>
+          <h4 className="text-xs text-slate-400 font-semibold uppercase pb-1 mb-3 border-b border-slate-200">Contato</h4>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {I('email', 'E-mail', 'email', 'financeiro@empresa.com.br')}
             {I('telefone', 'Telefone', 'tel', '(11) 9xxxx-xxxx')}
@@ -5130,7 +5142,7 @@ function ModalCliente({ dados, onSave, onClose }) {
 
         {/* Endereço */}
         <div>
-          <h4 className="text-xs text-slate-400 font-semibold uppercase pb-1 mb-3 border-b border-slate-800">Endereço</h4>
+          <h4 className="text-xs text-slate-400 font-semibold uppercase pb-1 mb-3 border-b border-slate-200">Endereço</h4>
           <div className="grid grid-cols-1 sm:grid-cols-6 gap-3">
             <Campo label="Logradouro" span={4}>
               <input value={f.endereco || ''} onChange={e => set('endereco', e.target.value)} placeholder="Rua / Av." className="w-full bg-white border border-slate-200 rounded px-3 py-2 text-sm" />
@@ -5230,15 +5242,15 @@ function ModalMassaLancServico({ ids, servicos, lancamentos, onSave, onClose }) 
   );
 }
 
-function Card({ title, value, sub, icon: Icon, cor, iconCor }) { return <div className={`bg-gradient-to-br ${cor} border border-slate-800 rounded-xl p-3 sm:p-4 min-w-0`}><div className="flex items-center justify-between mb-1.5 sm:mb-2 gap-2"><span className="text-[10px] sm:text-xs text-slate-400 uppercase tracking-wide truncate">{title}</span><Icon className={`w-4 h-4 flex-shrink-0 ${iconCor}`} /></div><div className="text-xl sm:text-2xl font-bold leading-tight break-words">{value}</div>{sub && <div className="text-[10px] sm:text-xs text-slate-500 mt-1 truncate">{sub}</div>}</div>; }
-function Painel({ titulo, children }) { return <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-3 sm:p-4 min-w-0"><h3 className="font-semibold mb-2 sm:mb-3 text-sm text-slate-600">{titulo}</h3>{children}</div>; }
+function Card({ title, value, sub, icon: Icon, cor, iconCor }) { return <div className={`bg-gradient-to-br ${cor} border border-slate-200 rounded-xl p-3 sm:p-4 min-w-0`}><div className="flex items-center justify-between mb-1.5 sm:mb-2 gap-2"><span className="text-[10px] sm:text-xs text-slate-400 uppercase tracking-wide truncate">{title}</span><Icon className={`w-4 h-4 flex-shrink-0 ${iconCor}`} /></div><div className="text-xl sm:text-2xl font-bold leading-tight break-words">{value}</div>{sub && <div className="text-[10px] sm:text-xs text-slate-500 mt-1 truncate">{sub}</div>}</div>; }
+function Painel({ titulo, children }) { return <div className="bg-slate-900/50 border border-slate-200 rounded-xl p-3 sm:p-4 min-w-0"><h3 className="font-semibold mb-2 sm:mb-3 text-sm text-slate-600">{titulo}</h3>{children}</div>; }
 function Stat({ label, valor, cor = 'text-white' }) { return <div className="bg-slate-900/50 rounded p-2 min-w-0"><div className="text-[10px] text-slate-500 uppercase truncate">{label}</div><div className={`font-semibold ${cor} truncate`}>{valor}</div></div>; }
 function BotaoXResumo({ excluido, onClick }) {
   return excluido
     ? <button onClick={onClick} title="Restaurar este registro" className="w-6 h-6 rounded-full bg-emerald-500/20 hover:bg-emerald-500/40 text-emerald-300 flex items-center justify-center text-base font-bold leading-none">+</button>
     : <button onClick={onClick} title="Excluir do resumo e da planilha" className="w-6 h-6 rounded-full bg-white hover:bg-red-500/40 text-slate-500 hover:text-red-300 flex items-center justify-center text-sm font-bold leading-none">×</button>;
 }
-function Badge({ status }) { const cls = { pendente: 'bg-amber-500/20 text-amber-600', pago: 'bg-emerald-500/20 text-emerald-600', fechado: 'bg-slate-600/40 text-slate-600' }[status] || 'bg-slate-700 text-slate-600'; return <span className={`text-xs px-2 py-0.5 rounded-full ${cls}`}>{status}</span>; }
+function Badge({ status }) { const cls = { pendente: 'bg-amber-500/20 text-amber-600', pago: 'bg-emerald-500/20 text-emerald-600', fechado: 'bg-slate-100 text-slate-700' }[status] || 'bg-slate-100 text-slate-700'; return <span className={`text-xs px-2 py-0.5 rounded-full ${cls}`}>{status}</span>; }
 
 // ============ MODAL MASSA FERIADO ============
 function ModalMassaLancFeriado({ ids, lancamentos, servicos, feriadosExtra, onSave, onClose }) {
@@ -5265,10 +5277,10 @@ function ModalMassaLancFeriado({ ids, lancamentos, servicos, feriadosExtra, onSa
       <p className="text-sm text-slate-400 mb-4">{qtd} lançamento{qtd !== 1 ? 's' : ''} selecionado{qtd !== 1 ? 's' : ''}. Os valores de adicional serão recalculados.</p>
 
       <div className="flex gap-2 mb-4">
-        <button onClick={() => setModo('marcar')} className={`flex-1 py-2 rounded-lg text-sm font-medium border ${modo === 'marcar' ? 'bg-amber-600/20 border-amber-500 text-amber-300' : 'bg-slate-800 border-slate-200 text-slate-400 hover:text-white'}`}>
+        <button onClick={() => setModo('marcar')} className={`flex-1 py-2 rounded-lg text-sm font-medium border ${modo === 'marcar' ? 'bg-amber-600/20 border-amber-500 text-amber-300' : 'bg-slate-800 border-slate-200 text-slate-400 hover:text-slate-900'}`}>
           Marcar como feriado
         </button>
-        <button onClick={() => setModo('remover')} className={`flex-1 py-2 rounded-lg text-sm font-medium border ${modo === 'remover' ? 'bg-slate-600/40 border-slate-500 text-slate-700' : 'bg-slate-800 border-slate-200 text-slate-400 hover:text-white'}`}>
+        <button onClick={() => setModo('remover')} className={`flex-1 py-2 rounded-lg text-sm font-medium border ${modo === 'remover' ? 'bg-slate-600/40 border-slate-500 text-slate-700' : 'bg-slate-800 border-slate-200 text-slate-400 hover:text-slate-900'}`}>
           Remover marcação
         </button>
       </div>
@@ -5337,8 +5349,8 @@ function ModalGerenciarFeriados({ feriadosExtra, setFeriadosExtra, onClose }) {
   return (
     <ModalBase titulo="Gestão de Feriados" onClose={onClose}>
       <div className="flex gap-2 mb-4 border-b border-slate-200">
-        <button onClick={() => setAbaF('custom')} className={`px-3 py-1.5 text-sm font-medium rounded-t ${abaF === 'custom' ? 'text-white border-b-2 border-indigo-500' : 'text-slate-400 hover:text-white'}`}>Feriados customizados</button>
-        <button onClick={() => setAbaF('base')} className={`px-3 py-1.5 text-sm font-medium rounded-t ${abaF === 'base' ? 'text-white border-b-2 border-indigo-500' : 'text-slate-400 hover:text-white'}`}>Base {anoAtual} (nacionais + RJ)</button>
+        <button onClick={() => setAbaF('custom')} className={`px-3 py-1.5 text-sm font-medium rounded-t ${abaF === 'custom' ? 'text-white border-b-2 border-indigo-500' : 'text-slate-400 hover:text-slate-900'}`}>Feriados customizados</button>
+        <button onClick={() => setAbaF('base')} className={`px-3 py-1.5 text-sm font-medium rounded-t ${abaF === 'base' ? 'text-white border-b-2 border-indigo-500' : 'text-slate-400 hover:text-slate-900'}`}>Base {anoAtual} (nacionais + RJ)</button>
       </div>
 
       {abaF === 'custom' && (
@@ -5447,9 +5459,9 @@ function ModalLancamento({ dados, servicos, funcionarios, categoriasFolha = [], 
         <>
           <div className="mt-3 bg-white rounded p-2 text-xs flex items-center justify-between flex-wrap gap-2">
             <div className="text-slate-400"><b className="text-indigo-600">{template.nome}</b> · Franquia {servico.franquiaHoras}h/{servico.franquiaKm}km · Vlr {fmt(servico.valorFatura)}</div>
-            {template.incluirPedagioFatura && <span className="text-[10px] px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-300">Pedágio fatura</span>}
+            {template.incluirPedagioFatura && <span className="text-[10px] px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-600">Pedágio fatura</span>}
             {template.reembolsarPedagio && <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300">Reembolsa pedágio</span>}
-            {template.periodo === '25-25' && <span className="text-[10px] px-2 py-0.5 rounded bg-rose-500/20 text-rose-300">Ciclo 26→25</span>}
+            {template.periodo === '25-25' && <span className="text-[10px] px-2 py-0.5 rounded bg-rose-500/20 text-rose-600">Ciclo 26→25</span>}
           </div>
           <datalist id="lista-funcionarios">{funcAtivos.map(f => <option key={f.id} value={f.nome} />)}</datalist>
           <div className="mt-3 grid sm:grid-cols-2 gap-3">
@@ -5534,12 +5546,12 @@ function ModalLancamento({ dados, servicos, funcionarios, categoriasFolha = [], 
             })()}
             <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
               <Linha l="Vlr fatura base" v={fmt(servico.valorFatura)} />
-              <Linha l="Diária paga base" v={fmt(servico.diariaPaga)} cor="text-orange-300" />
-              {calc.horasExtras > 0 && <><Linha l={`+ ${calc.horasExtras.toFixed(2)}h extra fat`} v={fmt(calc.extraHorasFatura)} /><Linha l={`+ ${calc.horasExtras.toFixed(2)}h extra pago`} v={fmt(calc.extraHorasPaga)} cor="text-orange-300" /></>}
-              {calc.kmExtras > 0 && <><Linha l={`+ ${calc.kmExtras}km extra fat`} v={fmt(calc.extraKmFatura)} /><Linha l={`+ ${calc.kmExtras}km extra pago`} v={fmt(calc.extraKmPago)} cor="text-orange-300" /></>}
-              {form.isDomingo && (calc.adicDomFatura > 0 || calc.adicDomPago > 0) && <><Linha l="+ Adic. domingo fat" v={fmt(calc.adicDomFatura)} /><Linha l="+ Adic. domingo pago" v={fmt(calc.adicDomPago)} cor="text-orange-300" /></>}
+              <Linha l="Diária paga base" v={fmt(servico.diariaPaga)} cor="text-orange-600" />
+              {calc.horasExtras > 0 && <><Linha l={`+ ${calc.horasExtras.toFixed(2)}h extra fat`} v={fmt(calc.extraHorasFatura)} /><Linha l={`+ ${calc.horasExtras.toFixed(2)}h extra pago`} v={fmt(calc.extraHorasPaga)} cor="text-orange-600" /></>}
+              {calc.kmExtras > 0 && <><Linha l={`+ ${calc.kmExtras}km extra fat`} v={fmt(calc.extraKmFatura)} /><Linha l={`+ ${calc.kmExtras}km extra pago`} v={fmt(calc.extraKmPago)} cor="text-orange-600" /></>}
+              {form.isDomingo && (calc.adicDomFatura > 0 || calc.adicDomPago > 0) && <><Linha l="+ Adic. domingo fat" v={fmt(calc.adicDomFatura)} /><Linha l="+ Adic. domingo pago" v={fmt(calc.adicDomPago)} cor="text-orange-600" /></>}
               {calc.pedagioFatura > 0 && <Linha l="+ Pedágio fatura" v={fmt(calc.pedagioFatura)} />}
-              {calc.pedagioReembolso > 0 && <Linha l="+ Pedágio reembolso" v={fmt(calc.pedagioReembolso)} cor="text-orange-300" />}
+              {calc.pedagioReembolso > 0 && <Linha l="+ Pedágio reembolso" v={fmt(calc.pedagioReembolso)} cor="text-orange-600" />}
               {calc.batidaExtra > 0 && <Linha l="+ Batida extra" v={fmt(calc.batidaExtra)} />}
               {calc.outros > 0 && <Linha l="+ Outros" v={fmt(calc.outros)} />}
             </div>
@@ -6205,7 +6217,7 @@ function ModalProposta({ dados, clientes, servicos, onSave, onClose }) {
                 {f.categoria === 'ESCOLTA' && !readOnly && it._modoCatalogo && (
                   <div className="sm:col-span-3">
                     <div className="text-[10px] text-slate-400 mb-0.5">Selecionar do catálogo</div>
-                    <select onChange={e => popularDeServico(idx, e.target.value)} value="" className="w-full bg-slate-900 border border-slate-200 rounded px-2 py-2 text-xs">
+                    <select onChange={e => popularDeServico(idx, e.target.value)} value="" className="w-full bg-white border border-slate-200 rounded px-2 py-2 text-xs">
                       <option value="">— escolher —</option>
                       {servicos.map(s => <option key={s.id} value={s._apiId || s.id}>{s.cod} · {s.descricao}</option>)}
                     </select>
@@ -6213,19 +6225,19 @@ function ModalProposta({ dados, clientes, servicos, onSave, onClose }) {
                 )}
                 <div className={f.categoria === 'ESCOLTA' && !readOnly && it._modoCatalogo ? 'sm:col-span-3' : 'sm:col-span-5'}>
                   <div className="text-[10px] text-slate-400 mb-0.5">Descrição *</div>
-                  <input value={it.descricao} onChange={e => atualizarItem(idx, 'descricao', e.target.value)} disabled={readOnly} className="w-full bg-slate-900 border border-slate-200 rounded px-2 py-2 text-xs" />
+                  <input value={it.descricao} onChange={e => atualizarItem(idx, 'descricao', e.target.value)} disabled={readOnly} className="w-full bg-white border border-slate-200 rounded px-2 py-2 text-xs" />
                 </div>
                 <div className="sm:col-span-2">
                   <div className="text-[10px] text-slate-400 mb-0.5">Qtd</div>
-                  <input type="number" step="0.01" value={it.quantidade} onChange={e => atualizarItem(idx, 'quantidade', e.target.value)} disabled={readOnly} className="w-full bg-slate-900 border border-slate-200 rounded px-2 py-2 text-xs" />
+                  <input type="number" step="0.01" value={it.quantidade} onChange={e => atualizarItem(idx, 'quantidade', e.target.value)} disabled={readOnly} className="w-full bg-white border border-slate-200 rounded px-2 py-2 text-xs" />
                 </div>
                 <div className="sm:col-span-2">
                   <div className="text-[10px] text-slate-400 mb-0.5">Unit. (R$)</div>
-                  <input type="number" step="0.01" value={it.valor_unitario} onChange={e => atualizarItem(idx, 'valor_unitario', e.target.value)} disabled={readOnly} className="w-full bg-slate-900 border border-slate-200 rounded px-2 py-2 text-xs" />
+                  <input type="number" step="0.01" value={it.valor_unitario} onChange={e => atualizarItem(idx, 'valor_unitario', e.target.value)} disabled={readOnly} className="w-full bg-white border border-slate-200 rounded px-2 py-2 text-xs" />
                 </div>
                 <div className={f.categoria === 'ESCOLTA' && !readOnly && it._modoCatalogo ? 'sm:col-span-1' : 'sm:col-span-2'}>
                   <div className="text-[10px] text-slate-400 mb-0.5">Total (R$)</div>
-                  <input type="number" step="0.01" value={it.valor_total} onChange={e => atualizarItem(idx, 'valor_total', e.target.value)} disabled={readOnly} className="w-full bg-slate-900 border border-slate-200 rounded px-2 py-2 text-xs font-semibold" />
+                  <input type="number" step="0.01" value={it.valor_total} onChange={e => atualizarItem(idx, 'valor_total', e.target.value)} disabled={readOnly} className="w-full bg-white border border-slate-200 rounded px-2 py-2 text-xs font-semibold" />
                 </div>
                 <div className="sm:col-span-1 flex justify-end">
                   {!readOnly && itens.length > 1 && (
@@ -6237,11 +6249,11 @@ function ModalProposta({ dados, clientes, servicos, onSave, onClose }) {
                 <div className="grid sm:grid-cols-2 gap-2 mt-2">
                   <div>
                     <div className="text-[10px] text-slate-400 mb-0.5">Efetivo</div>
-                    <input type="number" min="0" value={it.efetivo} onChange={e => atualizarItem(idx, 'efetivo', e.target.value)} disabled={readOnly} className="w-full bg-slate-900 border border-slate-200 rounded px-2 py-2 text-xs" />
+                    <input type="number" min="0" value={it.efetivo} onChange={e => atualizarItem(idx, 'efetivo', e.target.value)} disabled={readOnly} className="w-full bg-white border border-slate-200 rounded px-2 py-2 text-xs" />
                   </div>
                   <div>
                     <div className="text-[10px] text-slate-400 mb-0.5">Escala</div>
-                    <input value={it.escala} onChange={e => atualizarItem(idx, 'escala', e.target.value)} disabled={readOnly} placeholder="Ex: 12x36, diurno..." className="w-full bg-slate-900 border border-slate-200 rounded px-2 py-2 text-xs" />
+                    <input value={it.escala} onChange={e => atualizarItem(idx, 'escala', e.target.value)} disabled={readOnly} placeholder="Ex: 12x36, diurno..." className="w-full bg-white border border-slate-200 rounded px-2 py-2 text-xs" />
                   </div>
                 </div>
               )}
@@ -6251,27 +6263,27 @@ function ModalProposta({ dados, clientes, servicos, onSave, onClose }) {
                   <div className="grid sm:grid-cols-3 gap-2">
                     <div>
                       <div className="text-[10px] text-slate-400 mb-0.5">Franquia horas</div>
-                      <input type="number" step="0.01" min="0" value={it.franquia_horas ?? 0} onChange={e => atualizarItem(idx, 'franquia_horas', e.target.value)} disabled={readOnly} className="w-full bg-slate-900 border border-slate-200 rounded px-2 py-2 text-xs" />
+                      <input type="number" step="0.01" min="0" value={it.franquia_horas ?? 0} onChange={e => atualizarItem(idx, 'franquia_horas', e.target.value)} disabled={readOnly} className="w-full bg-white border border-slate-200 rounded px-2 py-2 text-xs" />
                     </div>
                     <div>
                       <div className="text-[10px] text-slate-400 mb-0.5">H. extra fatura (R$/h)</div>
-                      <input type="number" step="0.01" min="0" value={it.hora_extra_fatura ?? 0} onChange={e => atualizarItem(idx, 'hora_extra_fatura', e.target.value)} disabled={readOnly} className="w-full bg-slate-900 border border-slate-200 rounded px-2 py-2 text-xs" />
+                      <input type="number" step="0.01" min="0" value={it.hora_extra_fatura ?? 0} onChange={e => atualizarItem(idx, 'hora_extra_fatura', e.target.value)} disabled={readOnly} className="w-full bg-white border border-slate-200 rounded px-2 py-2 text-xs" />
                     </div>
                     <div>
                       <div className="text-[10px] text-slate-400 mb-0.5">Alíquota (%)</div>
-                      <input type="number" step="0.01" min="0" max="100" value={it.aliquota ?? 0} onChange={e => atualizarItem(idx, 'aliquota', e.target.value)} disabled={readOnly} className="w-full bg-slate-900 border border-slate-200 rounded px-2 py-2 text-xs" />
+                      <input type="number" step="0.01" min="0" max="100" value={it.aliquota ?? 0} onChange={e => atualizarItem(idx, 'aliquota', e.target.value)} disabled={readOnly} className="w-full bg-white border border-slate-200 rounded px-2 py-2 text-xs" />
                     </div>
                     <div>
                       <div className="text-[10px] text-slate-400 mb-0.5">Franquia km</div>
-                      <input type="number" step="0.01" min="0" value={it.franquia_km ?? 0} onChange={e => atualizarItem(idx, 'franquia_km', e.target.value)} disabled={readOnly} className="w-full bg-slate-900 border border-slate-200 rounded px-2 py-2 text-xs" />
+                      <input type="number" step="0.01" min="0" value={it.franquia_km ?? 0} onChange={e => atualizarItem(idx, 'franquia_km', e.target.value)} disabled={readOnly} className="w-full bg-white border border-slate-200 rounded px-2 py-2 text-xs" />
                     </div>
                     <div>
                       <div className="text-[10px] text-slate-400 mb-0.5">KM extra fatura (R$/km)</div>
-                      <input type="number" step="0.01" min="0" value={it.km_extra_fatura ?? 0} onChange={e => atualizarItem(idx, 'km_extra_fatura', e.target.value)} disabled={readOnly} className="w-full bg-slate-900 border border-slate-200 rounded px-2 py-2 text-xs" />
+                      <input type="number" step="0.01" min="0" value={it.km_extra_fatura ?? 0} onChange={e => atualizarItem(idx, 'km_extra_fatura', e.target.value)} disabled={readOnly} className="w-full bg-white border border-slate-200 rounded px-2 py-2 text-xs" />
                     </div>
                     <div>
                       <div className="text-[10px] text-slate-400 mb-0.5">Adicional dom./feriado (R$)</div>
-                      <input type="number" step="0.01" min="0" value={it.adicional_domingos_fatura ?? 0} onChange={e => atualizarItem(idx, 'adicional_domingos_fatura', e.target.value)} disabled={readOnly} className="w-full bg-slate-900 border border-slate-200 rounded px-2 py-2 text-xs" />
+                      <input type="number" step="0.01" min="0" value={it.adicional_domingos_fatura ?? 0} onChange={e => atualizarItem(idx, 'adicional_domingos_fatura', e.target.value)} disabled={readOnly} className="w-full bg-white border border-slate-200 rounded px-2 py-2 text-xs" />
                     </div>
                   </div>
                 </div>
@@ -6396,18 +6408,18 @@ function ModalCriarServicosDeProposta({ proposta, clientes, onCriar, onClose }) 
                   <div className="grid sm:grid-cols-3 gap-2 mt-2 ml-6">
                     <div>
                       <div className="text-[10px] text-slate-400 mb-0.5">Código *</div>
-                      <input value={sel.codigo} onChange={e => atualizar(it.id, 'codigo', e.target.value)} placeholder="Ex: 9050" className="w-full bg-slate-900 border border-slate-200 rounded px-2 py-1.5 text-xs" />
+                      <input value={sel.codigo} onChange={e => atualizar(it.id, 'codigo', e.target.value)} placeholder="Ex: 9050" className="w-full bg-white border border-slate-200 rounded px-2 py-1.5 text-xs" />
                     </div>
                     <div>
                       <div className="text-[10px] text-slate-400 mb-0.5">Cliente *</div>
-                      <select value={sel.cliente_id} onChange={e => atualizar(it.id, 'cliente_id', e.target.value)} className="w-full bg-slate-900 border border-slate-200 rounded px-2 py-1.5 text-xs">
+                      <select value={sel.cliente_id} onChange={e => atualizar(it.id, 'cliente_id', e.target.value)} className="w-full bg-white border border-slate-200 rounded px-2 py-1.5 text-xs">
                         <option value="">—</option>
                         {clientes.map(c => <option key={c.id} value={c._apiId || c.id}>{c.razaoSocial || c.nome}</option>)}
                       </select>
                     </div>
                     <div>
                       <div className="text-[10px] text-slate-400 mb-0.5">Template</div>
-                      <select value={sel.template} onChange={e => atualizar(it.id, 'template', e.target.value)} className="w-full bg-slate-900 border border-slate-200 rounded px-2 py-1.5 text-xs">
+                      <select value={sel.template} onChange={e => atualizar(it.id, 'template', e.target.value)} className="w-full bg-white border border-slate-200 rounded px-2 py-1.5 text-xs">
                         <option>TOMBINI</option>
                         <option>ESCOLTECH</option>
                         <option>BRK</option>
@@ -6418,7 +6430,7 @@ function ModalCriarServicosDeProposta({ proposta, clientes, onCriar, onClose }) 
                     </div>
                     <div>
                       <div className="text-[10px] text-slate-400 mb-0.5">Categoria</div>
-                      <select value={sel.categoria_servico} onChange={e => atualizar(it.id, 'categoria_servico', e.target.value)} className="w-full bg-slate-900 border border-slate-200 rounded px-2 py-1.5 text-xs">
+                      <select value={sel.categoria_servico} onChange={e => atualizar(it.id, 'categoria_servico', e.target.value)} className="w-full bg-white border border-slate-200 rounded px-2 py-1.5 text-xs">
                         <option>VELADA SP</option>
                         <option>VELADA RJ</option>
                         <option>MOTOLINK RJ</option>
@@ -6429,31 +6441,31 @@ function ModalCriarServicosDeProposta({ proposta, clientes, onCriar, onClose }) 
                     </div>
                     <div>
                       <div className="text-[10px] text-slate-400 mb-0.5">Valor Fatura (R$)</div>
-                      <input type="number" step="0.01" value={sel.valor_fatura} onChange={e => atualizar(it.id, 'valor_fatura', e.target.value)} className="w-full bg-slate-900 border border-slate-200 rounded px-2 py-1.5 text-xs" />
+                      <input type="number" step="0.01" value={sel.valor_fatura} onChange={e => atualizar(it.id, 'valor_fatura', e.target.value)} className="w-full bg-white border border-slate-200 rounded px-2 py-1.5 text-xs" />
                     </div>
                     <div>
                       <div className="text-[10px] text-slate-400 mb-0.5">Alíquota (%)</div>
-                      <input type="number" step="0.01" value={sel.aliquota} onChange={e => atualizar(it.id, 'aliquota', e.target.value)} className="w-full bg-slate-900 border border-slate-200 rounded px-2 py-1.5 text-xs" />
+                      <input type="number" step="0.01" value={sel.aliquota} onChange={e => atualizar(it.id, 'aliquota', e.target.value)} className="w-full bg-white border border-slate-200 rounded px-2 py-1.5 text-xs" />
                     </div>
                     <div>
                       <div className="text-[10px] text-slate-400 mb-0.5">Franquia horas</div>
-                      <input type="number" step="0.01" value={sel.franquia_horas} onChange={e => atualizar(it.id, 'franquia_horas', e.target.value)} className="w-full bg-slate-900 border border-slate-200 rounded px-2 py-1.5 text-xs" />
+                      <input type="number" step="0.01" value={sel.franquia_horas} onChange={e => atualizar(it.id, 'franquia_horas', e.target.value)} className="w-full bg-white border border-slate-200 rounded px-2 py-1.5 text-xs" />
                     </div>
                     <div>
                       <div className="text-[10px] text-slate-400 mb-0.5">Franquia km</div>
-                      <input type="number" step="0.01" value={sel.franquia_km} onChange={e => atualizar(it.id, 'franquia_km', e.target.value)} className="w-full bg-slate-900 border border-slate-200 rounded px-2 py-1.5 text-xs" />
+                      <input type="number" step="0.01" value={sel.franquia_km} onChange={e => atualizar(it.id, 'franquia_km', e.target.value)} className="w-full bg-white border border-slate-200 rounded px-2 py-1.5 text-xs" />
                     </div>
                     <div>
                       <div className="text-[10px] text-slate-400 mb-0.5">H. extra fatura (R$)</div>
-                      <input type="number" step="0.01" value={sel.hora_extra_fatura} onChange={e => atualizar(it.id, 'hora_extra_fatura', e.target.value)} className="w-full bg-slate-900 border border-slate-200 rounded px-2 py-1.5 text-xs" />
+                      <input type="number" step="0.01" value={sel.hora_extra_fatura} onChange={e => atualizar(it.id, 'hora_extra_fatura', e.target.value)} className="w-full bg-white border border-slate-200 rounded px-2 py-1.5 text-xs" />
                     </div>
                     <div>
                       <div className="text-[10px] text-slate-400 mb-0.5">KM extra fatura (R$)</div>
-                      <input type="number" step="0.01" value={sel.km_extra_fatura} onChange={e => atualizar(it.id, 'km_extra_fatura', e.target.value)} className="w-full bg-slate-900 border border-slate-200 rounded px-2 py-1.5 text-xs" />
+                      <input type="number" step="0.01" value={sel.km_extra_fatura} onChange={e => atualizar(it.id, 'km_extra_fatura', e.target.value)} className="w-full bg-white border border-slate-200 rounded px-2 py-1.5 text-xs" />
                     </div>
                     <div className="sm:col-span-3">
                       <div className="text-[10px] text-slate-400 mb-0.5">Adicional dom. fatura (R$)</div>
-                      <input type="number" step="0.01" value={sel.adicional_domingos_fatura} onChange={e => atualizar(it.id, 'adicional_domingos_fatura', e.target.value)} className="w-full bg-slate-900 border border-slate-200 rounded px-2 py-1.5 text-xs" />
+                      <input type="number" step="0.01" value={sel.adicional_domingos_fatura} onChange={e => atualizar(it.id, 'adicional_domingos_fatura', e.target.value)} className="w-full bg-white border border-slate-200 rounded px-2 py-1.5 text-xs" />
                     </div>
                   </div>
                 )}
@@ -6498,12 +6510,12 @@ function ModalDetalheFolha({ dados, onSave, onProcessar, onRecibo, onClose }) {
       <div className="overflow-x-auto mb-4 max-h-60">
         <table className="w-full text-xs">
           <thead className="text-[10px] text-slate-400 border-b border-slate-200"><tr><th className="text-left py-1.5 px-1">Data</th><th className="text-left px-1">Cliente</th><th className="text-left px-1">Serviço</th><th className="text-center px-1">Qtd</th><th className="text-right px-1">Pago</th></tr></thead>
-          <tbody>{[...dados.lancs].sort((a, b) => a.data.localeCompare(b.data)).map(l => { const qtd = nomesNoLancamento(l).length || 1; return (<tr key={l.id} className="border-b border-slate-800"><td className="py-1 px-1">{fmtData(l.data)}</td><td className="px-1">{l.cliente}</td><td className="px-1">{l.descricao}</td><td className="text-center px-1">{qtd}</td><td className="text-right px-1 font-semibold">{fmt(l.totalPago)}</td></tr>); })}</tbody>
+          <tbody>{[...dados.lancs].sort((a, b) => a.data.localeCompare(b.data)).map(l => { const qtd = nomesNoLancamento(l).length || 1; return (<tr key={l.id} className="border-b border-slate-200"><td className="py-1 px-1">{fmtData(l.data)}</td><td className="px-1">{l.cliente}</td><td className="px-1">{l.descricao}</td><td className="text-center px-1">{qtd}</td><td className="text-right px-1 font-semibold">{fmt(l.totalPago)}</td></tr>); })}</tbody>
           <tfoot className="border-t border-slate-200 font-semibold"><tr><td colSpan={4} className="py-2 px-1 text-right">Subtotal:</td><td className="text-right px-1">{fmt(dados.total)}</td></tr></tfoot>
         </table>
       </div>
       <h4 className="text-xs uppercase font-semibold text-slate-400 mb-2">Adicionais e Descontos manuais</h4>
-      {ajustes.length > 0 && <table className="w-full text-xs mb-2"><tbody>{ajustes.map(a => <tr key={a.id} className="border-b border-slate-800"><td className="py-1 px-1"><span className={`text-[10px] px-2 py-0.5 rounded-full ${a.tipo === 'adicional' ? 'bg-emerald-500/20 text-emerald-600' : 'bg-red-500/20 text-red-600'}`}>{a.tipo}</span></td><td className="px-1">{a.descricao}</td><td className={`text-right px-1 ${a.tipo === 'adicional' ? 'text-emerald-600' : 'text-red-600'}`}>{a.tipo === 'adicional' ? '+' : '-'}{fmt(a.valor)}</td><td className="text-right px-1"><button onClick={() => remover(a.id)} className="p-1 hover:bg-red-900/40 text-red-600 rounded"><X className="w-3 h-3" /></button></td></tr>)}</tbody></table>}
+      {ajustes.length > 0 && <table className="w-full text-xs mb-2"><tbody>{ajustes.map(a => <tr key={a.id} className="border-b border-slate-200"><td className="py-1 px-1"><span className={`text-[10px] px-2 py-0.5 rounded-full ${a.tipo === 'adicional' ? 'bg-emerald-500/20 text-emerald-600' : 'bg-red-500/20 text-red-600'}`}>{a.tipo}</span></td><td className="px-1">{a.descricao}</td><td className={`text-right px-1 ${a.tipo === 'adicional' ? 'text-emerald-600' : 'text-red-600'}`}>{a.tipo === 'adicional' ? '+' : '-'}{fmt(a.valor)}</td><td className="text-right px-1"><button onClick={() => remover(a.id)} className="p-1 hover:bg-red-900/40 text-red-600 rounded"><X className="w-3 h-3" /></button></td></tr>)}</tbody></table>}
       <div className="grid grid-cols-12 gap-2 mb-4">
         <select value={novo.tipo} onChange={e => setNovo({ ...novo, tipo: e.target.value })} className="col-span-3 bg-white border border-slate-200 rounded px-2 py-1.5 text-xs"><option value="adicional">Adicional</option><option value="desconto">Desconto</option></select>
         <input value={novo.descricao} onChange={e => setNovo({ ...novo, descricao: e.target.value })} placeholder="Descrição" className="col-span-5 bg-white border border-slate-200 rounded px-2 py-1.5 text-xs" />
@@ -6514,14 +6526,14 @@ function ModalDetalheFolha({ dados, onSave, onProcessar, onRecibo, onClose }) {
         <h4 className="text-xs uppercase font-semibold text-amber-600 mb-2">Vales/Adiantamentos da competência (descontados automaticamente)</h4>
         <table className="w-full text-xs mb-4">
           <thead className="text-[10px] text-slate-400 border-b border-slate-200"><tr><th className="text-left py-1 px-1">Tipo</th><th className="text-left px-1">C. Custo</th><th className="text-left px-1">Forma Pgto</th><th className="text-right px-1">Valor</th></tr></thead>
-          <tbody>{dados.vales.map(v => <tr key={v.id} className="border-b border-slate-800"><td className="py-1 px-1"><span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300">{v.tipoVale}</span></td><td className="px-1 text-slate-400">{v.centroCusto || '—'}</td><td className="px-1 text-slate-400">{v.formaPagamento || '—'}</td><td className="text-right px-1 text-red-600">-{fmt(v.valor)}</td></tr>)}</tbody>
+          <tbody>{dados.vales.map(v => <tr key={v.id} className="border-b border-slate-200"><td className="py-1 px-1"><span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300">{v.tipoVale}</span></td><td className="px-1 text-slate-400">{v.centroCusto || '—'}</td><td className="px-1 text-slate-400">{v.formaPagamento || '—'}</td><td className="text-right px-1 text-red-600">-{fmt(v.valor)}</td></tr>)}</tbody>
           <tfoot className="border-t border-slate-200 font-semibold"><tr><td colSpan={3} className="py-1 px-1">Total vales</td><td className="text-right px-1 text-red-600">-{fmt(dados.totalVales)}</td></tr></tfoot>
         </table>
       </>)}
       <div className="bg-amber-500/10 border-2 border-amber-500 rounded-lg p-4">
         <div className="grid grid-cols-2 sm:grid-cols-6 gap-2 text-sm">
           <div><div className="text-[10px] uppercase opacity-70">Atividade</div><div className="font-semibold">{fmt(dados.total)}</div></div>
-          <div><div className="text-[10px] uppercase opacity-70">Lanç. Avulsos</div><div className="font-semibold text-blue-300">{fmt(totalDiarias)}</div></div>
+          <div><div className="text-[10px] uppercase opacity-70">Lanç. Avulsos</div><div className="font-semibold text-blue-600">{fmt(totalDiarias)}</div></div>
           <div><div className="text-[10px] uppercase opacity-70">Bruto</div><div className="font-semibold">{fmt(bruto)}</div></div>
           <div><div className="text-[10px] uppercase opacity-70">Adicionais</div><div className="font-semibold text-emerald-600">+{fmt(adicionais)}</div></div>
           <div><div className="text-[10px] uppercase opacity-70">Descontos</div><div className="font-semibold text-red-600">-{fmt(descontosTotal)}</div></div>
@@ -6577,10 +6589,10 @@ function ModalDetalheFatura({ dados, servicos, onClose }) {
             <h4 className="text-xs uppercase font-semibold text-slate-400 mb-2">Resumo por Serviço</h4>
             <table className="w-full text-sm">
               <thead className="text-xs text-slate-400 border-b border-slate-200"><tr><th className="text-left py-1.5">Cód.</th><th className="text-left">Serviço</th><th className="text-center">Qtd</th><th className="text-right">Faturado</th></tr></thead>
-              <tbody>{resumoServ.map(r => <tr key={r.cod} className="border-b border-slate-800"><td className="py-1.5 font-mono text-xs">{r.cod}</td><td>{r.descricao}</td><td className="text-center">{r.qtd}</td><td className="text-right">{fmt(r.fatura)}</td></tr>)}</tbody>
+              <tbody>{resumoServ.map(r => <tr key={r.cod} className="border-b border-slate-200"><td className="py-1.5 font-mono text-xs">{r.cod}</td><td>{r.descricao}</td><td className="text-center">{r.qtd}</td><td className="text-right">{fmt(r.fatura)}</td></tr>)}</tbody>
             </table>
           </div>
-          {totalPedagio > 0 && t?.incluirPedagioFatura && <div className="bg-cyan-500/10 border border-cyan-500/30 rounded p-2 text-xs flex justify-between"><span className="text-cyan-300">Pedágios incluídos no faturamento</span><span className="font-semibold">{fmt(totalPedagio)}</span></div>}
+          {totalPedagio > 0 && t?.incluirPedagioFatura && <div className="bg-cyan-500/10 border border-cyan-500/30 rounded p-2 text-xs flex justify-between"><span className="text-cyan-600">Pedágios incluídos no faturamento</span><span className="font-semibold">{fmt(totalPedagio)}</span></div>}
           <div className="bg-indigo-500/10 border-2 border-indigo-500 rounded-lg p-4 flex items-center justify-between"><div className="text-sm uppercase font-semibold">Total a Faturar</div><div className="text-2xl font-bold">{fmt(dados.totalFatura)}</div></div>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs"><Stat label="Faturado" valor={fmt(dados.totalFatura)} /><Stat label="Pago" valor={fmt(dados.totalPago)} cor="text-orange-400" /><Stat label="Imposto" valor={fmt((dados.lancs || []).reduce((s, l) => s + num(l.imposto), 0))} cor="text-amber-600" /><Stat label="Lucro" valor={fmt((dados.lancs || []).reduce((s, l) => s + (num(l.totalFatura) - num(l.totalPago) - num(l.imposto)), 0))} cor="text-emerald-600" /></div>
         </div>
@@ -6591,7 +6603,7 @@ function ModalDetalheFatura({ dados, servicos, onClose }) {
             <h4 className="text-xs uppercase font-semibold text-slate-400 mb-2">Lançamentos do período</h4>
             <table className="w-full text-xs">
               <thead className="text-[10px] text-slate-400 border-b border-slate-200"><tr><th className="text-left py-1.5 px-1">Data</th><th className="text-left px-1">Cód.</th>{(t?.campos || []).slice(0, 4).map(c => <th key={c.k} className="text-left px-1">{c.l}</th>)}<th className="text-right px-1">H.E</th><th className="text-right px-1">KM.E</th>{t?.incluirPedagioFatura && <th className="text-right px-1">Pedág.</th>}<th className="text-right px-1">Fatura</th></tr></thead>
-              <tbody>{itens.map(l => (<tr key={l.id} className="border-b border-slate-800"><td className="py-1 px-1">{fmtData(l.data)}</td><td className="px-1 font-mono">{l.codServico}</td>{(t?.campos || []).slice(0, 4).map(c => { const v = l.extras?.[c.k]; return <td key={c.k} className="px-1 max-w-[120px] truncate" title={v}>{c.tipo === 'datetime' || c.tipo === 'time' ? fmtDateTime(v) : v || '—'}</td>; })}<td className="text-right px-1">{l.horasExtras > 0 ? l.horasExtras.toFixed(1) : '-'}</td><td className="text-right px-1">{l.kmExtras > 0 ? l.kmExtras : '-'}</td>{t?.incluirPedagioFatura && <td className="text-right px-1">{num(l.pedagio) > 0 ? fmt(l.pedagio) : '-'}</td>}<td className="text-right px-1">{fmt(l.totalFatura)}</td></tr>))}</tbody>
+              <tbody>{itens.map(l => (<tr key={l.id} className="border-b border-slate-200"><td className="py-1 px-1">{fmtData(l.data)}</td><td className="px-1 font-mono">{l.codServico}</td>{(t?.campos || []).slice(0, 4).map(c => { const v = l.extras?.[c.k]; return <td key={c.k} className="px-1 max-w-[120px] truncate" title={v}>{c.tipo === 'datetime' || c.tipo === 'time' ? fmtDateTime(v) : v || '—'}</td>; })}<td className="text-right px-1">{l.horasExtras > 0 ? l.horasExtras.toFixed(1) : '-'}</td><td className="text-right px-1">{l.kmExtras > 0 ? l.kmExtras : '-'}</td>{t?.incluirPedagioFatura && <td className="text-right px-1">{num(l.pedagio) > 0 ? fmt(l.pedagio) : '-'}</td>}<td className="text-right px-1">{fmt(l.totalFatura)}</td></tr>))}</tbody>
               <tfoot className="border-t border-slate-200 font-semibold"><tr><td colSpan={2 + Math.min(4, t?.campos?.length || 0)} className="py-2 px-1">Totais ({itens.length})</td><td className="text-right px-1">—</td><td className="text-right px-1">—</td>{t?.incluirPedagioFatura && <td className="text-right px-1">{fmt(totalPedagio)}</td>}<td className="text-right px-1">{fmt(dados.totalFatura)}</td></tr></tfoot>
             </table>
           </div>
@@ -6599,7 +6611,7 @@ function ModalDetalheFatura({ dados, servicos, onClose }) {
             <h4 className="text-xs uppercase font-semibold text-slate-400 mb-2">Resumo por Agente {t?.reembolsarPedagio && '(c/ reembolso)'}</h4>
             <table className="w-full text-xs">
               <thead className="text-[10px] text-slate-400 border-b border-slate-200"><tr><th className="text-left py-1">Agente</th><th className="text-center">Qtd</th><th className="text-right">Pago</th>{t?.reembolsarPedagio && <th className="text-right">Pedágio</th>}<th className="text-right">Total</th></tr></thead>
-              <tbody>{resumoAgente.map(r => <tr key={r.agente} className="border-b border-slate-800"><td className="py-1">{r.agente}</td><td className="text-center">{r.qtd}</td><td className="text-right">{fmt(r.pago - (t?.reembolsarPedagio ? r.pedagio : 0))}</td>{t?.reembolsarPedagio && <td className="text-right">{fmt(r.pedagio)}</td>}<td className="text-right font-semibold">{fmt(r.pago)}</td></tr>)}</tbody>
+              <tbody>{resumoAgente.map(r => <tr key={r.agente} className="border-b border-slate-200"><td className="py-1">{r.agente}</td><td className="text-center">{r.qtd}</td><td className="text-right">{fmt(r.pago - (t?.reembolsarPedagio ? r.pedagio : 0))}</td>{t?.reembolsarPedagio && <td className="text-right">{fmt(r.pedagio)}</td>}<td className="text-right font-semibold">{fmt(r.pago)}</td></tr>)}</tbody>
             </table>
           </div>
         </div>
@@ -7113,7 +7125,7 @@ function ModalImportarSalariosFixos({ funcionariosExistentes = [], onImportar, o
           {aba === 'xlsx' ? (
             <>
               <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4">
-                <h3 className="font-semibold text-blue-300 mb-2 flex items-center gap-2"><Download className="w-4 h-4" />Passo 1 — Baixe o modelo</h3>
+                <h3 className="font-semibold text-blue-600 mb-2 flex items-center gap-2"><Download className="w-4 h-4" />Passo 1 — Baixe o modelo</h3>
                 <p className="text-xs text-slate-600 mb-3">3 colunas: <b>Nome do Colaborador</b>, <b>Salário</b>, <b>Grupo Folha</b>. Apenas colaboradores já cadastrados serão atualizados.</p>
                 <button onClick={() => gerarModeloSalariosFixosXLSX()} className="bg-blue-600 hover:bg-blue-500 px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2"><Download className="w-4 h-4" />Baixar modelo XLSX</button>
               </div>
@@ -7127,7 +7139,7 @@ function ModalImportarSalariosFixos({ funcionariosExistentes = [], onImportar, o
           ) : (
             <>
               <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4">
-                <h3 className="font-semibold text-blue-300 mb-2 flex items-center gap-2"><FileText className="w-4 h-4" />Cole os dados</h3>
+                <h3 className="font-semibold text-blue-600 mb-2 flex items-center gap-2"><FileText className="w-4 h-4" />Cole os dados</h3>
                 <p className="text-xs text-slate-600">Copie diretamente do Excel/Sheets ou contracheque. Cabeçalho na primeira linha. Colunas separadas por <b>tab</b>, <b>;</b> ou <b>|</b>.</p>
                 <p className="text-xs text-slate-400 mt-2">Cabeçalho aceito: <span className="font-mono">Nome  Salário  Grupo Folha</span></p>
               </div>
@@ -7171,7 +7183,7 @@ function ModalImportarSalariosFixos({ funcionariosExistentes = [], onImportar, o
                       <td className="py-1 px-2">{u.existente.nome}</td>
                       <td className="px-2 text-right text-slate-500">{num(u.existente.salarioFixo) > 0 ? fmt(u.existente.salarioFixo) : '—'}</td>
                       <td className="px-2 text-right text-emerald-300 font-medium">{fmt(u.novo.salarioFixo)}</td>
-                      <td className="px-2 text-blue-300 text-[11px]">{u.novo.folhaGrupo || '—'}</td>
+                      <td className="px-2 text-blue-600 text-[11px]">{u.novo.folhaGrupo || '—'}</td>
                     </tr>
                   ))}</tbody>
                 </table>
@@ -7186,7 +7198,7 @@ function ModalImportarSalariosFixos({ funcionariosExistentes = [], onImportar, o
               </div>
             </div>
           )}
-          <div className="flex gap-2 pt-2 border-t border-slate-800">
+          <div className="flex gap-2 pt-2 border-t border-slate-200">
             <button onClick={() => setAnalise(null)} className="flex-1 bg-slate-700 hover:bg-slate-600 px-4 py-2 rounded text-sm">Voltar</button>
             <button onClick={confirmar} disabled={analise.atualizar.length === 0} className="flex-1 bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-700 disabled:cursor-not-allowed px-4 py-2 rounded text-sm font-semibold">Confirmar atualização ({analise.atualizar.length})</button>
           </div>
@@ -7278,14 +7290,14 @@ function ModalImportarDespesasChefiaXLSX({ onImportar, onClose }) {
                   <tr key={i} className="border-t border-slate-200/50">
                     <td className="py-1 px-2 font-mono text-[10px]">{it.competencia}</td>
                     <td className="px-2">{it.descricao}</td>
-                    <td className="px-2"><span className={`text-[10px] px-1.5 py-0.5 rounded ${it.origem === 'MANHÃES' ? 'bg-emerald-500/20 text-emerald-300' : 'bg-blue-500/20 text-blue-300'}`}>{it.origem}</span></td>
+                    <td className="px-2"><span className={`text-[10px] px-1.5 py-0.5 rounded ${it.origem === 'MANHÃES' ? 'bg-emerald-500/20 text-emerald-300' : 'bg-blue-500/20 text-blue-600'}`}>{it.origem}</span></td>
                     <td className="px-2 text-right text-red-300 font-medium">{fmt(it.valor)}</td>
                   </tr>
                 ))}</tbody>
               </table>
             </div>
           )}
-          <div className="flex gap-2 pt-2 border-t border-slate-800">
+          <div className="flex gap-2 pt-2 border-t border-slate-200">
             <button onClick={() => setAnalise(null)} className="flex-1 bg-slate-700 hover:bg-slate-600 px-4 py-2 rounded text-sm">Voltar</button>
             <button onClick={confirmar} disabled={!analise.itens?.length} className="flex-1 bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-700 disabled:cursor-not-allowed px-4 py-2 rounded text-sm font-semibold">Confirmar ({analise.itens?.length || 0})</button>
           </div>
@@ -7353,7 +7365,7 @@ function ModalImportarDiariasXLSX({ funcionariosExistentes = [], onImportar, onC
           {aba === 'xlsx' ? (
             <>
               <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4">
-                <h3 className="font-semibold text-blue-300 mb-2 flex items-center gap-2"><Download className="w-4 h-4" />Passo 1 — Baixe o modelo</h3>
+                <h3 className="font-semibold text-blue-600 mb-2 flex items-center gap-2"><Download className="w-4 h-4" />Passo 1 — Baixe o modelo</h3>
                 <p className="text-xs text-slate-600 mb-3">4 colunas: <b>data</b>, <b>Colaborador</b>, <b>Valor</b>, <b>Grupo Folha</b>. Apenas colaboradores já cadastrados serão importados.</p>
                 <button onClick={() => gerarModeloDiariasXLSX()} className="bg-blue-600 hover:bg-blue-500 px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2"><Download className="w-4 h-4" />Baixar modelo XLSX</button>
               </div>
@@ -7367,7 +7379,7 @@ function ModalImportarDiariasXLSX({ funcionariosExistentes = [], onImportar, onC
           ) : (
             <>
               <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4">
-                <h3 className="font-semibold text-blue-300 mb-2 flex items-center gap-2"><FileText className="w-4 h-4" />Cole os dados</h3>
+                <h3 className="font-semibold text-blue-600 mb-2 flex items-center gap-2"><FileText className="w-4 h-4" />Cole os dados</h3>
                 <p className="text-xs text-slate-600">Copie diretamente do Excel/Sheets. Cabeçalho na primeira linha. Colunas separadas por <b>tab</b>, <b>;</b> ou <b>|</b>.</p>
                 <p className="text-xs text-slate-400 mt-2">Cabeçalho aceito: <span className="font-mono">data  Colaborador  Valor  Grupo Folha</span></p>
               </div>
@@ -7411,7 +7423,7 @@ function ModalImportarDiariasXLSX({ funcionariosExistentes = [], onImportar, onC
                       <td className="py-1 px-2 font-mono text-[10px]">{it.data ? it.data.split('-').reverse().join('/') : '—'}</td>
                       <td className="px-2">{it.nome}</td>
                       <td className="px-2 text-right text-emerald-300 font-medium">{fmt(it.valor)}</td>
-                      <td className="px-2 text-blue-300 text-[11px]">{it.folhaGrupo || '—'}</td>
+                      <td className="px-2 text-blue-600 text-[11px]">{it.folhaGrupo || '—'}</td>
                     </tr>
                   ))}</tbody>
                 </table>
@@ -7426,7 +7438,7 @@ function ModalImportarDiariasXLSX({ funcionariosExistentes = [], onImportar, onC
               </div>
             </div>
           )}
-          <div className="flex gap-2 pt-2 border-t border-slate-800">
+          <div className="flex gap-2 pt-2 border-t border-slate-200">
             <button onClick={() => setAnalise(null)} className="flex-1 bg-slate-700 hover:bg-slate-600 px-4 py-2 rounded text-sm">Voltar</button>
             <button onClick={confirmar} disabled={analise.validos.length === 0} className="flex-1 bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-700 disabled:cursor-not-allowed px-4 py-2 rounded text-sm font-semibold">Confirmar importação ({analise.validos.length})</button>
           </div>
@@ -7592,7 +7604,7 @@ function ModalBase({ titulo, children, onClose, pequeno, grande }) {
   return (
     <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 overflow-y-auto">
       <div className="flex min-h-full items-start justify-center p-3 sm:p-6">
-        <div className={`bg-slate-900 border border-slate-200 rounded-xl p-4 sm:p-5 w-full ${w} my-4 sm:my-8`}>
+        <div className={`bg-white border border-slate-200 rounded-xl p-4 sm:p-5 w-full ${w} my-4 sm:my-8`}>
           <div className="flex items-center justify-between mb-3 sm:mb-4 gap-2">
             <h3 className="font-bold text-base sm:text-lg truncate">{titulo}</h3>
             <button onClick={onClose} className="p-1 hover:bg-slate-100 rounded flex-shrink-0"><X className="w-4 h-4 sm:w-5 sm:h-5" /></button>
@@ -7812,11 +7824,11 @@ function ModalImportar({ destino = 'lancamento', servicos, onSaveLanc, onSaveDes
             <div className="text-slate-400 mb-1">Mapeamento:</div>
             <div className="flex flex-wrap gap-1">{parsed.headers.map((h, i) => { const norm = normCol(h); const mapped = parsed.headerMap[norm]; const isMapped = mapped && mapped !== '@skip'; const isSkip = mapped === '@skip'; return <span key={i} className={`px-2 py-0.5 rounded font-mono text-[10px] ${isMapped ? 'bg-emerald-500/20 text-emerald-300' : isSkip ? 'bg-slate-700 text-slate-500' : 'bg-amber-500/20 text-amber-300'}`} title={isMapped ? `→ ${mapped.replace('extras.', '').replace('@', '')}` : isSkip ? 'ignorada' : 'não reconhecida'}>{h || '(vazia)'}</span>; })}</div>
           </div>
-          <div className="max-h-80 overflow-auto bg-slate-900/50 rounded border border-slate-800">
+          <div className="max-h-80 overflow-auto bg-slate-900/50 rounded border border-slate-200">
             <table className="w-full text-xs">
               <thead className="text-[10px] text-slate-400 bg-white sticky top-0"><tr><th className="text-left px-2 py-1.5">#</th><th className="text-center px-2">OK</th>{isLanc && <th className="text-left px-2">Data</th>}{isLanc ? <><th className="text-left px-2">Cód.</th><th className="text-left px-2">Detalhes</th></> : <><th className="text-left px-2">Compet.</th><th className="text-left px-2">{destino === 'despesa' ? 'Lançamento' : 'Beneficiário'}</th><th className="text-left px-2">Tipo</th><th className="text-right px-2">Valor</th></>}<th className="text-left px-2">Problemas</th></tr></thead>
               <tbody>{parsed.allRows.map((r, i) => { const e = r.dados.extras || {}; return (
-                <tr key={i} className="border-b border-slate-800/50">
+                <tr key={i} className="border-b border-slate-200/50">
                   <td className="px-2 py-1 text-slate-500">{i + 1}</td>
                   <td className="text-center px-2">{r.valid ? <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 inline" /> : <X className="w-3.5 h-3.5 text-red-600 inline" />}</td>
                   {isLanc && <td className="px-2 whitespace-nowrap">{r.dados.data ? fmtData(r.dados.data) : <span className="text-red-600">—</span>}</td>}
@@ -8910,7 +8922,7 @@ function ModalEnviarMedicao({ fechamento, lancamentos, servicos, funcionarios, e
               {destinatarios.map(e => (
                 <span key={e} className="bg-indigo-500/20 border border-indigo-500/40 text-indigo-700 text-xs px-2 py-1 rounded-full flex items-center gap-1.5">
                   {e}
-                  <button onClick={() => removerEmail(e)} type="button" className="hover:text-white"><X className="w-3 h-3" /></button>
+                  <button onClick={() => removerEmail(e)} type="button" className="hover:text-slate-900"><X className="w-3 h-3" /></button>
                 </span>
               ))}
             </div>
@@ -8930,7 +8942,7 @@ function ModalEnviarMedicao({ fechamento, lancamentos, servicos, funcionarios, e
           <textarea value={corpo} onChange={e => setCorpo(e.target.value)} rows={6} className="w-full bg-white border border-slate-200 rounded px-3 py-2 text-sm" />
         </Campo>
 
-        <div className="flex justify-end gap-2 pt-2 border-t border-slate-800">
+        <div className="flex justify-end gap-2 pt-2 border-t border-slate-200">
           <button onClick={onClose} disabled={enviando} className="px-4 py-2 rounded-lg text-sm bg-slate-700 hover:bg-slate-600">Cancelar</button>
           <button onClick={enviar} disabled={enviando || destinatarios.length === 0} className="px-4 py-2 rounded-lg text-sm bg-blue-600 hover:bg-blue-500 disabled:bg-slate-700 disabled:cursor-not-allowed flex items-center gap-2 font-medium">
             {enviando ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
@@ -9031,7 +9043,7 @@ function ModalMassaFolhaCategoria({ chaves = [], grupos = [], onSave, onClose })
           <input list="grupos-massa" value={valor} onChange={e => setValor(e.target.value.toUpperCase())} placeholder="Ex: ARMADA, ESCRITÓRIO" className="w-full bg-white border border-slate-200 rounded px-3 py-2 text-sm" />
           <datalist id="grupos-massa">{grupos.map(g => <option key={g} value={g} />)}</datalist>
         </Campo>
-        <div className="flex justify-end gap-2 pt-2 border-t border-slate-800">
+        <div className="flex justify-end gap-2 pt-2 border-t border-slate-200">
           <button onClick={onClose} className="px-4 py-2 rounded text-sm bg-slate-700 hover:bg-slate-600">Cancelar</button>
           <button onClick={() => onSave(valor.trim())} className="px-4 py-2 rounded text-sm bg-blue-600 hover:bg-blue-500 font-medium flex items-center gap-2"><Save className="w-4 h-4" />Aplicar</button>
         </div>
@@ -9051,7 +9063,7 @@ function ModalMassaFolhaCompetencia({ chaves = [], onSave, onClose }) {
         <Campo label="Nova competência (AAAA-MM)">
           <input type="month" value={valor} onChange={e => setValor(e.target.value)} className="w-full bg-white border border-slate-200 rounded px-3 py-2 text-sm" />
         </Campo>
-        <div className="flex justify-end gap-2 pt-2 border-t border-slate-800">
+        <div className="flex justify-end gap-2 pt-2 border-t border-slate-200">
           <button onClick={onClose} className="px-4 py-2 rounded text-sm bg-slate-700 hover:bg-slate-600">Cancelar</button>
           <button onClick={() => onSave(valor)} disabled={!valor} className="px-4 py-2 rounded text-sm bg-blue-600 hover:bg-blue-500 disabled:bg-slate-700 font-medium flex items-center gap-2"><Save className="w-4 h-4" />Aplicar</button>
         </div>
@@ -9070,7 +9082,7 @@ function ModalCategoriaFolha({ dados, onSave, onClose }) {
           <input type="text" value={nome} onChange={e => setNome(e.target.value.toUpperCase())} placeholder="Ex: ARMADA, ESCRITÓRIO, MOTOLINK" className="w-full bg-white border border-slate-200 rounded px-3 py-2 text-sm font-medium" autoFocus />
         </Campo>
         <p className="text-xs text-slate-500">Categorias de folha agrupam lançamentos e funcionários numa mesma folha de pagamento, independente do mês original do lançamento (basta marcar a competência).</p>
-        <div className="flex justify-end gap-2 pt-2 border-t border-slate-800">
+        <div className="flex justify-end gap-2 pt-2 border-t border-slate-200">
           <button onClick={onClose} className="px-4 py-2 rounded text-sm bg-slate-700 hover:bg-slate-600">Cancelar</button>
           <button onClick={() => onSave({ ...dados, nome })} disabled={!nome.trim()} className="px-4 py-2 rounded text-sm bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-700 disabled:cursor-not-allowed font-medium flex items-center gap-2"><Save className="w-4 h-4" />Salvar</button>
         </div>
@@ -9091,7 +9103,7 @@ function ModalMassaLancCompetencia({ ids = [], onSave, onClose }) {
           <input type="month" value={valor} onChange={e => setValor(e.target.value)} className="w-full bg-white border border-slate-200 rounded px-3 py-2 text-sm" autoFocus />
         </Campo>
         <p className="text-xs text-amber-300">⚠ Para limpar a competência (voltar a usar a data do lançamento), deixe em branco e clique em "Aplicar".</p>
-        <div className="flex justify-end gap-2 pt-2 border-t border-slate-800">
+        <div className="flex justify-end gap-2 pt-2 border-t border-slate-200">
           <button onClick={() => onSave(ids, '')} className="px-4 py-2 rounded text-sm bg-slate-700 hover:bg-slate-600">Limpar</button>
           <button onClick={onClose} className="px-4 py-2 rounded text-sm bg-slate-700 hover:bg-slate-600">Cancelar</button>
           <button onClick={() => onSave(ids, valor)} disabled={!valor} className="px-4 py-2 rounded text-sm bg-blue-600 hover:bg-blue-500 disabled:bg-slate-700 font-medium flex items-center gap-2"><Save className="w-4 h-4" />Aplicar</button>
@@ -9269,9 +9281,9 @@ function ModalTransferirCora({ folhas = [], onSucesso, onClose }) {
           </Campo>
           <div>
             <h4 className="text-xs uppercase font-semibold text-slate-400 mb-2">{folhas.length} folha(s) elegível(is)</h4>
-            <div className="overflow-x-auto bg-slate-900/40 rounded-lg border border-slate-800 max-h-80">
+            <div className="overflow-x-auto bg-slate-900/40 rounded-lg border border-slate-200 max-h-80">
               <table className="w-full text-xs">
-                <thead className="text-[10px] text-slate-400 bg-slate-900 border-b border-slate-200"><tr>
+                <thead className="text-[10px] text-slate-400 bg-slate-50 border-b border-slate-200"><tr>
                   <th className="text-left py-2 px-2">Funcionário</th>
                   <th className="text-left px-2">Mês</th>
                   <th className="text-left px-2">Tipo PIX</th>
@@ -9279,7 +9291,7 @@ function ModalTransferirCora({ folhas = [], onSucesso, onClose }) {
                   <th className="text-right px-2">Valor líquido</th>
                 </tr></thead>
                 <tbody>{folhas.map((f, i) => (
-                  <tr key={i} className="border-b border-slate-800/40">
+                  <tr key={i} className="border-b border-slate-200/40">
                     <td className="py-1.5 px-2 font-medium">{f.funcionario.nome}</td>
                     <td className="px-2 text-slate-400">{fmtMesCurto(f.periodo)}</td>
                     <td className="px-2 text-slate-400">{f.funcionario.tipoPix || '—'}</td>
@@ -9295,7 +9307,7 @@ function ModalTransferirCora({ folhas = [], onSucesso, onClose }) {
             </div>
           </div>
           {erro && <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 text-xs text-red-700">{erro}</div>}
-          <div className="flex justify-end gap-2 pt-2 border-t border-slate-800">
+          <div className="flex justify-end gap-2 pt-2 border-t border-slate-200">
             <button onClick={onClose} disabled={enviando} className="px-4 py-2 rounded text-sm bg-slate-700 hover:bg-slate-600">Cancelar</button>
             <button onClick={enviar} disabled={enviando || folhas.length === 0} className="px-4 py-2 rounded text-sm bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-700 font-semibold flex items-center gap-2">
               {enviando ? <><RefreshCw className="w-4 h-4 animate-spin" />Enviando...</> : <><Send className="w-4 h-4" />Transferir {folhas.length}</>}
@@ -9309,16 +9321,16 @@ function ModalTransferirCora({ folhas = [], onSucesso, onClose }) {
             <div className="bg-amber-500/10 border border-amber-500/30 rounded p-2 text-center"><div className="text-[10px] text-amber-300 uppercase">Duplicadas</div><div className="text-2xl font-bold text-amber-700">{resultado.resumo.duplicadas}</div></div>
             <div className="bg-red-500/10 border border-red-500/30 rounded p-2 text-center"><div className="text-[10px] text-red-300 uppercase">Erros</div><div className="text-2xl font-bold text-red-700">{resultado.resumo.erros}</div></div>
           </div>
-          <div className="overflow-x-auto bg-slate-900/40 rounded-lg border border-slate-800 max-h-80">
+          <div className="overflow-x-auto bg-slate-900/40 rounded-lg border border-slate-200 max-h-80">
             <table className="w-full text-xs">
-              <thead className="text-[10px] text-slate-400 bg-slate-900 border-b border-slate-200"><tr>
+              <thead className="text-[10px] text-slate-400 bg-slate-50 border-b border-slate-200"><tr>
                 <th className="text-left py-2 px-2">Funcionário</th>
                 <th className="text-center px-2">Status</th>
                 <th className="text-left px-2">Mensagem</th>
                 <th className="text-left px-2">Cora ID</th>
               </tr></thead>
               <tbody>{resultado.resultados.map((r, i) => (
-                <tr key={i} className="border-b border-slate-800/40">
+                <tr key={i} className="border-b border-slate-200/40">
                   <td className="py-1.5 px-2 font-medium">{r.funcionario_nome}</td>
                   <td className="px-2 text-center"><span className={`text-[10px] px-2 py-0.5 rounded-full ${r.status === 'enviada' ? 'bg-emerald-500/20 text-emerald-300' : r.status === 'duplicada' ? 'bg-amber-500/20 text-amber-300' : 'bg-red-500/20 text-red-300'}`}>{r.status}</span></td>
                   <td className="px-2 text-slate-600">{r.mensagem || '—'}</td>
@@ -9327,7 +9339,7 @@ function ModalTransferirCora({ folhas = [], onSucesso, onClose }) {
               ))}</tbody>
             </table>
           </div>
-          <div className="flex justify-end gap-2 pt-2 border-t border-slate-800">
+          <div className="flex justify-end gap-2 pt-2 border-t border-slate-200">
             <button onClick={() => onSucesso?.()} className="px-4 py-2 rounded text-sm bg-emerald-600 hover:bg-emerald-500 font-semibold">Concluir</button>
           </div>
         </div>
@@ -9400,12 +9412,12 @@ function ModalHistoricoCora({ onAbrirWebhooks, onClose }) {
 
   const corStatus = (s) => ({
     'enviada': 'bg-emerald-500/20 text-emerald-300',
-    'aguardando_aprovacao': 'bg-blue-500/20 text-blue-300',
+    'aguardando_aprovacao': 'bg-blue-500/20 text-blue-600',
     'concluida': 'bg-emerald-700/40 text-emerald-700',
     'rejeitada': 'bg-red-500/20 text-red-300',
     'cancelada': 'bg-slate-700 text-slate-400',
     'erro': 'bg-rose-600/30 text-rose-200',
-  })[s] || 'bg-slate-700 text-slate-600';
+  })[s] || 'bg-slate-100 text-slate-700';
 
   return (
     <ModalBase titulo="Histórico de transferências Cora" onClose={onClose} grande>
@@ -9431,9 +9443,9 @@ function ModalHistoricoCora({ onAbrirWebhooks, onClose }) {
           <button onClick={onAbrirWebhooks} className="bg-blue-700/40 hover:bg-blue-600/60 text-blue-700 px-3 py-1.5 rounded text-xs flex items-center gap-1.5"><FileText className="w-3.5 h-3.5" />Ver webhooks</button>
         </div>
         {erro && <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 text-xs text-red-700">{erro}</div>}
-        <div className="overflow-x-auto bg-slate-900/40 rounded-lg border border-slate-800 max-h-[60vh]">
+        <div className="overflow-x-auto bg-slate-900/40 rounded-lg border border-slate-200 max-h-[60vh]">
           <table className="w-full text-xs">
-            <thead className="text-[10px] text-slate-400 bg-slate-900 border-b border-slate-200 sticky top-0"><tr>
+            <thead className="text-[10px] text-slate-400 bg-slate-50 border-b border-slate-200 sticky top-0"><tr>
               <th className="text-left py-2 px-2">Data</th>
               <th className="text-left px-2">Funcionário</th>
               <th className="text-left px-2">Mês</th>
@@ -9446,7 +9458,7 @@ function ModalHistoricoCora({ onAbrirWebhooks, onClose }) {
             <tbody>{transferencias.length === 0 && !carregando ? (
               <tr><td colSpan={8} className="py-8 text-center text-slate-500 italic">Nenhuma transferência encontrada</td></tr>
             ) : transferencias.map(t => (
-              <tr key={t.id} className="border-b border-slate-800/40">
+              <tr key={t.id} className="border-b border-slate-200/40">
                 <td className="py-1.5 px-2 text-slate-400 whitespace-nowrap">{new Date(t.criado_em).toLocaleString('pt-BR')}</td>
                 <td className="px-2 font-medium">{t.funcionario_nome}</td>
                 <td className="px-2 text-slate-400">{fmtMesCurto(t.competencia)}</td>
@@ -9455,7 +9467,7 @@ function ModalHistoricoCora({ onAbrirWebhooks, onClose }) {
                 <td className="px-2 text-center"><span className={`text-[10px] px-2 py-0.5 rounded-full ${corStatus(t.status)}`}>{t.status}</span></td>
                 <td className="px-2 max-w-[200px] truncate">
                   {t.cora_transfer_id && <span className="font-mono text-slate-500 text-[10px]">{t.cora_transfer_id}</span>}
-                  {t.erro_mensagem && <span className="text-rose-300 text-[10px] block">{t.erro_mensagem}</span>}
+                  {t.erro_mensagem && <span className="text-rose-600 text-[10px] block">{t.erro_mensagem}</span>}
                 </td>
                 <td className="px-2 text-right">
                   {t.status === 'erro' || t.status === 'rejeitada' ? (
@@ -9471,7 +9483,7 @@ function ModalHistoricoCora({ onAbrirWebhooks, onClose }) {
         </div>
         <div className="flex justify-between text-xs text-slate-400">
           <span>{transferencias.length} transferência(s) listada(s)</span>
-          <button onClick={onClose} className="text-slate-600 hover:text-white">Fechar</button>
+          <button onClick={onClose} className="text-slate-600 hover:text-slate-900">Fechar</button>
         </div>
       </div>
     </ModalBase>
@@ -9531,9 +9543,9 @@ function ModalWebhooksCora({ onVoltar, onClose }) {
           <button onClick={onVoltar} className="bg-slate-700 hover:bg-slate-600 px-3 py-1.5 rounded text-xs">← Voltar p/ histórico</button>
         </div>
         {erro && <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 text-xs text-red-700">{erro}</div>}
-        <div className="overflow-x-auto bg-slate-900/40 rounded-lg border border-slate-800 max-h-[60vh]">
+        <div className="overflow-x-auto bg-slate-900/40 rounded-lg border border-slate-200 max-h-[60vh]">
           <table className="w-full text-xs">
-            <thead className="text-[10px] text-slate-400 bg-slate-900 border-b border-slate-200 sticky top-0"><tr>
+            <thead className="text-[10px] text-slate-400 bg-slate-50 border-b border-slate-200 sticky top-0"><tr>
               <th className="text-left py-2 px-2">Recebido</th>
               <th className="text-left px-2">Evento</th>
               <th className="text-left px-2">Empresa</th>
@@ -9545,21 +9557,21 @@ function ModalWebhooksCora({ onVoltar, onClose }) {
             <tbody>{logs.length === 0 && !carregando ? (
               <tr><td colSpan={7} className="py-8 text-center text-slate-500 italic">Nenhum webhook recebido</td></tr>
             ) : logs.map(l => (
-              <tr key={l.id} className="border-b border-slate-800/40">
+              <tr key={l.id} className="border-b border-slate-200/40">
                 <td className="py-1.5 px-2 text-slate-400 whitespace-nowrap">{new Date(l.recebido_em).toLocaleString('pt-BR')}</td>
                 <td className="px-2 font-mono text-[10px]">{l.evento || '—'}</td>
                 <td className="px-2 text-slate-400">{l.empresa || '—'}</td>
                 <td className="px-2 font-mono text-slate-500 text-[10px] max-w-[160px] truncate" title={l.cora_transfer_id}>{l.cora_transfer_id || '—'}</td>
                 <td className="px-2 text-center">{l.signature_valid == 1 ? <span className="text-emerald-600">✓</span> : <span className="text-red-600">✗</span>}</td>
                 <td className="px-2 text-center">{l.processado == 1 ? <span className="text-emerald-600">✓</span> : <span className="text-amber-600">—</span>}</td>
-                <td className="px-2 text-rose-300 max-w-[200px] truncate text-[10px]" title={l.erro_processamento}>{l.erro_processamento || (l.ip_origem ? <span className="text-slate-500">{l.ip_origem}</span> : '')}</td>
+                <td className="px-2 text-rose-600 max-w-[200px] truncate text-[10px]" title={l.erro_processamento}>{l.erro_processamento || (l.ip_origem ? <span className="text-slate-500">{l.ip_origem}</span> : '')}</td>
               </tr>
             ))}</tbody>
           </table>
         </div>
         <div className="flex justify-between text-xs text-slate-400">
           <span>{logs.length} webhook(s) listado(s)</span>
-          <button onClick={onClose} className="text-slate-600 hover:text-white">Fechar</button>
+          <button onClick={onClose} className="text-slate-600 hover:text-slate-900">Fechar</button>
         </div>
       </div>
     </ModalBase>
@@ -9576,7 +9588,7 @@ function ModalSalvarResumo({ competencia, onSave, onClose }) {
       <Campo label="Nome do resumo">
         <input value={nome} onChange={e => setNome(e.target.value)} placeholder="Ex: Fechamento abril 2026" className="w-full bg-white border border-slate-200 rounded px-3 py-2 text-sm" autoFocus />
       </Campo>
-      <div className="flex justify-end gap-2 pt-3 border-t border-slate-800 mt-4">
+      <div className="flex justify-end gap-2 pt-3 border-t border-slate-200 mt-4">
         <button onClick={onClose} className="px-4 py-2 rounded text-sm bg-slate-700 hover:bg-slate-600">Cancelar</button>
         <button onClick={() => nome.trim() && onSave(nome.trim())} disabled={!nome.trim()} className="px-4 py-2 rounded text-sm bg-blue-600 hover:bg-blue-500 disabled:bg-slate-700 font-medium flex items-center gap-2"><Save className="w-4 h-4" />Salvar</button>
       </div>
@@ -9605,7 +9617,7 @@ function ModalCarregarResumos({ resumos = [], onVer, onExcluir, onClose }) {
           ))}
         </div>
       )}
-      <div className="flex justify-end pt-3 border-t border-slate-800 mt-4">
+      <div className="flex justify-end pt-3 border-t border-slate-200 mt-4">
         <button onClick={onClose} className="px-4 py-2 rounded text-sm bg-slate-700 hover:bg-slate-600">Fechar</button>
       </div>
     </ModalBase>
@@ -9620,21 +9632,21 @@ function ModalVisualizarResumo({ resumo, onClose }) {
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <tbody>
-            <tr className="border-b border-slate-800"><td className="py-2 px-3 text-slate-600">Faturamento total</td><td className="text-right px-3 font-medium text-emerald-300">{fmt(resumo.totalFaturamento)}</td></tr>
-            <tr className="border-b border-slate-800"><td className="py-2 px-3 text-slate-400 pl-6">(−) Imposto</td><td className="text-right px-3 text-yellow-400">−{fmt(resumo.totalImpostoFat)}</td></tr>
+            <tr className="border-b border-slate-200"><td className="py-2 px-3 text-slate-600">Faturamento total</td><td className="text-right px-3 font-medium text-emerald-300">{fmt(resumo.totalFaturamento)}</td></tr>
+            <tr className="border-b border-slate-200"><td className="py-2 px-3 text-slate-400 pl-6">(−) Imposto</td><td className="text-right px-3 text-yellow-400">−{fmt(resumo.totalImpostoFat)}</td></tr>
             <tr className="border-b-2 border-slate-200"></tr>
-            <tr className="border-b border-slate-800"><td className="py-2 px-3 text-slate-600">Folha total (bruto)</td><td className="text-right px-3 font-medium text-blue-300">{fmt(resumo.totalFolha)}</td></tr>
-            <tr className="border-b border-slate-800"><td className="py-2 px-3 text-slate-400 pl-6">(−) Vales / Adiantamentos</td><td className="text-right px-3 text-red-600">−{fmt(resumo.totalVales)}</td></tr>
+            <tr className="border-b border-slate-200"><td className="py-2 px-3 text-slate-600">Folha total (bruto)</td><td className="text-right px-3 font-medium text-blue-600">{fmt(resumo.totalFolha)}</td></tr>
+            <tr className="border-b border-slate-200"><td className="py-2 px-3 text-slate-400 pl-6">(−) Vales / Adiantamentos</td><td className="text-right px-3 text-red-600">−{fmt(resumo.totalVales)}</td></tr>
             <tr className="border-b-2 border-slate-200 bg-slate-800/40"><td className="py-2 px-3 font-semibold text-slate-700">= Folha líquida a pagar</td><td className="text-right px-3 font-bold text-amber-300">{fmt(resumo.folhaLiquida)}</td></tr>
-            <tr className="border-b border-slate-800"><td className="py-2 px-3 text-slate-600">(+) Despesas do mês</td><td className="text-right px-3 font-medium text-orange-300">{fmt(resumo.totalCartaoEmpresa)}</td></tr>
-            <tr className="border-b border-slate-800"><td className="py-2 px-3 text-slate-600">(+) Galop (combustível)</td><td className="text-right px-3 font-medium text-orange-300">{fmt(resumo.totalGalop)}</td></tr>
-            <tr className="border-b border-slate-800"><td className="py-2 px-3 text-slate-600">(+) Despesas Manhães</td><td className="text-right px-3 font-medium text-violet-300">{fmt(resumo.totalManhaes)}</td></tr>
-            <tr className="border-b border-slate-800"><td className="py-2 px-3 text-slate-600">(+) Despesas Ricardo</td><td className="text-right px-3 font-medium text-violet-300">{fmt(resumo.totalRicardo)}</td></tr>
+            <tr className="border-b border-slate-200"><td className="py-2 px-3 text-slate-600">(+) Despesas do mês</td><td className="text-right px-3 font-medium text-orange-600">{fmt(resumo.totalCartaoEmpresa)}</td></tr>
+            <tr className="border-b border-slate-200"><td className="py-2 px-3 text-slate-600">(+) Galop (combustível)</td><td className="text-right px-3 font-medium text-orange-600">{fmt(resumo.totalGalop)}</td></tr>
+            <tr className="border-b border-slate-200"><td className="py-2 px-3 text-slate-600">(+) Despesas Manhães</td><td className="text-right px-3 font-medium text-violet-600">{fmt(resumo.totalManhaes)}</td></tr>
+            <tr className="border-b border-slate-200"><td className="py-2 px-3 text-slate-600">(+) Despesas Ricardo</td><td className="text-right px-3 font-medium text-violet-600">{fmt(resumo.totalRicardo)}</td></tr>
             <tr className="bg-emerald-500/10 border-2 border-emerald-500"><td className="py-3 px-3 font-bold text-emerald-700 uppercase">TOTAL GERAL A PAGAR</td><td className="text-right px-3 text-xl font-bold text-emerald-300">{fmt(resumo.totalGeralPagar)}</td></tr>
           </tbody>
         </table>
       </div>
-      <div className="flex justify-end pt-3 border-t border-slate-800 mt-4">
+      <div className="flex justify-end pt-3 border-t border-slate-200 mt-4">
         <button onClick={onClose} className="px-4 py-2 rounded text-sm bg-slate-700 hover:bg-slate-600">Voltar</button>
       </div>
     </ModalBase>
@@ -9666,7 +9678,7 @@ function ModalMassaLancPrestador({ ids = [], funcionarios = [], onSave, onClose 
           </select>
         </Campo>
         <p className="text-xs text-amber-300">⚠ Modo "Primeiro vazio" pula lançamentos com todos os slots preenchidos. Modos específicos sobrescrevem o slot mesmo se já tiver alguém.</p>
-        <div className="flex justify-end gap-2 pt-2 border-t border-slate-800">
+        <div className="flex justify-end gap-2 pt-2 border-t border-slate-200">
           <button onClick={onClose} className="px-4 py-2 rounded text-sm bg-slate-700 hover:bg-slate-600">Cancelar</button>
           <button onClick={() => onSave(ids, nome, slot)} disabled={!nome} className="px-4 py-2 rounded text-sm bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-700 font-medium flex items-center gap-2"><Save className="w-4 h-4" />Aplicar em {ids.length}</button>
         </div>
@@ -9692,7 +9704,7 @@ function ModalMassaLancCatFolha({ ids = [], categorias = [], onSave, onClose }) 
           <datalist id="cat-folha-massa">{categorias.map(c => <option key={c.id} value={c.nome} />)}</datalist>
         </Campo>
         <p className="text-xs text-amber-300">⚠ Deixe em branco e clique "Limpar" para remover a categoria dos selecionados.</p>
-        <div className="flex justify-end gap-2 pt-2 border-t border-slate-800">
+        <div className="flex justify-end gap-2 pt-2 border-t border-slate-200">
           <button onClick={() => onSave(ids, '')} className="px-4 py-2 rounded text-sm bg-slate-700 hover:bg-slate-600">Limpar</button>
           <button onClick={onClose} className="px-4 py-2 rounded text-sm bg-slate-700 hover:bg-slate-600">Cancelar</button>
           <button onClick={() => onSave(ids, valor)} disabled={!valor.trim()} className="px-4 py-2 rounded text-sm bg-blue-600 hover:bg-blue-500 disabled:bg-slate-700 font-medium flex items-center gap-2"><Save className="w-4 h-4" />Aplicar</button>
@@ -9741,7 +9753,7 @@ function ModalEditarPagoLancamento({ dados, onSave, onClose }) {
           <div><div className="text-slate-500 uppercase text-[10px]">Lucro recalculado</div><div className={`font-mono font-bold ${novoLucro >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>{fmt(novoLucro)}</div></div>
           <div><div className="text-slate-500 uppercase text-[10px]">Δ Pago</div><div className={`font-mono ${(totalCalc - num(l.totalPago)) >= 0 ? 'text-amber-600' : 'text-emerald-600'}`}>{(totalCalc - num(l.totalPago)) >= 0 ? '+' : ''}{fmt(totalCalc - num(l.totalPago))}</div></div>
         </div>
-        <div className="flex justify-end gap-2 pt-2 border-t border-slate-800">
+        <div className="flex justify-end gap-2 pt-2 border-t border-slate-200">
           <button onClick={onClose} className="px-4 py-2 rounded text-sm bg-slate-700 hover:bg-slate-600">Cancelar</button>
           <button onClick={() => onSave(l.id, f)} className="px-4 py-2 rounded text-sm bg-orange-600 hover:bg-orange-500 font-medium flex items-center gap-2"><Save className="w-4 h-4" />Salvar valores pagos</button>
         </div>
@@ -9795,7 +9807,7 @@ function ModalImportarDespesasXLSX({ onImportar, onClose }) {
           {aba === 'xlsx' ? (
             <>
               <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4">
-                <h3 className="font-semibold text-blue-300 mb-2 flex items-center gap-2"><Download className="w-4 h-4" />Passo 1 — Baixe o modelo</h3>
+                <h3 className="font-semibold text-blue-600 mb-2 flex items-center gap-2"><Download className="w-4 h-4" />Passo 1 — Baixe o modelo</h3>
                 <p className="text-xs text-slate-600 mb-3">9 colunas: <b>Data</b>, <b>Descrição</b>, <b>Tipo</b>, <b>Valor</b>, <b>Centro de Custo</b>, <b>Origem</b>, <b>Competência</b>, <b>Status</b>, <b>Observações</b>.</p>
                 <button onClick={() => gerarModeloDespesasXLSX()} className="bg-blue-600 hover:bg-blue-500 px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2"><Download className="w-4 h-4" />Baixar modelo XLSX</button>
               </div>
@@ -9809,7 +9821,7 @@ function ModalImportarDespesasXLSX({ onImportar, onClose }) {
           ) : (
             <>
               <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4">
-                <h3 className="font-semibold text-blue-300 mb-2 flex items-center gap-2"><FileText className="w-4 h-4" />Cole os dados</h3>
+                <h3 className="font-semibold text-blue-600 mb-2 flex items-center gap-2"><FileText className="w-4 h-4" />Cole os dados</h3>
                 <p className="text-xs text-slate-600">Copie do Excel/Sheets. Cabeçalho na primeira linha. Separadores: tab, <code>;</code> ou <code>|</code>.</p>
               </div>
               <textarea
@@ -9850,7 +9862,7 @@ function ModalImportarDespesasXLSX({ onImportar, onClose }) {
               </table>
             </div>
           )}
-          <div className="flex gap-2 pt-2 border-t border-slate-800">
+          <div className="flex gap-2 pt-2 border-t border-slate-200">
             <button onClick={() => setAnalise(null)} className="flex-1 bg-slate-700 hover:bg-slate-600 px-4 py-2 rounded text-sm">Voltar</button>
             <button onClick={confirmar} disabled={!analise.itens?.length} className="flex-1 bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-700 disabled:cursor-not-allowed px-4 py-2 rounded text-sm font-semibold">Confirmar ({analise.itens?.length || 0})</button>
           </div>
@@ -9892,9 +9904,9 @@ function ModalHistoricoEmail({ onClose }) {
         ) : (
           <>
             <p className="text-xs text-slate-500">{total} registro(s) no total</p>
-            <div className="overflow-x-auto rounded-lg border border-slate-800">
+            <div className="overflow-x-auto rounded-lg border border-slate-200">
               <table className="w-full text-xs">
-                <thead className="bg-slate-900 text-slate-400 border-b border-slate-800">
+                <thead className="bg-slate-900 text-slate-400 border-b border-slate-200">
                   <tr>
                     <th className="text-left py-2 px-3">Data/Hora</th>
                     <th className="text-left px-3">Tipo</th>
@@ -9906,9 +9918,9 @@ function ModalHistoricoEmail({ onClose }) {
                 </thead>
                 <tbody>
                   {items.map(item => (
-                    <tr key={item.id} className="border-b border-slate-800/50 hover:bg-slate-50">
+                    <tr key={item.id} className="border-b border-slate-200/50 hover:bg-slate-50">
                       <td className="py-2 px-3 whitespace-nowrap text-slate-600">{fmtDt(item.enviado_em)}</td>
-                      <td className="px-3"><span className="text-[10px] px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-300">{item.tipo}</span></td>
+                      <td className="px-3"><span className="text-[10px] px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-600">{item.tipo}</span></td>
                       <td className="px-3 max-w-[200px] truncate">{item.assunto}</td>
                       <td className="px-3">
                         <div className="flex flex-wrap gap-1">

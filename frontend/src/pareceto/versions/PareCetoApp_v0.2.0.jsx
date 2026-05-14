@@ -574,8 +574,8 @@ function computeScorePlacas(records, cfg) {
 
 function getScoreColors(nivel) {
   if (nivel === 'critico') return { bg: 'bg-red-500/20', text: 'text-red-300', border: 'border-red-500/40', bar: 'bg-red-500', label: 'Crítico' }
-  if (nivel === 'alto')    return { bg: 'bg-orange-500/20', text: 'text-orange-300', border: 'border-orange-500/40', bar: 'bg-orange-400', label: 'Alto' }
-  if (nivel === 'medio')   return { bg: 'bg-yellow-500/20', text: 'text-yellow-300', border: 'border-yellow-500/40', bar: 'bg-yellow-400', label: 'Médio' }
+  if (nivel === 'alto')    return { bg: 'bg-orange-500/20', text: 'text-orange-600', border: 'border-orange-500/40', bar: 'bg-orange-400', label: 'Alto' }
+  if (nivel === 'medio')   return { bg: 'bg-yellow-500/20', text: 'text-yellow-700', border: 'border-yellow-500/40', bar: 'bg-yellow-400', label: 'Médio' }
   return { bg: 'bg-emerald-500/20', text: 'text-emerald-300', border: 'border-emerald-500/30', bar: 'bg-emerald-500', label: 'Baixo' }
 }
 
@@ -633,8 +633,8 @@ function KpiComparRow({ label, valA, valB, fmt, inverso }) {
   return (
     <div className="flex items-center justify-between py-2 border-b border-slate-200/40 last:border-0 gap-2">
       <span className="text-xs text-slate-400 flex-1">{label}</span>
-      <span className="text-sm font-semibold text-blue-300 w-24 text-right">{valA !== null ? f(valA) : '—'}</span>
-      <span className="text-sm font-semibold text-purple-300 w-24 text-right">{valB !== null ? f(valB) : '—'}</span>
+      <span className="text-sm font-semibold text-blue-600 w-24 text-right">{valA !== null ? f(valA) : '—'}</span>
+      <span className="text-sm font-semibold text-purple-600 w-24 text-right">{valB !== null ? f(valB) : '—'}</span>
       <div className="w-20 text-right">
         {valA !== null && valB !== null ? <DeltaBadge valA={valA} valB={valB} inverso={inverso} /> : <span className="text-xs text-slate-600">—</span>}
       </div>
@@ -656,8 +656,8 @@ function RankingCompar({ title, listA, listB, nameKey, valueKey, fmtVal }) {
         <div key={n} className="py-1.5 border-b border-slate-200/30 last:border-0">
           <div className="flex items-center justify-between text-xs mb-1">
             <span className="text-slate-600 truncate flex-1">{n}</span>
-            <span className="text-blue-300 w-20 text-right">{mapA[n] != null ? f(mapA[n]) : '—'}</span>
-            <span className="text-purple-300 w-20 text-right">{mapB[n] != null ? f(mapB[n]) : '—'}</span>
+            <span className="text-blue-600 w-20 text-right">{mapA[n] != null ? f(mapA[n]) : '—'}</span>
+            <span className="text-purple-600 w-20 text-right">{mapB[n] != null ? f(mapB[n]) : '—'}</span>
           </div>
           <div className="flex gap-1">
             <div className="flex-1 h-1 bg-slate-700 rounded-full overflow-hidden">
@@ -719,13 +719,13 @@ function ComparacaoPeriodos({ records, tipo }) {
             <label className="text-xs text-slate-500 block mb-1">De</label>
             <input type="date" value={p.de} min={dMin} max={dMax}
               onChange={e => setP(prev => ({ ...prev, de: e.target.value }))}
-              className="w-full bg-slate-900 border border-slate-600 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:border-emerald-500" />
+              className="w-full bg-white border border-slate-600 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:border-emerald-500" />
           </div>
           <div>
             <label className="text-xs text-slate-500 block mb-1">Até</label>
             <input type="date" value={p.ate} min={dMin} max={dMax}
               onChange={e => setP(prev => ({ ...prev, ate: e.target.value }))}
-              className="w-full bg-slate-900 border border-slate-600 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:border-emerald-500" />
+              className="w-full bg-white border border-slate-600 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:border-emerald-500" />
           </div>
         </div>
         <div className="flex flex-wrap gap-1">
@@ -754,8 +754,8 @@ function ComparacaoPeriodos({ records, tipo }) {
         <div className="space-y-4">
           {/* Legenda */}
           <div className="flex items-center gap-4 text-xs">
-            <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-blue-500 inline-block"/><span className="text-blue-300 font-semibold">A</span> {pA.de} a {pA.ate} ({recA.length.toLocaleString('pt-BR')} reg.)</span>
-            <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-purple-500 inline-block"/><span className="text-purple-300 font-semibold">B</span> {pB.de} a {pB.ate} ({recB.length.toLocaleString('pt-BR')} reg.)</span>
+            <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-blue-500 inline-block"/><span className="text-blue-600 font-semibold">A</span> {pA.de} a {pA.ate} ({recA.length.toLocaleString('pt-BR')} reg.)</span>
+            <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-purple-500 inline-block"/><span className="text-purple-600 font-semibold">B</span> {pB.de} a {pB.ate} ({recB.length.toLocaleString('pt-BR')} reg.)</span>
             <span className="text-slate-500 ml-auto">Δ = variação de B → A</span>
           </div>
 
@@ -1026,8 +1026,8 @@ function RelatorioSemanal({ records, scorePlacas }) {
 // ---- MÓDULO INADIMPLÊNCIA ----
 const AGING_BANDS = [
   { key: 'recente',  label: 'Recente',  desc: '≤ 30 dias', cor: { bg: 'bg-emerald-500/20', text: 'text-emerald-300', bar: 'bg-emerald-500' } },
-  { key: 'moderado', label: 'Moderado', desc: '31–60 dias', cor: { bg: 'bg-yellow-500/20',  text: 'text-yellow-300',  bar: 'bg-yellow-400' } },
-  { key: 'antigo',   label: 'Antigo',   desc: '61–90 dias', cor: { bg: 'bg-orange-500/20',  text: 'text-orange-300',  bar: 'bg-orange-400' } },
+  { key: 'moderado', label: 'Moderado', desc: '31–60 dias', cor: { bg: 'bg-yellow-500/20',  text: 'text-yellow-700',  bar: 'bg-yellow-400' } },
+  { key: 'antigo',   label: 'Antigo',   desc: '61–90 dias', cor: { bg: 'bg-orange-500/20',  text: 'text-orange-600',  bar: 'bg-orange-400' } },
   { key: 'critico',  label: 'Crítico',  desc: '> 90 dias',  cor: { bg: 'bg-red-500/20',     text: 'text-red-300',     bar: 'bg-red-500' } },
 ]
 
@@ -1156,7 +1156,7 @@ function AbaInadimplencia({ records, scorePlacas }) {
               <div className="text-xs text-slate-400 mt-1">Irregulações pendentes</div>
             </div>
             <div className="bg-white border border-slate-200/50 rounded-xl p-4 text-center">
-              <div className="text-2xl font-bold text-orange-300">{fmtBRL(analise.valorTotal)}</div>
+              <div className="text-2xl font-bold text-orange-600">{fmtBRL(analise.valorTotal)}</div>
               <div className="text-xs text-slate-400 mt-1">Valor total pendente</div>
             </div>
             <div className="bg-white border border-slate-200/50 rounded-xl p-4 text-center">
@@ -1609,9 +1609,9 @@ function StatCard({ label, value, sub }) {
 }
 
 function CargoBadge({ cargo }) {
-  const cls = cargo === 'Supervisor' ? 'bg-purple-500/20 text-purple-300'
-    : cargo === 'Fiscal' ? 'bg-blue-500/20 text-blue-300'
-    : cargo === 'Operador' ? 'bg-slate-600/40 text-slate-600'
+  const cls = cargo === 'Supervisor' ? 'bg-purple-500/20 text-purple-600'
+    : cargo === 'Fiscal' ? 'bg-blue-500/20 text-blue-600'
+    : cargo === 'Operador' ? 'bg-slate-100 text-slate-700'
     : 'bg-amber-500/20 text-amber-300'
   return <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${cls}`}>{cargo || 'Não cadastrado'}</span>
 }
@@ -3211,7 +3211,7 @@ function AbaHistorico({ historico, loading, onExcluir, onRecarregar }) {
               {historico.map(r => (
                 <tr key={r.id} className="hover:bg-slate-50">
                   <td className="px-4 py-3">
-                    <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${r.modulo === 'vendas' ? 'bg-blue-500/20 text-blue-300' : 'bg-amber-500/20 text-amber-300'}`}>
+                    <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${r.modulo === 'vendas' ? 'bg-blue-500/20 text-blue-600' : 'bg-amber-500/20 text-amber-300'}`}>
                       {r.modulo === 'vendas' ? 'Vendas' : 'Irregularidades'}
                     </span>
                   </td>
@@ -3240,7 +3240,7 @@ function InsightBadge({ text, tipo }) {
     ok:     'bg-emerald-500/15 border-emerald-500/30 text-emerald-300',
     alerta: 'bg-amber-500/15 border-amber-500/30 text-amber-300',
     critico:'bg-red-500/15 border-red-500/30 text-red-300',
-    info:   'bg-blue-500/15 border-blue-500/30 text-blue-300',
+    info:   'bg-blue-500/15 border-blue-500/30 text-blue-600',
   }
   const Icon = tipo === 'ok' ? TrendingUp : tipo === 'critico' ? TrendingDown : tipo === 'alerta' ? Bell : Activity
   return (
@@ -3252,7 +3252,7 @@ function InsightBadge({ text, tipo }) {
 }
 
 function DashKpi({ label, value, sub, cor, icon: Icon }) {
-  const corText = cor === 'emerald' ? 'text-emerald-300' : cor === 'red' ? 'text-red-300' : cor === 'amber' ? 'text-amber-300' : cor === 'blue' ? 'text-blue-300' : cor === 'purple' ? 'text-purple-300' : 'text-slate-900'
+  const corText = cor === 'emerald' ? 'text-emerald-300' : cor === 'red' ? 'text-red-300' : cor === 'amber' ? 'text-amber-300' : cor === 'blue' ? 'text-blue-600' : cor === 'purple' ? 'text-purple-600' : 'text-slate-900'
   return (
     <div className="bg-white border border-slate-200/50 rounded-xl p-4 flex flex-col gap-1 min-w-0">
       <div className="flex items-center justify-between gap-2">
@@ -3412,10 +3412,10 @@ function AbaDashboard({ recordsVendas, recordsIrreg, scorePlacas, scoreConfig })
         <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${temV ? 'bg-emerald-500/20 text-emerald-300' : 'bg-slate-700 text-slate-500'}`}>
           {temV ? `✓ Vendas — ${analiseVendas.totalTrans.toLocaleString('pt-BR')} / ${fmtBRL(analiseVendas.totalValor)}` : '— Vendas não carregado'}
         </span>
-        <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${temI ? 'bg-blue-500/20 text-blue-300' : 'bg-slate-700 text-slate-500'}`}>
+        <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${temI ? 'bg-blue-500/20 text-blue-600' : 'bg-slate-700 text-slate-500'}`}>
           {temI ? `✓ Irregularidades — ${analiseIrreg.total.toLocaleString('pt-BR')} / ${fmtBRL(analiseIrreg.valorTotal)}` : '— Irregularidades não carregado'}
         </span>
-        {scorePlacas && <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-purple-500/20 text-purple-300">✓ Score — {scoreResumo.total} placas</span>}
+        {scorePlacas && <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-purple-500/20 text-purple-600">✓ Score — {scoreResumo.total} placas</span>}
       </div>
 
       {/* KPIs */}
@@ -3665,7 +3665,7 @@ function AbaConfiguracoes({ scoreConfig, onSaveScore, metas, onSaveMeta, onDelet
                     {label} — {desc}
                   </label>
                   <input type="number" min={0} max={100} value={cfg[key]} onChange={e => setLim(key, e.target.value)}
-                    className="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500" />
+                    className="w-full bg-white border border-slate-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500" />
                 </div>
               ))}
             </div>
@@ -3712,7 +3712,7 @@ function AbaConfiguracoes({ scoreConfig, onSaveScore, metas, onSaveMeta, onDelet
                 <input list="pc-funcs-list" value={metaForm.funcionario_nome}
                   onChange={e => setMetaForm(m => ({ ...m, funcionario_nome: e.target.value }))}
                   placeholder="Nome do agente" required
-                  className="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500" />
+                  className="w-full bg-white border border-slate-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500" />
                 <datalist id="pc-funcs-list">
                   {funcionarios.map(f => <option key={f.id} value={f.nome} />)}
                 </datalist>
@@ -3720,20 +3720,20 @@ function AbaConfiguracoes({ scoreConfig, onSaveScore, metas, onSaveMeta, onDelet
               <div>
                 <label className="block text-xs text-slate-400 mb-1">Mês (AAAA-MM)</label>
                 <input type="month" value={metaForm.mes} onChange={e => setMetaForm(m => ({ ...m, mes: e.target.value }))} required
-                  className="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500" />
+                  className="w-full bg-white border border-slate-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500" />
               </div>
               <div>
                 <label className="block text-xs text-slate-400 mb-1">Meta de transações</label>
                 <input type="number" min={0} value={metaForm.meta_trans} onChange={e => setMetaForm(m => ({ ...m, meta_trans: e.target.value }))}
                   placeholder="Ex: 500"
-                  className="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500" />
+                  className="w-full bg-white border border-slate-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500" />
               </div>
               <div>
                 <label className="block text-xs text-slate-400 mb-1">Meta de receita (R$)</label>
                 <div className="flex gap-2">
                   <input type="number" min={0} step="0.01" value={metaForm.meta_valor} onChange={e => setMetaForm(m => ({ ...m, meta_valor: e.target.value }))}
                     placeholder="Ex: 5000"
-                    className="flex-1 bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500" />
+                    className="flex-1 bg-white border border-slate-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500" />
                   <button type="submit" className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-sm font-medium transition flex-shrink-0">
                     {editandoMeta ? 'Atualizar' : 'Adicionar'}
                   </button>
