@@ -3360,7 +3360,7 @@ export default function App({ onVoltarHub, onLogout } = {}) {
               </div>
             )}
             {lancamentos.length === 0 ? (
-              <div className="bg-slate-900/50 border border-slate-200 rounded-xl p-12 text-center">
+              <div className="bg-white border border-slate-200 rounded-xl p-12 text-center">
                 <FileText className="w-12 h-12 text-slate-600 mx-auto mb-3" />
                 <p className="text-slate-400 mb-4">Nenhum lançamento ainda.</p>
                 <button onClick={() => { setAba('lancamentos'); setModal({ tipo: 'lancamento', dados: null }); }} className="bg-indigo-600 hover:bg-indigo-500 px-4 py-2 rounded-lg text-sm font-medium inline-flex items-center gap-2"><Plus className="w-4 h-4" />Adicionar lançamento</button>
@@ -3444,8 +3444,8 @@ export default function App({ onVoltarHub, onLogout } = {}) {
               <h2 className="text-lg sm:text-xl font-bold">Lançamentos</h2>
               <div className="flex flex-wrap gap-1.5 sm:gap-2 w-full sm:w-auto">
                 <button onClick={() => { if (confirm('Recalcular todos os lançamentos pendentes? Útil para corrigir totais de imports antigos. Lançamentos em faturas fechadas não serão alterados.')) recalcularPendentes(); }} className="bg-amber-700 hover:bg-amber-600 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium flex items-center gap-1.5 sm:gap-2 min-h-[36px]"><RefreshCw className="w-4 h-4 flex-shrink-0" /><span>Recalcular pendentes</span></button>
-                <button onClick={() => setModal({ tipo: 'gerenciarFeriados' })} className="bg-slate-700 hover:bg-slate-600 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium flex items-center gap-1.5 sm:gap-2 min-h-[36px]"><Calendar className="w-4 h-4 flex-shrink-0" /><span>Feriados</span></button>
-                <button onClick={() => setModal({ tipo: 'importar', destino: 'lancamento' })} className="bg-slate-700 hover:bg-slate-600 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium flex items-center gap-1.5 sm:gap-2 min-h-[36px]"><Upload className="w-4 h-4 flex-shrink-0" /><span>Importar planilha</span></button>
+                <button onClick={() => setModal({ tipo: 'gerenciarFeriados' })} className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium flex items-center gap-1.5 sm:gap-2 min-h-[36px]"><Calendar className="w-4 h-4 flex-shrink-0" /><span>Feriados</span></button>
+                <button onClick={() => setModal({ tipo: 'importar', destino: 'lancamento' })} className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium flex items-center gap-1.5 sm:gap-2 min-h-[36px]"><Upload className="w-4 h-4 flex-shrink-0" /><span>Importar planilha</span></button>
                 <button onClick={() => setModal({ tipo: 'lancamento', dados: null })} className="bg-indigo-600 hover:bg-indigo-500 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium flex items-center gap-1.5 sm:gap-2 min-h-[36px]"><Plus className="w-4 h-4 flex-shrink-0" /><span>Novo lançamento</span></button>
               </div>
             </div>
@@ -3484,11 +3484,11 @@ export default function App({ onVoltarHub, onLogout } = {}) {
               );
             })()}
             <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-2 text-xs">
-              <div className="bg-slate-900/60 border border-slate-200 rounded px-3 py-2"><div className="text-slate-500 text-[10px] uppercase">Lançamentos</div><div className="font-bold text-slate-700">{lancFiltrados.length}</div></div>
-              <div className="bg-slate-900/60 border border-slate-200 rounded px-3 py-2"><div className="text-slate-500 text-[10px] uppercase">Hr trab.</div><div className="font-bold text-slate-700">{tot.qtdHrTrab.toFixed(2)}h</div></div>
-              <div className="bg-slate-900/60 border border-slate-200 rounded px-3 py-2"><div className="text-slate-500 text-[10px] uppercase">Hr extras</div><div className="font-bold text-emerald-300">{tot.qtdHrExtra.toFixed(2)}h</div></div>
-              <div className="bg-slate-900/60 border border-slate-200 rounded px-3 py-2"><div className="text-slate-500 text-[10px] uppercase">Km total</div><div className="font-bold text-slate-700">{tot.qtdKmTotal.toFixed(0)} km</div></div>
-              <div className="bg-slate-900/60 border border-slate-200 rounded px-3 py-2"><div className="text-slate-500 text-[10px] uppercase">Km extras</div><div className="font-bold text-emerald-300">{tot.qtdKmExtra.toFixed(0)} km</div></div>
+              <div className="bg-slate-50 border border-slate-200 rounded px-3 py-2"><div className="text-slate-500 text-[10px] uppercase">Lançamentos</div><div className="font-bold text-slate-700">{lancFiltrados.length}</div></div>
+              <div className="bg-slate-50 border border-slate-200 rounded px-3 py-2"><div className="text-slate-500 text-[10px] uppercase">Hr trab.</div><div className="font-bold text-slate-700">{tot.qtdHrTrab.toFixed(2)}h</div></div>
+              <div className="bg-slate-50 border border-slate-200 rounded px-3 py-2"><div className="text-slate-500 text-[10px] uppercase">Hr extras</div><div className="font-bold text-emerald-300">{tot.qtdHrExtra.toFixed(2)}h</div></div>
+              <div className="bg-slate-50 border border-slate-200 rounded px-3 py-2"><div className="text-slate-500 text-[10px] uppercase">Km total</div><div className="font-bold text-slate-700">{tot.qtdKmTotal.toFixed(0)} km</div></div>
+              <div className="bg-slate-50 border border-slate-200 rounded px-3 py-2"><div className="text-slate-500 text-[10px] uppercase">Km extras</div><div className="font-bold text-emerald-300">{tot.qtdKmExtra.toFixed(0)} km</div></div>
               <div className="bg-orange-500/10 border border-orange-500/30 rounded px-3 py-2"><div className="text-slate-500 text-[10px] uppercase">Total Pago</div><div className="font-bold text-orange-400">{fmt(tot.pag)}</div></div>
             </div>
             {/* Barra de ações em massa */}
@@ -3500,17 +3500,17 @@ export default function App({ onVoltarHub, onLogout } = {}) {
                 <button
                   disabled={selEditaveisIds.length === 0}
                   onClick={() => setModal({ tipo: 'massaLancData', ids: selEditaveisIds })}
-                  className="bg-slate-700 hover:bg-slate-600 disabled:opacity-40 disabled:cursor-not-allowed px-3 py-1.5 rounded text-xs flex items-center gap-1.5"
+                  className="bg-slate-100 hover:bg-slate-200 text-slate-700 disabled:opacity-40 disabled:cursor-not-allowed px-3 py-1.5 rounded text-xs flex items-center gap-1.5"
                 ><Calendar className="w-3.5 h-3.5" />Mudar data</button>
                 <button
                   disabled={selEditaveisIds.length === 0}
                   onClick={() => setModal({ tipo: 'massaLancStatus', ids: selEditaveisIds })}
-                  className="bg-slate-700 hover:bg-slate-600 disabled:opacity-40 disabled:cursor-not-allowed px-3 py-1.5 rounded text-xs flex items-center gap-1.5"
+                  className="bg-slate-100 hover:bg-slate-200 text-slate-700 disabled:opacity-40 disabled:cursor-not-allowed px-3 py-1.5 rounded text-xs flex items-center gap-1.5"
                 ><CheckCircle2 className="w-3.5 h-3.5" />Mudar status</button>
                 <button
                   disabled={selEditaveisIds.length === 0}
                   onClick={() => setModal({ tipo: 'massaLancServico', ids: selEditaveisIds })}
-                  className="bg-slate-700 hover:bg-slate-600 disabled:opacity-40 disabled:cursor-not-allowed px-3 py-1.5 rounded text-xs flex items-center gap-1.5"
+                  className="bg-slate-100 hover:bg-slate-200 text-slate-700 disabled:opacity-40 disabled:cursor-not-allowed px-3 py-1.5 rounded text-xs flex items-center gap-1.5"
                 ><Package className="w-3.5 h-3.5" />Mudar serviço</button>
                 <button
                   disabled={[...selLancs].length === 0}
@@ -3541,9 +3541,9 @@ export default function App({ onVoltarHub, onLogout } = {}) {
               </div>
             )}
             {lancFiltrados.length === 0 ? (
-              <div className="bg-slate-900/50 border border-slate-200 rounded-xl p-12 text-center"><p className="text-slate-400">Nenhum lançamento encontrado.</p></div>
+              <div className="bg-white border border-slate-200 rounded-xl p-12 text-center"><p className="text-slate-400">Nenhum lançamento encontrado.</p></div>
             ) : (
-              <div className="bg-slate-900/50 border border-slate-200 rounded-xl overflow-hidden">
+              <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead className="text-xs bg-slate-50 border-b border-slate-200">
@@ -3615,7 +3615,7 @@ export default function App({ onVoltarHub, onLogout } = {}) {
                       </tr>
                       );
                     })}</tbody>
-                    <tfoot className="bg-slate-900 border-t-2 border-slate-200 font-bold text-xs">
+                    <tfoot className="bg-slate-50 border-t-2 border-slate-200 font-bold text-xs">
                       <tr>
                         <td className="py-2.5 px-3"></td>
                         <td colSpan={3} className="py-2.5 px-2 text-slate-400">TOTAL ({lancFiltrados.length})</td>
@@ -3645,7 +3645,7 @@ export default function App({ onVoltarHub, onLogout } = {}) {
             <div className="flex flex-wrap gap-2 items-center justify-between">
               <div className="min-w-0"><h2 className="text-lg sm:text-xl font-bold">Despesas</h2><p className="text-[11px] sm:text-xs text-slate-400">Custos da empresa por competência. Tipos: FIXA, PARCELA, AVULSA.</p></div>
               <div className="flex gap-1.5 sm:gap-2 flex-wrap w-full sm:w-auto">
-                <button onClick={() => exportarDespesasXLSX(despesasFiltradas)} className="bg-slate-700 hover:bg-slate-600 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium flex items-center gap-1.5 sm:gap-2 min-h-[36px]"><Download className="w-4 h-4 flex-shrink-0" /><span>Exportar</span></button>
+                <button onClick={() => exportarDespesasXLSX(despesasFiltradas)} className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium flex items-center gap-1.5 sm:gap-2 min-h-[36px]"><Download className="w-4 h-4 flex-shrink-0" /><span>Exportar</span></button>
                 <button onClick={() => setModal({ tipo: 'importarDespesasXLSX' })} className="bg-blue-600 hover:bg-blue-500 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium flex items-center gap-1.5 sm:gap-2 min-h-[36px]"><Upload className="w-4 h-4 flex-shrink-0" /><span>Importar (XLSX/Texto)</span></button>
                 <button onClick={() => migrarParcelasExistentes('despesas')} title="One-shot: detecta parcelas existentes e cria as parcelas faltantes nos meses futuros. Pode ser apagado depois de rodar." className="bg-purple-700 hover:bg-purple-600 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium flex items-center gap-1.5 sm:gap-2 min-h-[36px]" type="button"><span>Migrar parcelas</span></button>
                 <button onClick={() => setModal({ tipo: 'despesa', dados: null })} className="bg-red-600 hover:bg-red-500 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium flex items-center gap-1.5 sm:gap-2 min-h-[36px]"><Plus className="w-4 h-4 flex-shrink-0" /><span>Nova despesa</span></button>
@@ -3660,7 +3660,7 @@ export default function App({ onVoltarHub, onLogout } = {}) {
                     <p className="text-xs text-slate-600 mb-2">{erroSalvar.mensagem}</p>
                     <p className="text-xs text-slate-400 mb-3">Erro ao sincronizar despesas com o servidor. Verifique a conexão e tente novamente.</p>
                     <div className="flex gap-2 flex-wrap">
-                      <button onClick={() => { setErroSalvar(null); salvarChave('despesas', despesas); }} className="text-xs bg-slate-700 hover:bg-slate-600 px-3 py-1.5 rounded flex items-center gap-1.5"><RefreshCw className="w-3 h-3" />Tentar salvar novamente</button>
+                      <button onClick={() => { setErroSalvar(null); salvarChave('despesas', despesas); }} className="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded flex items-center gap-1.5"><RefreshCw className="w-3 h-3" />Tentar salvar novamente</button>
                     </div>
                   </div>
                 </div>
@@ -3679,7 +3679,7 @@ export default function App({ onVoltarHub, onLogout } = {}) {
               const origens = Object.entries(origemMap).sort((a, b) => b[1] - a[1]);
               if (origens.length === 0) return null;
               return (
-                <div className="bg-slate-900/50 border border-slate-200 rounded-xl p-3">
+                <div className="bg-white border border-slate-200 rounded-xl p-3">
                   <div className="text-xs font-semibold text-slate-400 uppercase mb-2">Por Origem</div>
                   <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
                     {origens.map(([orig, val]) => (
@@ -3698,8 +3698,8 @@ export default function App({ onVoltarHub, onLogout } = {}) {
               <select value={filtroCategoria} onChange={e => setFiltroCategoria(e.target.value)} className="bg-white border border-slate-300 rounded-lg text-slate-900 px-3 py-2 text-sm"><option value="">Todos tipos</option>{TIPOS_DESPESA.map(c => <option key={c} value={c}>{c}</option>)}</select>
               <select value={filtroStatus} onChange={e => setFiltroStatus(e.target.value)} className="bg-white border border-slate-300 rounded-lg text-slate-900 px-3 py-2 text-sm"><option value="">Todos status</option><option value="pago">Pago</option><option value="pendente">Pendente</option></select>
             </div>
-            {despesasFiltradas.length === 0 ? <div className="bg-slate-900/50 border border-slate-200 rounded-xl p-12 text-center"><TrendingDown className="w-12 h-12 text-slate-600 mx-auto mb-3" /><p className="text-slate-400">Nenhuma despesa encontrada.</p></div> : (
-              <div className="bg-slate-900/50 border border-slate-200 rounded-xl overflow-hidden">
+            {despesasFiltradas.length === 0 ? <div className="bg-white border border-slate-200 rounded-xl p-12 text-center"><TrendingDown className="w-12 h-12 text-slate-600 mx-auto mb-3" /><p className="text-slate-400">Nenhuma despesa encontrada.</p></div> : (
+              <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead className="text-xs text-slate-400 bg-slate-50 border-b border-slate-200"><tr><th className="text-left py-3 px-3">Compet.</th><th className="text-left px-3">Lançamento</th><th className="text-center px-3">Tipo</th><th className="text-center px-3">Parcela</th><th className="hidden sm:table-cell text-left px-3">Origem</th><th className="text-right px-3">Valor</th><th className="text-center px-3">Status</th><th className="text-right px-3">Ações</th></tr></thead>
@@ -3718,7 +3718,7 @@ export default function App({ onVoltarHub, onLogout } = {}) {
                         </div></td>
                       </tr>
                     ))}</tbody>
-                    <tfoot className="bg-slate-900 border-t border-slate-200 font-medium"><tr><td colSpan={4} className="py-2.5 px-3 text-slate-400">Total ({despesasFiltradas.length})</td><td className="hidden sm:table-cell"></td><td className="text-right px-3 text-red-600">{fmt(totaisDespesas)}</td><td colSpan={2}></td></tr></tfoot>
+                    <tfoot className="bg-slate-50 border-t border-slate-200 font-medium"><tr><td colSpan={4} className="py-2.5 px-3 text-slate-400">Total ({despesasFiltradas.length})</td><td className="hidden sm:table-cell"></td><td className="text-right px-3 text-red-600">{fmt(totaisDespesas)}</td><td colSpan={2}></td></tr></tfoot>
                   </table>
                 </div>
               </div>
@@ -3742,7 +3742,7 @@ export default function App({ onVoltarHub, onLogout } = {}) {
                   <p className="text-[11px] sm:text-xs text-slate-400">Despesas de Manhães e Ricardo — separadas das despesas operacionais.</p>
                 </div>
                 <div className="flex gap-1.5 sm:gap-2 flex-wrap w-full sm:w-auto">
-                  <button onClick={() => setModal({ tipo: 'importarDespesasChefia' })} className="bg-slate-700 hover:bg-slate-600 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium flex items-center gap-1.5 sm:gap-2 min-h-[36px]"><Upload className="w-4 h-4 flex-shrink-0" /><span>Importar (XLSX/Texto)</span></button>
+                  <button onClick={() => setModal({ tipo: 'importarDespesasChefia' })} className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium flex items-center gap-1.5 sm:gap-2 min-h-[36px]"><Upload className="w-4 h-4 flex-shrink-0" /><span>Importar (XLSX/Texto)</span></button>
                   <button onClick={() => migrarParcelasExistentes('despesas_chefia')} title="One-shot: detecta parcelas existentes e cria as parcelas faltantes nos meses futuros." className="bg-purple-700 hover:bg-purple-600 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium flex items-center gap-1.5 sm:gap-2 min-h-[36px]" type="button"><span>Migrar parcelas</span></button>
                   <button onClick={() => setModal({ tipo: 'despChefia', dados: null })} className="bg-violet-600 hover:bg-violet-500 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium flex items-center gap-1.5 sm:gap-2 min-h-[36px]"><Plus className="w-4 h-4 flex-shrink-0" /><span>Nova despesa</span></button>
                 </div>
@@ -3760,7 +3760,7 @@ export default function App({ onVoltarHub, onLogout } = {}) {
                 const origens = Object.entries(origemMap).sort((a, b) => b[1] - a[1]);
                 if (origens.length === 0) return null;
                 return (
-                  <div className="bg-slate-900/50 border border-slate-200 rounded-xl p-3">
+                  <div className="bg-white border border-slate-200 rounded-xl p-3">
                     <div className="text-xs font-semibold text-slate-400 uppercase mb-2">Por Origem</div>
                     <div className="flex flex-wrap gap-2">
                       {origens.map(([orig, val]) => (
@@ -3777,8 +3777,8 @@ export default function App({ onVoltarHub, onLogout } = {}) {
                 <div className="relative flex-1"><Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" /><input value={busca} onChange={e => setBusca(e.target.value)} placeholder="Buscar..." className="w-full bg-white border border-slate-300 rounded-lg text-slate-900 pl-9 pr-3 py-2 text-sm" /></div>
                 <select value={filtroCompetencia} onChange={e => setFiltroCompetencia(e.target.value)} className="bg-white border border-slate-300 rounded-lg text-slate-900 px-3 py-2 text-sm"><option value="">Todas competências</option>{compsChefia.map(c => <option key={c} value={c}>{fmtMes(c)}</option>)}</select>
               </div>
-              {despChefiaFiltradas.length === 0 ? <div className="bg-slate-900/50 border border-slate-200 rounded-xl p-12 text-center"><Briefcase className="w-12 h-12 text-slate-600 mx-auto mb-3" /><p className="text-slate-400">Nenhuma despesa da chefia encontrada.</p></div> : (
-                <div className="bg-slate-900/50 border border-slate-200 rounded-xl overflow-hidden">
+              {despChefiaFiltradas.length === 0 ? <div className="bg-white border border-slate-200 rounded-xl p-12 text-center"><Briefcase className="w-12 h-12 text-slate-600 mx-auto mb-3" /><p className="text-slate-400">Nenhuma despesa da chefia encontrada.</p></div> : (
+                <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm">
                       <thead className="text-xs text-slate-400 bg-slate-50 border-b border-slate-200"><tr><th className="text-left py-3 px-3">Compet.</th><th className="text-left px-3">Lançamento</th><th className="text-center px-3">Tipo</th><th className="text-center px-3">Parcela</th><th className="text-center px-3">Origem</th><th className="text-right px-3">Valor</th><th className="text-center px-3">Status</th><th className="text-right px-3">Ações</th></tr></thead>
@@ -3788,7 +3788,7 @@ export default function App({ onVoltarHub, onLogout } = {}) {
                           <td className="px-3 font-medium">{d.descricao}</td>
                           <td className="text-center px-3"><span className={`text-[10px] px-2 py-0.5 rounded-full ${d.tipo === 'FIXA' ? 'bg-blue-500/20 text-blue-600' : d.tipo === 'PARCELA' ? 'bg-purple-500/20 text-purple-600' : 'bg-slate-100 text-slate-600'}`}>{d.tipo === 'PARCELA' ? 'PARCELA' : (d.tipo || 'AVULSA')}</span></td>
                           <td className="text-center px-3 text-xs text-slate-400">{d.tipo === 'PARCELA' && d.parcelaAtual && d.parcelaTotal ? `${d.parcelaAtual}/${d.parcelaTotal}` : '—'}</td>
-                          <td className="text-center px-3"><span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${d.origem === 'MANHÃES' ? 'bg-emerald-500/20 text-emerald-300' : 'bg-blue-500/20 text-blue-600'}`}>{d.origem || 'MANHÃES'}</span></td>
+                          <td className="text-center px-3"><span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${d.origem === 'MANHÃES' ? 'bg-emerald-500/20 text-emerald-700' : 'bg-blue-500/20 text-blue-600'}`}>{d.origem || 'MANHÃES'}</span></td>
                           <td className="text-right px-3 text-violet-400 font-medium">{fmt(d.valor)}</td>
                           <td className="text-center px-3"><Badge status={d.status} /></td>
                           <td className="text-right px-3"><div className="flex justify-end gap-1">
@@ -3797,7 +3797,7 @@ export default function App({ onVoltarHub, onLogout } = {}) {
                           </div></td>
                         </tr>
                       ))}</tbody>
-                      <tfoot className="bg-slate-900 border-t border-slate-200 font-medium"><tr><td colSpan={4} className="py-2.5 px-3 text-slate-400">Total ({despChefiaFiltradas.length})</td><td></td><td className="text-right px-3 text-violet-400">{fmt(totalChefia)}</td><td colSpan={2}></td></tr></tfoot>
+                      <tfoot className="bg-slate-50 border-t border-slate-200 font-medium"><tr><td colSpan={4} className="py-2.5 px-3 text-slate-400">Total ({despChefiaFiltradas.length})</td><td></td><td className="text-right px-3 text-violet-400">{fmt(totalChefia)}</td><td colSpan={2}></td></tr></tfoot>
                     </table>
                   </div>
                 </div>
@@ -3811,8 +3811,8 @@ export default function App({ onVoltarHub, onLogout } = {}) {
             <div className="flex flex-wrap gap-2 items-center justify-between">
               <div className="min-w-0"><h2 className="text-lg sm:text-xl font-bold">Vales e Adiantamentos</h2><p className="text-[11px] sm:text-xs text-slate-400">Descontados automaticamente da folha do funcionário na competência informada.</p></div>
               <div className="flex flex-wrap gap-1.5 sm:gap-2 w-full sm:w-auto">
-                <button onClick={() => exportarDescontosXLSX(descontosFiltrados)} className="bg-slate-700 hover:bg-slate-600 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium flex items-center gap-1.5 sm:gap-2 min-h-[36px]"><Download className="w-4 h-4 flex-shrink-0" /><span>Exportar</span></button>
-                <button onClick={() => setModal({ tipo: 'importar', destino: 'desconto' })} className="bg-slate-700 hover:bg-slate-600 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium flex items-center gap-1.5 sm:gap-2 min-h-[36px]"><Upload className="w-4 h-4 flex-shrink-0" /><span>Importar</span></button>
+                <button onClick={() => exportarDescontosXLSX(descontosFiltrados)} className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium flex items-center gap-1.5 sm:gap-2 min-h-[36px]"><Download className="w-4 h-4 flex-shrink-0" /><span>Exportar</span></button>
+                <button onClick={() => setModal({ tipo: 'importar', destino: 'desconto' })} className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium flex items-center gap-1.5 sm:gap-2 min-h-[36px]"><Upload className="w-4 h-4 flex-shrink-0" /><span>Importar</span></button>
                 <button onClick={() => migrarParcelasExistentes('descontos')} title="One-shot: detecta vales parcelados existentes e cria as parcelas faltantes nas folhas futuras." className="bg-purple-700 hover:bg-purple-600 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium flex items-center gap-1.5 sm:gap-2 min-h-[36px]" type="button"><span>Migrar parcelas</span></button>
                 <button onClick={() => setModal({ tipo: 'desconto', dados: null })} className="bg-amber-600 hover:bg-amber-500 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium flex items-center gap-1.5 sm:gap-2 min-h-[36px]"><Plus className="w-4 h-4 flex-shrink-0" /><span>Novo vale</span></button>
               </div>
@@ -3828,8 +3828,8 @@ export default function App({ onVoltarHub, onLogout } = {}) {
               <select value={filtroCompetencia} onChange={e => setFiltroCompetencia(e.target.value)} className="bg-white border border-slate-300 rounded-lg text-slate-900 px-3 py-2 text-sm"><option value="">Todas competências</option>{competenciasUsadas.map(c => <option key={c} value={c}>{fmtMes(c)}</option>)}</select>
               <select value={filtroCategoria} onChange={e => setFiltroCategoria(e.target.value)} className="bg-white border border-slate-300 rounded-lg text-slate-900 px-3 py-2 text-sm"><option value="">Todos tipos</option>{TIPOS_VALE.map(c => <option key={c} value={c}>{c}</option>)}</select>
             </div>
-            {descontosFiltrados.length === 0 ? <div className="bg-slate-900/50 border border-slate-200 rounded-xl p-12 text-center"><MinusCircle className="w-12 h-12 text-slate-600 mx-auto mb-3" /><p className="text-slate-400">Nenhum vale encontrado.</p></div> : (
-              <div className="bg-slate-900/50 border border-slate-200 rounded-xl overflow-hidden">
+            {descontosFiltrados.length === 0 ? <div className="bg-white border border-slate-200 rounded-xl p-12 text-center"><MinusCircle className="w-12 h-12 text-slate-600 mx-auto mb-3" /><p className="text-slate-400">Nenhum vale encontrado.</p></div> : (
+              <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead className="text-xs text-slate-400 bg-slate-50 border-b border-slate-200"><tr><th className="text-left py-3 px-3">Compet.</th><th className="text-left px-3">Beneficiário</th><th className="text-left px-3">Tipo</th><th className="text-center px-3">Parcela</th><th className="hidden sm:table-cell text-left px-3">Forma Pgto</th><th className="text-right px-3">Valor</th><th className="text-right px-3">Ações</th></tr></thead>
@@ -3837,7 +3837,7 @@ export default function App({ onVoltarHub, onLogout } = {}) {
                       <tr key={d.id} className="border-b border-slate-200/50 hover:bg-slate-50">
                         <td className="px-3 text-xs whitespace-nowrap text-slate-600">{fmtMesCurto(d.competencia)}</td>
                         <td className="px-3 font-medium">{d.alvoNome}</td>
-                        <td className="px-3"><span className={`text-[10px] px-2 py-0.5 rounded-full ${d.tipoVale === 'VALE' ? 'bg-amber-500/20 text-amber-300' : d.tipoVale?.includes('GALOP') ? 'bg-orange-500/20 text-orange-600' : d.tipoVale?.includes('MARRAKESH') ? 'bg-rose-500/20 text-rose-600' : 'bg-slate-700/60'}`}>{d.tipo === 'PARCELA' ? 'PARCELA' : (d.tipoVale || 'VALE')}</span></td>
+                        <td className="px-3"><span className={`text-[10px] px-2 py-0.5 rounded-full ${d.tipoVale === 'VALE' ? 'bg-amber-500/20 text-amber-700' : d.tipoVale?.includes('GALOP') ? 'bg-orange-500/20 text-orange-600' : d.tipoVale?.includes('MARRAKESH') ? 'bg-rose-500/20 text-rose-600' : 'bg-slate-100 text-slate-500'}`}>{d.tipo === 'PARCELA' ? 'PARCELA' : (d.tipoVale || 'VALE')}</span></td>
                         <td className="text-center px-3 text-xs text-slate-400">{d.tipo === 'PARCELA' && d.parcelaAtual && d.parcelaTotal ? `${d.parcelaAtual}/${d.parcelaTotal}` : '—'}</td>
                         <td className="hidden sm:table-cell px-3 text-xs text-slate-400">{d.formaPagamento || '—'}</td>
                         <td className="text-right px-3 text-amber-600 font-medium">{fmt(d.valor)}</td>
@@ -3847,7 +3847,7 @@ export default function App({ onVoltarHub, onLogout } = {}) {
                         </div></td>
                       </tr>
                     ))}</tbody>
-                    <tfoot className="bg-slate-900 border-t border-slate-200 font-medium"><tr><td colSpan={4} className="py-2.5 px-3 text-slate-400">Total ({descontosFiltrados.length})</td><td className="hidden sm:table-cell"></td><td className="text-right px-3 text-amber-600">{fmt(totaisDescontos)}</td><td></td></tr></tfoot>
+                    <tfoot className="bg-slate-50 border-t border-slate-200 font-medium"><tr><td colSpan={4} className="py-2.5 px-3 text-slate-400">Total ({descontosFiltrados.length})</td><td className="hidden sm:table-cell"></td><td className="text-right px-3 text-amber-600">{fmt(totaisDescontos)}</td><td></td></tr></tfoot>
                   </table>
                 </div>
               </div>
@@ -3924,9 +3924,9 @@ export default function App({ onVoltarHub, onLogout } = {}) {
                 <select value={filtroCliente} onChange={e => setFiltroCliente(e.target.value)} className="bg-white border border-slate-300 rounded-lg text-slate-900 px-3 py-2 text-sm"><option value="">Todos clientes</option>{clientesDiarias.map(c => <option key={c} value={c}>{c}</option>)}</select>
               </div>
               {diariasFiltradas.length === 0
-                ? <div className="bg-slate-900/50 border border-slate-200 rounded-xl p-12 text-center"><Calendar className="w-12 h-12 text-slate-600 mx-auto mb-3" /><p className="text-slate-400">Nenhuma diária encontrada. Importe um arquivo ou adicione manualmente.</p></div>
+                ? <div className="bg-white border border-slate-200 rounded-xl p-12 text-center"><Calendar className="w-12 h-12 text-slate-600 mx-auto mb-3" /><p className="text-slate-400">Nenhuma diária encontrada. Importe um arquivo ou adicione manualmente.</p></div>
                 : (
-                  <div className="bg-slate-900/50 border border-slate-200 rounded-xl overflow-hidden">
+                  <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
                     <div className="overflow-x-auto">
                       <table className="w-full text-sm">
                         <thead className="text-xs text-slate-400 bg-slate-50 border-b border-slate-200">
@@ -3945,7 +3945,7 @@ export default function App({ onVoltarHub, onLogout } = {}) {
                             </div></td>
                           </tr>
                         ))}</tbody>
-                        <tfoot className="bg-slate-900 border-t border-slate-200 font-medium"><tr><td colSpan={2} className="py-2.5 px-3 text-slate-400">Total ({diariasFiltradas.length})</td><td className="hidden sm:table-cell"></td><td className="hidden sm:table-cell"></td><td className="text-right px-3 text-orange-400">{fmt(totalDiarias)}</td><td></td></tr></tfoot>
+                        <tfoot className="bg-slate-50 border-t border-slate-200 font-medium"><tr><td colSpan={2} className="py-2.5 px-3 text-slate-400">Total ({diariasFiltradas.length})</td><td className="hidden sm:table-cell"></td><td className="hidden sm:table-cell"></td><td className="text-right px-3 text-orange-400">{fmt(totalDiarias)}</td><td></td></tr></tfoot>
                       </table>
                     </div>
                   </div>
@@ -4007,16 +4007,16 @@ export default function App({ onVoltarHub, onLogout } = {}) {
                 <select value={filtroStatus} onChange={e => setFiltroStatus(e.target.value)} className="bg-white border border-slate-300 rounded-lg text-slate-900 px-3 py-2 text-sm"><option value="">Todos status</option><option value="ATIVO">Ativo</option><option value="INATIVO">Inativo</option></select>
               </div>
               {clientesFiltrados.length === 0 ? (
-                <div className="bg-slate-900/50 border border-slate-200 rounded-xl p-12 text-center"><Building2 className="w-12 h-12 text-slate-600 mx-auto mb-3" /><p className="text-slate-400">Nenhum cliente encontrado.</p></div>
+                <div className="bg-white border border-slate-200 rounded-xl p-12 text-center"><Building2 className="w-12 h-12 text-slate-600 mx-auto mb-3" /><p className="text-slate-400">Nenhum cliente encontrado.</p></div>
               ) : (
                 <div className="grid md:grid-cols-2 gap-3">
                   {clientesFiltrados.map(c => (
-                    <div key={c.id} className={`bg-slate-900/50 border rounded-xl p-4 ${c.status === 'INATIVO' ? 'border-slate-200 opacity-60' : 'border-slate-800'}`}>
+                    <div key={c.id} className={`bg-white border rounded-xl p-4 ${c.status === 'INATIVO' ? 'border-slate-200 opacity-60' : 'border-slate-800'}`}>
                       <div className="flex items-start justify-between gap-2 mb-3">
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 flex-wrap">
                             <span className="font-bold text-base truncate">{c.nome}</span>
-                            {c.status === 'INATIVO' && <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-700 text-slate-400">INATIVO</span>}
+                            {c.status === 'INATIVO' && <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-200 text-slate-500">INATIVO</span>}
                           </div>
                           {c.razaoSocial && c.razaoSocial !== c.nome && <div className="text-xs text-slate-400 mt-0.5">{c.razaoSocial}</div>}
                         </div>
@@ -4060,8 +4060,8 @@ export default function App({ onVoltarHub, onLogout } = {}) {
             <div className="flex flex-wrap gap-2 items-center justify-between">
               <div className="min-w-0"><h2 className="text-lg sm:text-xl font-bold">Funcionários e Prestadores</h2><p className="text-[11px] sm:text-xs text-slate-400">Cadastro com RG, CPF, endereço, chave Pix e categoria editável.</p></div>
               <div className="flex gap-1.5 sm:gap-2 flex-wrap w-full sm:w-auto">
-                <button onClick={() => exportarFuncionariosXLSX(funcionarios)} className="bg-slate-700 hover:bg-slate-600 px-3 py-2 rounded-lg text-xs sm:text-sm font-medium flex items-center gap-1.5 sm:gap-2 min-h-[36px]" title="Exportar todos os funcionários em XLSX"><Download className="w-4 h-4 flex-shrink-0" /><span>Exportar XLSX</span></button>
-                <button onClick={() => gerarModeloFuncionariosXLSX()} className="bg-slate-700 hover:bg-slate-600 px-3 py-2 rounded-lg text-xs sm:text-sm font-medium flex items-center gap-1.5 sm:gap-2 min-h-[36px]" title="Baixar modelo de planilha em branco"><Download className="w-4 h-4 flex-shrink-0" /><span>Modelo</span></button>
+                <button onClick={() => exportarFuncionariosXLSX(funcionarios)} className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-2 rounded-lg text-xs sm:text-sm font-medium flex items-center gap-1.5 sm:gap-2 min-h-[36px]" title="Exportar todos os funcionários em XLSX"><Download className="w-4 h-4 flex-shrink-0" /><span>Exportar XLSX</span></button>
+                <button onClick={() => gerarModeloFuncionariosXLSX()} className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-2 rounded-lg text-xs sm:text-sm font-medium flex items-center gap-1.5 sm:gap-2 min-h-[36px]" title="Baixar modelo de planilha em branco"><Download className="w-4 h-4 flex-shrink-0" /><span>Modelo</span></button>
                 <button onClick={() => setModal({ tipo: 'importarFuncionarios' })} className="bg-emerald-600 hover:bg-emerald-500 px-3 py-2 rounded-lg text-xs sm:text-sm font-medium flex items-center gap-1.5 sm:gap-2 min-h-[36px]"><Upload className="w-4 h-4 flex-shrink-0" /><span>Importar planilha</span></button>
                 <button onClick={() => setModal({ tipo: 'funcionario', dados: null })} className="bg-indigo-600 hover:bg-indigo-500 px-3 py-2 rounded-lg text-xs sm:text-sm font-medium flex items-center gap-1.5 sm:gap-2 min-h-[36px]"><Plus className="w-4 h-4 flex-shrink-0" /><span>Novo</span></button>
               </div>
@@ -4069,7 +4069,7 @@ export default function App({ onVoltarHub, onLogout } = {}) {
             <div className="flex flex-col sm:flex-row gap-1.5 sm:gap-2">
               <div className="relative flex-1"><Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" /><input value={busca} onChange={e => setBusca(e.target.value)} placeholder="Buscar..." className="w-full bg-white border border-slate-300 rounded-lg text-slate-900 pl-9 pr-3 py-2 text-sm" /></div>
               <select value={filtroCategoria} onChange={e => setFiltroCategoria(e.target.value)} className="bg-white border border-slate-300 rounded-lg text-slate-900 px-3 py-2 text-sm"><option value="">Todas categorias</option>{categoriasUsadas.map(c => <option key={c} value={c}>{c}</option>)}</select>
-              <button onClick={() => setFiltroSemPixFunc(v => !v)} className={`px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-1.5 whitespace-nowrap ${filtroSemPixFunc ? 'bg-amber-600 hover:bg-amber-500 text-white' : 'bg-slate-800 hover:bg-slate-100 text-amber-300 border border-amber-700/40'}`} title="Filtra apenas funcionários ATIVOs sem chave PIX cadastrada">⚠ Sem PIX ({ativosSemPix.length})</button>
+              <button onClick={() => setFiltroSemPixFunc(v => !v)} className={`px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-1.5 whitespace-nowrap ${filtroSemPixFunc ? 'bg-amber-600 hover:bg-amber-500 text-white' : 'bg-slate-100 hover:bg-slate-200 text-amber-600 border border-amber-300'}`} title="Filtra apenas funcionários ATIVOs sem chave PIX cadastrada">⚠ Sem PIX ({ativosSemPix.length})</button>
             </div>
             {/* Barra de ações em massa */}
             {selFuncionarios.size > 0 && (
@@ -4077,14 +4077,14 @@ export default function App({ onVoltarHub, onLogout } = {}) {
                 <span className="text-sm font-medium text-indigo-600">{selFuncionarios.size} selecionado(s)</span>
                 <button onClick={() => ativarFuncionarios(true)} className="text-xs bg-emerald-600 hover:bg-emerald-500 px-3 py-1.5 rounded font-medium">Ativar</button>
                 <button onClick={() => ativarFuncionarios(false)} className="text-xs bg-slate-600 hover:bg-slate-500 px-3 py-1.5 rounded font-medium">Inativar</button>
-                <select onChange={e => alterarCategoriaEmMassa(e.target.value)} className="text-xs bg-slate-700 border border-slate-600 rounded px-2 py-1.5">
+                <select onChange={e => alterarCategoriaEmMassa(e.target.value)} className="text-xs bg-white border border-slate-200 text-slate-700 rounded px-2 py-1.5">
                   <option value="">Alterar categoria…</option>
                   {categoriasUsadas.map(c => <option key={c} value={c}>{c}</option>)}
                 </select>
                 <button onClick={() => setSelFuncionarios(new Set())} className="text-xs text-slate-400 hover:text-slate-700 ml-auto">Limpar seleção</button>
               </div>
             )}
-            <div className="bg-slate-900/50 border border-slate-200 rounded-xl overflow-hidden">
+            <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead className="text-xs text-slate-400 bg-slate-50 border-b border-slate-200">
@@ -4097,10 +4097,10 @@ export default function App({ onVoltarHub, onLogout } = {}) {
                     <tr key={f.id} className={`border-b border-slate-200/50 hover:bg-slate-50 ${sel ? 'bg-indigo-900/20' : ''}`}>
                       <td className="px-3"><input type="checkbox" checked={sel} onChange={() => toggleSelFunc(f.id)} className="rounded cursor-pointer" /></td>
                       <td className="py-2.5 px-3 font-medium">{f.nome}</td>
-                      <td className="px-3"><span className="text-xs px-2 py-0.5 rounded-full bg-slate-700/60 text-slate-700">{f.categoria}</span></td>
+                      <td className="px-3"><span className="text-xs px-2 py-0.5 rounded-full bg-slate-100 text-slate-700">{f.categoria}</span></td>
                       <td className="hidden sm:table-cell px-3 text-slate-400 font-mono text-xs">{f.cpf || '—'}</td>
                       <td className="hidden sm:table-cell px-3 text-xs">{f.chavePix ? <span className="text-emerald-600">{f.tipoPix}</span> : <span className="text-slate-500">—</span>}</td>
-                      <td className="hidden sm:table-cell text-center px-3"><span className={`text-xs px-2 py-0.5 rounded-full ${f.status === 'ATIVO' ? 'bg-emerald-500/20 text-emerald-600' : 'bg-slate-700 text-slate-400'}`}>{f.status}</span></td>
+                      <td className="hidden sm:table-cell text-center px-3"><span className={`text-xs px-2 py-0.5 rounded-full ${f.status === 'ATIVO' ? 'bg-emerald-500/20 text-emerald-600' : 'bg-slate-100 text-slate-500'}`}>{f.status}</span></td>
                       <td className="text-right px-3"><div className="flex justify-end gap-1">
                         <button onClick={() => setModal({ tipo: 'fichaFuncPDF', dados: f })} className="p-1.5 hover:bg-slate-100 rounded text-indigo-600" title="Ficha cadastral em PDF"><User className="w-4 h-4" /></button>
                         <button onClick={() => setModal({ tipo: 'escolherCompetReciboPSO', dados: f })} className="p-1.5 hover:bg-slate-100 rounded text-amber-300" title="Recibo de prestação de serviços"><Receipt className="w-4 h-4" /></button>
@@ -4127,8 +4127,8 @@ export default function App({ onVoltarHub, onLogout } = {}) {
             <div className="flex items-center justify-between flex-wrap gap-2">
               <div className="min-w-0"><h2 className="text-lg sm:text-xl font-bold">Folha de Pagamento</h2><p className="text-[11px] sm:text-xs text-slate-400">Pagamento por mês calendário. Calculado a partir dos lançamentos e dos lançamentos avulsos da competência.</p></div>
               <div className="flex flex-wrap gap-1.5 sm:gap-2 w-full sm:w-auto">
-                <button onClick={() => setModal({ tipo: 'historicoCora' })} className="bg-slate-700 hover:bg-slate-600 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium flex items-center gap-1.5 sm:gap-2 min-h-[36px]"><Wallet className="w-4 h-4 flex-shrink-0" /><span>Histórico Cora</span></button>
-                <button onClick={() => exportarFolhaCategoriaXLSX(folhasFiltradas)} className="bg-slate-700 hover:bg-slate-600 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium flex items-center gap-1.5 sm:gap-2 min-h-[36px]"><Download className="w-4 h-4 flex-shrink-0" /><span>Exportar XLSX</span></button>
+                <button onClick={() => setModal({ tipo: 'historicoCora' })} className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium flex items-center gap-1.5 sm:gap-2 min-h-[36px]"><Wallet className="w-4 h-4 flex-shrink-0" /><span>Histórico Cora</span></button>
+                <button onClick={() => exportarFolhaCategoriaXLSX(folhasFiltradas)} className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium flex items-center gap-1.5 sm:gap-2 min-h-[36px]"><Download className="w-4 h-4 flex-shrink-0" /><span>Exportar XLSX</span></button>
               </div>
             </div>
             <div className="flex flex-col sm:flex-row gap-1.5 sm:gap-2">
@@ -4173,7 +4173,7 @@ export default function App({ onVoltarHub, onLogout } = {}) {
               );
             })()}
 
-            {folhasFiltradas.length === 0 ? <div className="bg-slate-900/50 border border-slate-200 rounded-xl p-12 text-center"><Wallet className="w-12 h-12 text-slate-600 mx-auto mb-3" /><p className="text-slate-400">Nenhuma folha encontrada.</p></div> : (
+            {folhasFiltradas.length === 0 ? <div className="bg-white border border-slate-200 rounded-xl p-12 text-center"><Wallet className="w-12 h-12 text-slate-600 mx-auto mb-3" /><p className="text-slate-400">Nenhuma folha encontrada.</p></div> : (
               <>
                 <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 text-xs">
                   <Stat label="Folhas" valor={folhasFiltradas.length} />
@@ -4216,7 +4216,7 @@ export default function App({ onVoltarHub, onLogout } = {}) {
                     </div>
                   );
                 })()}
-                <div className="bg-slate-900/50 border border-slate-200 rounded-xl overflow-hidden">
+                <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm">
                       <thead className="text-xs text-slate-400 bg-slate-50 border-b border-slate-200"><tr>
@@ -4281,7 +4281,7 @@ export default function App({ onVoltarHub, onLogout } = {}) {
                 <button onClick={() => setModal({ tipo: 'categoriaFolha', dados: null })} className="bg-indigo-600 hover:bg-indigo-500 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium flex items-center gap-1.5 sm:gap-2 min-h-[36px]"><Plus className="w-4 h-4 flex-shrink-0" /><span>Nova categoria</span></button>
               </div>
               {categoriasFolha.length === 0 ? (
-                <div className="bg-slate-900/50 border border-slate-200 rounded-xl p-12 text-center">
+                <div className="bg-white border border-slate-200 rounded-xl p-12 text-center">
                   <ClipboardList className="w-12 h-12 text-slate-600 mx-auto mb-3" />
                   <p className="text-slate-400">Nenhuma categoria cadastrada ainda.</p>
                   <p className="text-xs text-slate-500 mt-2">Categorias controlam o agrupamento da folha de pagamento. Use a mesma para vários colaboradores que pertencem à mesma estrutura de folha (ex: ARMADA, ESCRITÓRIO, MOTOLINK).</p>
@@ -4292,7 +4292,7 @@ export default function App({ onVoltarHub, onLogout } = {}) {
                     const qtdLancs = lancamentos.filter(l => l.categoriaFolha === c.nome).length;
                     const qtdFuncs = funcionarios.filter(f => f.folhaGrupo === c.nome).length;
                     return (
-                      <div key={c.id} className="bg-slate-900/50 border border-slate-200 rounded-xl p-4">
+                      <div key={c.id} className="bg-white border border-slate-200 rounded-xl p-4">
                         <div className="flex items-start justify-between gap-2 mb-2">
                           <div className="flex-1 min-w-0">
                             <div className="font-bold text-base text-blue-600">{c.nome}</div>
@@ -4336,8 +4336,8 @@ export default function App({ onVoltarHub, onLogout } = {}) {
             <div className="flex flex-wrap gap-2 items-center justify-between">
               <div className="min-w-0"><h2 className="text-lg sm:text-xl font-bold">Catálogo de Serviços</h2><p className="text-[11px] sm:text-xs text-slate-400">Código editável diretamente no formulário. Copie um serviço existente como base.</p></div>
               <div className="flex gap-1.5 sm:gap-2 flex-wrap w-full sm:w-auto">
-                <button onClick={() => exportarServicosXLSX(servicos)} className="bg-slate-700 hover:bg-slate-600 px-3 py-2 rounded-lg text-xs sm:text-sm font-medium flex items-center gap-1.5 sm:gap-2 min-h-[36px]" title="Exportar todos os serviços em XLSX"><Download className="w-4 h-4 flex-shrink-0" /><span>Exportar XLSX</span></button>
-                <button onClick={() => setModal({ tipo: 'copiarServico' })} className="bg-slate-700 hover:bg-slate-600 px-3 py-2 rounded-lg text-xs sm:text-sm font-medium flex items-center gap-1.5 sm:gap-2 min-h-[36px]"><ClipboardList className="w-4 h-4 flex-shrink-0" /><span>Copiar serviço</span></button>
+                <button onClick={() => exportarServicosXLSX(servicos)} className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-2 rounded-lg text-xs sm:text-sm font-medium flex items-center gap-1.5 sm:gap-2 min-h-[36px]" title="Exportar todos os serviços em XLSX"><Download className="w-4 h-4 flex-shrink-0" /><span>Exportar XLSX</span></button>
+                <button onClick={() => setModal({ tipo: 'copiarServico' })} className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-2 rounded-lg text-xs sm:text-sm font-medium flex items-center gap-1.5 sm:gap-2 min-h-[36px]"><ClipboardList className="w-4 h-4 flex-shrink-0" /><span>Copiar serviço</span></button>
                 <button onClick={() => setModal({ tipo: 'servico', dados: null })} className="bg-indigo-600 hover:bg-indigo-500 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium flex items-center gap-1.5 sm:gap-2 min-h-[36px]"><Plus className="w-4 h-4 flex-shrink-0" /><span>Novo serviço</span></button>
               </div>
             </div>
@@ -4370,7 +4370,7 @@ export default function App({ onVoltarHub, onLogout } = {}) {
                 <button onClick={() => setSelServicos(new Set())} className="text-xs text-slate-400 hover:text-slate-700 ml-auto">Limpar seleção</button>
               </div>
             )}
-            <div className="bg-slate-900/50 border border-slate-200 rounded-xl overflow-hidden">
+            <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead className="text-xs text-slate-400 bg-slate-50 border-b border-slate-200">
@@ -4383,17 +4383,17 @@ export default function App({ onVoltarHub, onLogout } = {}) {
                     <tr key={s.cod} className={`border-b border-slate-200/50 hover:bg-slate-50 ${sel ? 'bg-indigo-900/20' : ''}`}>
                       <td className="px-3"><input type="checkbox" checked={sel} onChange={() => toggleSelServico(s.cod)} className="rounded cursor-pointer" /></td>
                       <td className="py-2.5 px-3 font-mono text-xs text-slate-400">#{s.cod}</td>
-                      <td className="px-3 font-medium">{s.descricao}{s.status === 'INATIVO' && <span className="ml-2 text-[10px] px-1.5 py-0.5 rounded bg-slate-700 text-slate-400">INATIVO</span>}</td>
+                      <td className="px-3 font-medium">{s.descricao}{s.status === 'INATIVO' && <span className="ml-2 text-[10px] px-1.5 py-0.5 rounded bg-slate-200 text-slate-500">INATIVO</span>}</td>
                       <td className="text-center px-3">
                         <select value={cat} onChange={e => atualizarCategoriaServico(s.cod, e.target.value)} className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded border cursor-pointer ${corC.bg} ${corC.text} ${corC.border} focus:ring-2 focus:ring-white/30 focus:outline-none`} title="Clique para alterar a categoria">
-                          {CATEGORIAS_SERVICO.map(c => <option key={c} value={c} className="bg-slate-900 text-white">{c}</option>)}
+                          {CATEGORIAS_SERVICO.map(c => <option key={c} value={c} className="bg-white text-slate-900">{c}</option>)}
                         </select>
                       </td>
                       <td className="hidden sm:table-cell px-3"><div className="text-slate-600">{s.cliente}</div><div className="text-xs text-slate-500">{TEMPLATES[s.template]?.nome}</div></td>
                       <td className="hidden md:table-cell text-center px-3 text-xs text-slate-400">{s.franquiaHoras}h / {s.franquiaKm}km</td>
                       <td className="text-right px-3 text-orange-400">{fmt(s.diariaPaga)}</td>
                       <td className="text-right px-3">{fmt(s.valorFatura)}</td>
-                      <td className="hidden md:table-cell text-center px-3"><span className={`text-xs font-mono px-2 py-0.5 rounded ${num(s.aliquota) > 0 ? 'bg-amber-500/20 text-amber-300' : 'bg-slate-700 text-slate-500'}`}>{num(s.aliquota).toFixed(2)}%</span></td>
+                      <td className="hidden md:table-cell text-center px-3"><span className={`text-xs font-mono px-2 py-0.5 rounded ${num(s.aliquota) > 0 ? 'bg-amber-500/20 text-amber-700' : 'bg-slate-100 text-slate-500'}`}>{num(s.aliquota).toFixed(2)}%</span></td>
                       <td className="text-right px-3"><div className="flex justify-end gap-1">
                         <button onClick={() => setModal({ tipo: 'copiarServico', fonte: s })} className="p-1.5 hover:bg-slate-100 rounded text-slate-400" title="Copiar serviço"><ClipboardList className="w-4 h-4" /></button>
                         <button onClick={() => setModal({ tipo: 'servico', dados: s })} className="p-1.5 hover:bg-slate-100 rounded"><Edit2 className="w-4 h-4" /></button>
@@ -4418,11 +4418,11 @@ export default function App({ onVoltarHub, onLogout } = {}) {
               <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap w-full sm:w-auto">
                 <Calendar className="w-4 h-4 text-slate-400 flex-shrink-0" />
                 <input type="month" value={competenciaResumo} onChange={e => setCompetenciaResumo(e.target.value)} className="bg-white border border-slate-300 rounded-lg text-slate-900 px-3 py-2 text-sm min-h-[36px]" />
-                {totalExcluidos > 0 && <button onClick={limparExclusoesResumo} className="text-xs bg-slate-700 hover:bg-slate-600 px-3 py-2 rounded-lg flex items-center gap-1.5 min-h-[36px]"><RefreshCw className="w-3.5 h-3.5 flex-shrink-0" /><span>Restaurar {totalExcluidos}</span></button>}
+                {totalExcluidos > 0 && <button onClick={limparExclusoesResumo} className="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-2 rounded-lg flex items-center gap-1.5 min-h-[36px]"><RefreshCw className="w-3.5 h-3.5 flex-shrink-0" /><span>Restaurar {totalExcluidos}</span></button>}
                 <button onClick={() => exportarResumoFechamentoXLSX(resumoLimpo, competenciaResumo)} disabled={!resumoLimpo} className="bg-emerald-600 hover:bg-emerald-500 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium flex items-center gap-1.5 sm:gap-2 disabled:opacity-50 min-h-[36px]"><Download className="w-4 h-4 flex-shrink-0" /><span>Exportar XLSX</span></button>
                 <button onClick={() => setModal({ tipo: 'resumoPDF' })} disabled={!resumoLimpo} className="bg-rose-600 hover:bg-rose-500 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium flex items-center gap-1.5 sm:gap-2 disabled:opacity-50 min-h-[36px]"><Printer className="w-4 h-4 flex-shrink-0" /><span>Gerar PDF</span></button>
                 <button onClick={() => setModal({ tipo: 'salvarResumo' })} disabled={!resumoLimpo} className="bg-blue-600 hover:bg-blue-500 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium flex items-center gap-1.5 sm:gap-2 disabled:opacity-50 min-h-[36px]"><Save className="w-4 h-4 flex-shrink-0" /><span>Salvar resumo</span></button>
-                <button onClick={() => setModal({ tipo: 'carregarResumos' })} className="bg-slate-700 hover:bg-slate-600 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium flex items-center gap-1.5 sm:gap-2 min-h-[36px]"><FolderOpen className="w-4 h-4 flex-shrink-0" /><span>Carregar ({resumosSalvos.length})</span></button>
+                <button onClick={() => setModal({ tipo: 'carregarResumos' })} className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium flex items-center gap-1.5 sm:gap-2 min-h-[36px]"><FolderOpen className="w-4 h-4 flex-shrink-0" /><span>Carregar ({resumosSalvos.length})</span></button>
               </div>
             </div>
 
@@ -4591,9 +4591,9 @@ export default function App({ onVoltarHub, onLogout } = {}) {
                           <tr key={d.id} className={`border-b border-slate-200/50 ${excl ? 'opacity-40 line-through' : ''}`}>
                             <td className="px-1 w-7"><BotaoXResumo excluido={excl} onClick={() => toggleExclResumo('despChefia', d.id)} /></td>
                             <td className="py-1.5 px-2 font-medium">{d.descricao}</td>
-                            <td className="text-center px-2"><span className={`text-[10px] px-1.5 py-0.5 rounded-full ${d.tipo === 'FIXA' ? 'bg-blue-500/20 text-blue-600' : d.tipo === 'PARCELA' ? 'bg-purple-500/20 text-purple-600' : 'bg-slate-700/60'}`}>{d.tipo === 'PARCELA' ? 'PARCELA' : (d.tipo || 'AVULSA')}</span></td>
+                            <td className="text-center px-2"><span className={`text-[10px] px-1.5 py-0.5 rounded-full ${d.tipo === 'FIXA' ? 'bg-blue-500/20 text-blue-600' : d.tipo === 'PARCELA' ? 'bg-purple-500/20 text-purple-600' : 'bg-slate-100 text-slate-500'}`}>{d.tipo === 'PARCELA' ? 'PARCELA' : (d.tipo || 'AVULSA')}</span></td>
                             <td className="text-center px-2 text-[10px] text-slate-400">{d.tipo === 'PARCELA' && d.parcelaAtual && d.parcelaTotal ? `${d.parcelaAtual}/${d.parcelaTotal}` : '—'}</td>
-                            <td className="text-center px-2"><span className={`text-[10px] px-1.5 py-0.5 rounded-full font-semibold ${d.origem === 'MANHÃES' ? 'bg-emerald-500/20 text-emerald-300' : 'bg-blue-500/20 text-blue-600'}`}>{d.origem || 'MANHÃES'}</span></td>
+                            <td className="text-center px-2"><span className={`text-[10px] px-1.5 py-0.5 rounded-full font-semibold ${d.origem === 'MANHÃES' ? 'bg-emerald-500/20 text-emerald-700' : 'bg-blue-500/20 text-blue-600'}`}>{d.origem || 'MANHÃES'}</span></td>
                             <td className="text-right px-2 text-violet-400 font-medium">{fmt(d.valor)}</td>
                           </tr>
                         ); })}</tbody>
@@ -4626,7 +4626,7 @@ export default function App({ onVoltarHub, onLogout } = {}) {
                           <tr key={p.key} className={`border-b border-slate-200/50 ${excl ? 'opacity-40 line-through' : ''}`}>
                             <td className="px-1 w-7"><BotaoXResumo excluido={excl} onClick={() => toggleExclResumo('parcelamentosTodos', p.key)} /></td>
                             <td className="text-center px-2">
-                              <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-semibold ${p._origem === 'Despesa' ? 'bg-red-500/20 text-red-300' : p._origem === 'Chefia' ? 'bg-violet-500/20 text-violet-600' : 'bg-amber-500/20 text-amber-300'}`}>{p._origem}</span>
+                              <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-semibold ${p._origem === 'Despesa' ? 'bg-red-500/20 text-red-700' : p._origem === 'Chefia' ? 'bg-violet-500/20 text-violet-600' : 'bg-amber-500/20 text-amber-700'}`}>{p._origem}</span>
                             </td>
                             <td className="py-1.5 px-2 font-medium">{p.descricao}</td>
                             <td className="text-center px-2 font-mono text-[11px]">{p.atual && p.total ? `${p.atual}/${p.total}` : '—'}</td>
@@ -4678,7 +4678,7 @@ export default function App({ onVoltarHub, onLogout } = {}) {
                               <td className="py-2 px-3 text-slate-400 pl-6">(−) Vales / Adiantamentos</td>
                               <td className="text-right px-3 text-red-600">−{fmt(totalVales)}</td>
                             </tr>
-                            <tr className="border-b-2 border-slate-200 bg-slate-800/40">
+                            <tr className="border-b-2 border-slate-200 bg-slate-50">
                               <td className="py-2 px-3 font-semibold text-slate-700">= Folha líquida a pagar</td>
                               <td className="text-right px-3 font-bold text-amber-300">{fmt(folhaLiquida)}</td>
                             </tr>
@@ -4742,7 +4742,7 @@ export default function App({ onVoltarHub, onLogout } = {}) {
                     <option value="__abertas">Apenas abertas</option>
                     {STATUS_FATURA.map(s => <option key={s} value={s}>{s}</option>)}
                   </select>
-                  <button onClick={() => setModal({ tipo: 'historicoEmail' })} className="bg-slate-700 hover:bg-slate-600 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium flex items-center gap-1.5 sm:gap-2 min-h-[36px]"><Mail className="w-4 h-4 flex-shrink-0" /><span>Histórico envios</span></button>
+                  <button onClick={() => setModal({ tipo: 'historicoEmail' })} className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium flex items-center gap-1.5 sm:gap-2 min-h-[36px]"><Mail className="w-4 h-4 flex-shrink-0" /><span>Histórico envios</span></button>
                   <button onClick={() => setModal({ tipo: 'importarXMLNF' })} className="bg-purple-600 hover:bg-purple-500 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium flex items-center gap-1.5 sm:gap-2 min-h-[36px]"><FileCheck className="w-4 h-4 flex-shrink-0" /><span>Importar XML NF-e</span></button>
                   <button onClick={() => setModal({ tipo: 'faturaIntervalo' })} className="bg-indigo-600 hover:bg-indigo-500 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium flex items-center gap-1.5 sm:gap-2 min-h-[36px]"><Calendar className="w-4 h-4 flex-shrink-0" /><span>Gerar por intervalo</span></button>
                 </div>
@@ -4769,12 +4769,12 @@ export default function App({ onVoltarHub, onLogout } = {}) {
                 })}
               </div>
 
-              {todosItens.length === 0 ? <div className="bg-slate-900/50 border border-slate-200 rounded-xl p-12 text-center"><p className="text-slate-400">Nenhum item encontrado com os filtros aplicados.</p></div> : (
+              {todosItens.length === 0 ? <div className="bg-white border border-slate-200 rounded-xl p-12 text-center"><p className="text-slate-400">Nenhum item encontrado com os filtros aplicados.</p></div> : (
                 <div className="space-y-2">{todosItens.map(item => {
                   const t = TEMPLATES[item.template];
                   if (item.tipo === 'aberta') {
                     return (
-                      <div key={item.key} className="bg-slate-900/50 border border-amber-500/30 rounded-lg p-3">
+                      <div key={item.key} className="bg-amber-50/30 border border-amber-500/30 rounded-lg p-3">
                         <div className="flex items-start justify-between flex-wrap gap-2 mb-2">
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 flex-wrap mb-1">
@@ -4801,7 +4801,7 @@ export default function App({ onVoltarHub, onLogout } = {}) {
                   const hojeStr = hoje();
                   const vencido = venc && venc < hojeStr && st !== 'Paga';
                   return (
-                    <div key={item.key} className={`bg-slate-900/50 border ${vencido && st !== 'Vencida' ? 'border-red-500/40' : 'border-slate-800'} rounded-lg p-3`}>
+                    <div key={item.key} className={`bg-white border ${vencido && st !== 'Vencida' ? 'border-red-500/40' : 'border-slate-800'} rounded-lg p-3`}>
                       <div className="flex items-start justify-between flex-wrap gap-2 mb-2">
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 flex-wrap mb-1">
@@ -4827,7 +4827,7 @@ export default function App({ onVoltarHub, onLogout } = {}) {
                         </div>
                         <div className="flex items-center gap-1 flex-wrap">
                           <select value={st} onChange={e => { const novo = e.target.value; if (novo === 'NF-emitida') { setModal({ tipo: 'informarNF', fechId: f.id }); } else { atualizarStatusFatura(f.id, novo); } }} className={`text-xs ${cor.bg} ${cor.text} border ${cor.border} rounded px-2 py-1 font-semibold`}>
-                            {STATUS_FATURA.map(s => <option key={s} value={s} className="bg-slate-900 text-white">{s}</option>)}
+                            {STATUS_FATURA.map(s => <option key={s} value={s} className="bg-white text-slate-900">{s}</option>)}
                           </select>
                           <input type="date" value={venc || ''} onChange={e => atualizarStatusFatura(f.id, st, e.target.value)} title="Data de vencimento" className="text-xs bg-white border border-slate-200 rounded px-2 py-1" />
                           <button onClick={() => { const fa = faturas.find(x => x.cliente === f.cliente && x.periodo === f.periodo && !f.custom); setModal({ tipo: 'detalheFatura', dados: fa || f }); }} title="Ver detalhes" className="text-xs bg-indigo-600 hover:bg-indigo-500 px-2.5 py-1 rounded flex items-center gap-1"><Eye className="w-3.5 h-3.5" />Ver</button>
@@ -4852,7 +4852,7 @@ export default function App({ onVoltarHub, onLogout } = {}) {
                 <p className="text-[11px] sm:text-xs text-slate-400">Orçamentos enviados a potenciais clientes. Após aceite virtual, podem virar serviços do catálogo.</p>
               </div>
               <div className="flex gap-1.5 sm:gap-2 flex-wrap w-full sm:w-auto">
-                <button onClick={() => carregarPropostas({ status: filtroStatusProposta, categoria: filtroCategoriaProposta, q: buscaProposta })} className="bg-slate-700 hover:bg-slate-600 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium flex items-center gap-1.5 sm:gap-2 min-h-[36px]"><RefreshCw className="w-4 h-4 flex-shrink-0" /><span>Atualizar</span></button>
+                <button onClick={() => carregarPropostas({ status: filtroStatusProposta, categoria: filtroCategoriaProposta, q: buscaProposta })} className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium flex items-center gap-1.5 sm:gap-2 min-h-[36px]"><RefreshCw className="w-4 h-4 flex-shrink-0" /><span>Atualizar</span></button>
                 <button onClick={() => setModal({ tipo: 'proposta', dados: null })} className="bg-indigo-600 hover:bg-indigo-500 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium flex items-center gap-1.5 sm:gap-2 min-h-[36px]"><Plus className="w-4 h-4 flex-shrink-0" /><span>Nova proposta</span></button>
               </div>
             </div>
@@ -4886,11 +4886,11 @@ export default function App({ onVoltarHub, onLogout } = {}) {
             {loadingPropostas ? (
               <div className="text-center text-slate-400 text-sm py-8">Carregando propostas...</div>
             ) : propostas.length === 0 ? (
-              <div className="text-center text-slate-500 text-sm py-12 bg-slate-900/40 border border-slate-200 rounded-xl">
+              <div className="text-center text-slate-500 text-sm py-12 bg-white border border-slate-200 rounded-xl">
                 Nenhuma proposta encontrada. Clique em <b>Nova proposta</b> para criar a primeira.
               </div>
             ) : (
-              <div className="bg-slate-900/40 border border-slate-200 rounded-xl overflow-hidden">
+              <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead className="text-xs text-slate-400 bg-slate-50 border-b border-slate-200">
@@ -4907,10 +4907,10 @@ export default function App({ onVoltarHub, onLogout } = {}) {
                     </thead>
                     <tbody>
                       {propostas.map(p => {
-                        const stCor = p.status === 'Aceita' ? 'bg-emerald-500/20 text-emerald-300'
-                          : p.status === 'Rejeitada' ? 'bg-red-500/20 text-red-300'
+                        const stCor = p.status === 'Aceita' ? 'bg-emerald-500/20 text-emerald-700'
+                          : p.status === 'Rejeitada' ? 'bg-red-500/20 text-red-700'
                           : p.status === 'Enviada' ? 'bg-blue-500/20 text-blue-600'
-                          : p.status === 'Em análise' ? 'bg-amber-500/20 text-amber-300'
+                          : p.status === 'Em análise' ? 'bg-amber-500/20 text-amber-700'
                           : 'bg-slate-100 text-slate-600';
                         const podeEditar = !['Aceita', 'Rejeitada'].includes(p.status);
                         const podeEnviar = !['Aceita', 'Rejeitada'].includes(p.status);
@@ -5077,7 +5077,7 @@ function ModalFaturaDeProposta({ proposta, clientes, onSave, onClose }) {
         </div>
         <p className="text-xs text-slate-500">A fatura será criada como fatura customizada (sem lançamentos vinculados) e aparecerá na aba Faturas com status "Enviada".</p>
         <div className="flex justify-end gap-2 pt-2">
-          <button onClick={onClose} className="px-4 py-2 rounded-lg text-sm bg-slate-700 hover:bg-slate-600">Cancelar</button>
+          <button onClick={onClose} className="px-4 py-2 rounded-lg text-sm bg-slate-100 hover:bg-slate-200 text-slate-700">Cancelar</button>
           <button onClick={submit} className="px-4 py-2 rounded-lg text-sm bg-amber-600 hover:bg-amber-500 font-medium flex items-center gap-2"><Receipt className="w-4 h-4" />Gerar Fatura</button>
         </div>
       </div>
@@ -5165,7 +5165,7 @@ function ModalCliente({ dados, onSave, onClose }) {
       </div>
 
       <div className="flex justify-end gap-2 mt-4">
-        <button onClick={onClose} className="px-4 py-2 rounded-lg text-sm bg-slate-700 hover:bg-slate-600">Cancelar</button>
+        <button onClick={onClose} className="px-4 py-2 rounded-lg text-sm bg-slate-100 hover:bg-slate-200 text-slate-700">Cancelar</button>
         <button onClick={submit} className="px-4 py-2 rounded-lg text-sm bg-indigo-600 hover:bg-indigo-500 font-medium">Salvar</button>
       </div>
     </ModalBase>
@@ -5228,7 +5228,7 @@ function ModalMassaLancServico({ ids, servicos, lancamentos, onSave, onClose }) 
         </select>
       </div>
       {serv && (
-        <div className="bg-slate-800/60 rounded-lg p-3 mb-4 grid grid-cols-3 gap-2 text-xs">
+        <div className="bg-slate-100 rounded-lg p-3 mb-4 grid grid-cols-3 gap-2 text-xs">
           <div><span className="text-slate-500">Diária paga</span><div className="font-semibold">{serv.diariaPaga > 0 ? `R$ ${num(serv.diariaPaga).toFixed(2)}` : '—'}</div></div>
           <div><span className="text-slate-500">Valor fatura</span><div className="font-semibold text-emerald-600">{`R$ ${num(serv.valorFatura).toFixed(2)}`}</div></div>
           <div><span className="text-slate-500">Alíquota</span><div className="font-semibold">{serv.aliquota}%</div></div>
@@ -5243,8 +5243,8 @@ function ModalMassaLancServico({ ids, servicos, lancamentos, onSave, onClose }) 
 }
 
 function Card({ title, value, sub, icon: Icon, cor, iconCor }) { return <div className={`bg-gradient-to-br ${cor} border border-slate-200 rounded-xl p-3 sm:p-4 min-w-0`}><div className="flex items-center justify-between mb-1.5 sm:mb-2 gap-2"><span className="text-[10px] sm:text-xs text-slate-400 uppercase tracking-wide truncate">{title}</span><Icon className={`w-4 h-4 flex-shrink-0 ${iconCor}`} /></div><div className="text-xl sm:text-2xl font-bold leading-tight break-words">{value}</div>{sub && <div className="text-[10px] sm:text-xs text-slate-500 mt-1 truncate">{sub}</div>}</div>; }
-function Painel({ titulo, children }) { return <div className="bg-slate-900/50 border border-slate-200 rounded-xl p-3 sm:p-4 min-w-0"><h3 className="font-semibold mb-2 sm:mb-3 text-sm text-slate-600">{titulo}</h3>{children}</div>; }
-function Stat({ label, valor, cor = 'text-white' }) { return <div className="bg-slate-900/50 rounded p-2 min-w-0"><div className="text-[10px] text-slate-500 uppercase truncate">{label}</div><div className={`font-semibold ${cor} truncate`}>{valor}</div></div>; }
+function Painel({ titulo, children }) { return <div className="bg-white border border-slate-200 rounded-xl p-3 sm:p-4 min-w-0"><h3 className="font-semibold mb-2 sm:mb-3 text-sm text-slate-600">{titulo}</h3>{children}</div>; }
+function Stat({ label, valor, cor = 'text-slate-900' }) { return <div className="bg-slate-50 rounded p-2 min-w-0"><div className="text-[10px] text-slate-500 uppercase truncate">{label}</div><div className={`font-semibold ${cor} truncate`}>{valor}</div></div>; }
 function BotaoXResumo({ excluido, onClick }) {
   return excluido
     ? <button onClick={onClick} title="Restaurar este registro" className="w-6 h-6 rounded-full bg-emerald-500/20 hover:bg-emerald-500/40 text-emerald-300 flex items-center justify-center text-base font-bold leading-none">+</button>
@@ -5277,10 +5277,10 @@ function ModalMassaLancFeriado({ ids, lancamentos, servicos, feriadosExtra, onSa
       <p className="text-sm text-slate-400 mb-4">{qtd} lançamento{qtd !== 1 ? 's' : ''} selecionado{qtd !== 1 ? 's' : ''}. Os valores de adicional serão recalculados.</p>
 
       <div className="flex gap-2 mb-4">
-        <button onClick={() => setModo('marcar')} className={`flex-1 py-2 rounded-lg text-sm font-medium border ${modo === 'marcar' ? 'bg-amber-600/20 border-amber-500 text-amber-300' : 'bg-slate-800 border-slate-200 text-slate-400 hover:text-slate-900'}`}>
+        <button onClick={() => setModo('marcar')} className={`flex-1 py-2 rounded-lg text-sm font-medium border ${modo === 'marcar' ? 'bg-amber-600/20 border-amber-500 text-amber-700' : 'bg-white border-slate-200 text-slate-500 hover:text-slate-900 hover:bg-slate-50'}`}>
           Marcar como feriado
         </button>
-        <button onClick={() => setModo('remover')} className={`flex-1 py-2 rounded-lg text-sm font-medium border ${modo === 'remover' ? 'bg-slate-600/40 border-slate-500 text-slate-700' : 'bg-slate-800 border-slate-200 text-slate-400 hover:text-slate-900'}`}>
+        <button onClick={() => setModo('remover')} className={`flex-1 py-2 rounded-lg text-sm font-medium border ${modo === 'remover' ? 'bg-red-50 border-red-300 text-red-700' : 'bg-white border-slate-200 text-slate-500 hover:text-slate-900 hover:bg-slate-50'}`}>
           Remover marcação
         </button>
       </div>
@@ -5293,7 +5293,7 @@ function ModalMassaLancFeriado({ ids, lancamentos, servicos, feriadosExtra, onSa
       )}
 
       <div className="border border-slate-200 rounded-lg overflow-hidden mb-5">
-        <div className="bg-slate-800/60 px-3 py-1.5 text-[10px] uppercase text-slate-500 font-semibold flex">
+        <div className="bg-slate-100 px-3 py-1.5 text-[10px] uppercase text-slate-500 font-semibold flex">
           <span className="w-24 flex-none">Data</span>
           <span className="flex-1">Serviço</span>
           <span className="w-40 text-right">Feriado resultante</span>
@@ -5502,7 +5502,7 @@ function ModalLancamento({ dados, servicos, funcionarios, categoriasFolha = [], 
               </label>
             </div>
           </div>
-          <div className="mt-4 bg-slate-800/60 border border-slate-200 rounded-lg p-3">
+          <div className="mt-4 bg-slate-100 border border-slate-200 rounded-lg p-3">
             <div className="text-xs text-slate-400 uppercase font-semibold mb-2">Cálculo</div>
             {/* Derivação de horas dos campos de início/término */}
             {(() => {
@@ -5563,7 +5563,7 @@ function ModalLancamento({ dados, servicos, funcionarios, categoriasFolha = [], 
           </div>
         </>
       )}
-      <div className="flex justify-end gap-2 mt-4"><button onClick={onClose} className="px-4 py-2 rounded-lg text-sm bg-slate-700 hover:bg-slate-600">Cancelar</button><button onClick={submit} className="px-4 py-2 rounded-lg text-sm bg-indigo-600 hover:bg-indigo-500 font-medium">Salvar</button></div>
+      <div className="flex justify-end gap-2 mt-4"><button onClick={onClose} className="px-4 py-2 rounded-lg text-sm bg-slate-100 hover:bg-slate-200 text-slate-700">Cancelar</button><button onClick={submit} className="px-4 py-2 rounded-lg text-sm bg-indigo-600 hover:bg-indigo-500 font-medium">Salvar</button></div>
     </ModalBase>
   );
 }
@@ -5613,7 +5613,7 @@ function ModalServico({ dados, clientes = [], onSave, onClose }) {
             {clienteNovo ? (
               <div className="flex gap-1">
                 <input value={f.cliente} onChange={e => setF({ ...f, cliente: e.target.value })} placeholder="Nome do novo cliente" className="flex-1 bg-white border border-slate-200 rounded px-3 py-2 text-sm" autoFocus />
-                <button type="button" onClick={() => { setClienteNovo(false); setF({ ...f, cliente: '' }); }} className="px-2 bg-slate-700 hover:bg-slate-600 rounded text-xs">↩</button>
+                <button type="button" onClick={() => { setClienteNovo(false); setF({ ...f, cliente: '' }); }} className="px-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded text-xs">↩</button>
               </div>
             ) : (
               <select value={f.cliente} onChange={e => { if (e.target.value === '__novo__') { setClienteNovo(true); setF({ ...f, cliente: '' }); } else setF({ ...f, cliente: e.target.value }); }} className="w-full bg-white border border-slate-200 rounded px-3 py-2 text-sm">
@@ -5655,7 +5655,7 @@ function ModalServico({ dados, clientes = [], onSave, onClose }) {
       </div>
 
       <div className="flex justify-end gap-2 mt-4">
-        <button onClick={onClose} className="px-4 py-2 rounded-lg text-sm bg-slate-700 hover:bg-slate-600">Cancelar</button>
+        <button onClick={onClose} className="px-4 py-2 rounded-lg text-sm bg-slate-100 hover:bg-slate-200 text-slate-700">Cancelar</button>
         <button onClick={submit} className="px-4 py-2 rounded-lg text-sm bg-indigo-600 hover:bg-indigo-500 font-medium">Salvar</button>
       </div>
     </ModalBase>
@@ -5694,7 +5694,7 @@ function ModalCopiarServico({ servicos, onSave, onClose }) {
           </select>
         </Campo>
         {fonte && (
-          <div className="bg-slate-800/40 rounded p-2 text-xs text-slate-400 grid grid-cols-3 gap-2">
+          <div className="bg-slate-50 rounded p-2 text-xs text-slate-400 grid grid-cols-3 gap-2">
             <div><div className="text-[10px] uppercase text-slate-500">Vlr Fatura</div><div className="font-medium text-slate-700">{fmt(fonte.valorFatura)}</div></div>
             <div><div className="text-[10px] uppercase text-slate-500">Diária Paga</div><div className="font-medium text-slate-700">{fmt(fonte.diariaPaga)}</div></div>
             <div><div className="text-[10px] uppercase text-slate-500">Alíquota</div><div className="font-medium text-slate-700">{num(fonte.aliquota).toFixed(2)}%</div></div>
@@ -5706,7 +5706,7 @@ function ModalCopiarServico({ servicos, onSave, onClose }) {
         </div>
       </div>
       <div className="flex justify-end gap-2 mt-4">
-        <button onClick={onClose} className="px-4 py-2 rounded-lg text-sm bg-slate-700 hover:bg-slate-600">Cancelar</button>
+        <button onClick={onClose} className="px-4 py-2 rounded-lg text-sm bg-slate-100 hover:bg-slate-200 text-slate-700">Cancelar</button>
         <button onClick={submit} className="px-4 py-2 rounded-lg text-sm bg-indigo-600 hover:bg-indigo-500 font-medium">Copiar e salvar</button>
       </div>
     </ModalBase>
@@ -5803,7 +5803,7 @@ function ModalFuncionario({ dados, categorias, categoriasFolha = [], onSave, onC
               {carregandoFoto && <div className="absolute inset-0 bg-slate-900/80 flex items-center justify-center"><RefreshCw className="w-5 h-5 animate-spin" /></div>}
             </div>
             <div className="flex gap-1">
-              <label className="bg-slate-700 hover:bg-slate-600 px-2 py-1 rounded text-xs flex items-center gap-1 cursor-pointer"><Upload className="w-3 h-3" />Foto<input type="file" accept="image/*" onChange={onSelectFoto} className="hidden" /></label>
+              <label className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-2 py-1 rounded text-xs flex items-center gap-1 cursor-pointer"><Upload className="w-3 h-3" />Foto<input type="file" accept="image/*" onChange={onSelectFoto} className="hidden" /></label>
               {f.fotoMeta && <button onClick={removerFoto} className="px-2 py-1 hover:bg-red-900/40 text-red-600 rounded text-xs"><Trash2 className="w-3 h-3" /></button>}
             </div>
           </div>
@@ -5855,12 +5855,12 @@ function ModalFuncionario({ dados, categorias, categoriasFolha = [], onSave, onC
         <div>
           <h4 className="text-xs uppercase font-semibold text-slate-400 mb-2 flex items-center justify-between gap-2">
             <span className="flex items-center gap-2"><Paperclip className="w-3.5 h-3.5" />Documentos anexos ({(f.documentos || []).length}/5)</span>
-            {(f.documentos || []).length < 5 && <label className="bg-slate-700 hover:bg-slate-600 px-2 py-1 rounded text-xs flex items-center gap-1 cursor-pointer"><Upload className="w-3 h-3" />{carregandoDoc ? 'Enviando…' : 'Adicionar arquivo'}<input type="file" onChange={onSelectDoc} className="hidden" disabled={carregandoDoc} /></label>}
+            {(f.documentos || []).length < 5 && <label className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-2 py-1 rounded text-xs flex items-center gap-1 cursor-pointer"><Upload className="w-3 h-3" />{carregandoDoc ? 'Enviando…' : 'Adicionar arquivo'}<input type="file" onChange={onSelectDoc} className="hidden" disabled={carregandoDoc} /></label>}
           </h4>
           {(f.documentos || []).length === 0 ? <p className="text-xs text-slate-500 italic">Nenhum documento anexado. Aceita até 5 arquivos de até 5MB cada.</p> : (
             <div className="space-y-1">
               {f.documentos.map(d => (
-                <div key={d.id} className="bg-slate-800/40 border border-slate-200 rounded px-3 py-2 flex items-center gap-2 text-sm">
+                <div key={d.id} className="bg-slate-50 border border-slate-200 rounded px-3 py-2 flex items-center gap-2 text-sm">
                   <FileCheck className="w-4 h-4 text-emerald-600 flex-shrink-0" />
                   <div className="flex-1 min-w-0">
                     <div className="font-medium truncate">{d.nome}</div>
@@ -5876,7 +5876,7 @@ function ModalFuncionario({ dados, categorias, categoriasFolha = [], onSave, onC
 
         <Campo label="Notas internas" full><textarea value={f.notas} onChange={e => setF({ ...f, notas: e.target.value })} rows={2} className="w-full bg-white border border-slate-200 rounded px-3 py-2 text-sm" /></Campo>
       </div>
-      <div className="flex justify-end gap-2 mt-4"><button onClick={onClose} className="px-4 py-2 rounded-lg text-sm bg-slate-700 hover:bg-slate-600">Cancelar</button><button onClick={submit} className="px-4 py-2 rounded-lg text-sm bg-indigo-600 hover:bg-indigo-500 font-medium">Salvar</button></div>
+      <div className="flex justify-end gap-2 mt-4"><button onClick={onClose} className="px-4 py-2 rounded-lg text-sm bg-slate-100 hover:bg-slate-200 text-slate-700">Cancelar</button><button onClick={submit} className="px-4 py-2 rounded-lg text-sm bg-indigo-600 hover:bg-indigo-500 font-medium">Salvar</button></div>
     </ModalBase>
   );
 }
@@ -5928,7 +5928,7 @@ function ModalDespesa({ dados, onSave, onClose }) {
         <Campo label="Origem"><input list="lista-orig" value={f.origem} onChange={e => setF({ ...f, origem: e.target.value })} className="w-full bg-white border border-slate-200 rounded px-3 py-2 text-sm" /><datalist id="lista-orig">{ORIGENS_DESPESA.map(c => <option key={c} value={c} />)}</datalist></Campo>
         <Campo label="Observações" full><textarea value={f.observacoes} onChange={e => setF({ ...f, observacoes: e.target.value })} rows={2} className="w-full bg-white border border-slate-200 rounded px-3 py-2 text-sm" /></Campo>
       </div>
-      <div className="flex justify-end gap-2 mt-4"><button onClick={onClose} className="px-4 py-2 rounded-lg text-sm bg-slate-700 hover:bg-slate-600">Cancelar</button><button onClick={submit} className={`px-4 py-2 rounded-lg text-sm font-medium ${parcelado ? 'bg-purple-600 hover:bg-purple-500' : 'bg-red-600 hover:bg-red-500'}`}>{parcelado ? (isEdicao ? `Migrar para ${parcelaTotal} parcelas` : `Criar ${parcelaTotal} parcelas`) : 'Salvar'}</button></div>
+      <div className="flex justify-end gap-2 mt-4"><button onClick={onClose} className="px-4 py-2 rounded-lg text-sm bg-slate-100 hover:bg-slate-200 text-slate-700">Cancelar</button><button onClick={submit} className={`px-4 py-2 rounded-lg text-sm font-medium ${parcelado ? 'bg-purple-600 hover:bg-purple-500' : 'bg-red-600 hover:bg-red-500'}`}>{parcelado ? (isEdicao ? `Migrar para ${parcelaTotal} parcelas` : `Criar ${parcelaTotal} parcelas`) : 'Salvar'}</button></div>
     </ModalBase>
   );
 }
@@ -5977,7 +5977,7 @@ function ModalDespesaChefia({ dados, onSave, onClose }) {
         {!parcelado && <Campo label="Status"><select value={f.status} onChange={e => setF({ ...f, status: e.target.value })} className="w-full bg-white border border-slate-200 rounded px-3 py-2 text-sm"><option value="pendente">Pendente</option><option value="pago">Pago</option></select></Campo>}
         <Campo label="Observações" full><textarea value={f.observacoes} onChange={e => setF({ ...f, observacoes: e.target.value })} rows={2} className="w-full bg-white border border-slate-200 rounded px-3 py-2 text-sm" /></Campo>
       </div>
-      <div className="flex justify-end gap-2 mt-4"><button onClick={onClose} className="px-4 py-2 rounded-lg text-sm bg-slate-700 hover:bg-slate-600">Cancelar</button><button onClick={submit} className={`px-4 py-2 rounded-lg text-sm font-medium ${parcelado ? 'bg-purple-600 hover:bg-purple-500' : 'bg-violet-600 hover:bg-violet-500'}`}>{parcelado ? (isEdicao ? `Migrar para ${parcelaTotal} parcelas` : `Criar ${parcelaTotal} parcelas`) : 'Salvar'}</button></div>
+      <div className="flex justify-end gap-2 mt-4"><button onClick={onClose} className="px-4 py-2 rounded-lg text-sm bg-slate-100 hover:bg-slate-200 text-slate-700">Cancelar</button><button onClick={submit} className={`px-4 py-2 rounded-lg text-sm font-medium ${parcelado ? 'bg-purple-600 hover:bg-purple-500' : 'bg-violet-600 hover:bg-violet-500'}`}>{parcelado ? (isEdicao ? `Migrar para ${parcelaTotal} parcelas` : `Criar ${parcelaTotal} parcelas`) : 'Salvar'}</button></div>
     </ModalBase>
   );
 }
@@ -6030,7 +6030,7 @@ function ModalDesconto({ dados, clientes, funcionarios, onSave, onClose }) {
         <Campo label="Forma de Pagamento"><input list="lista-fp-vale" value={f.formaPagamento} onChange={e => setF({ ...f, formaPagamento: e.target.value })} className="w-full bg-white border border-slate-200 rounded px-3 py-2 text-sm" /><datalist id="lista-fp-vale">{FORMAS_PAGAMENTO_VALE.map(c => <option key={c} value={c} />)}</datalist></Campo>
         <Campo label="Observações" full><textarea value={f.observacoes} onChange={e => setF({ ...f, observacoes: e.target.value })} rows={2} className="w-full bg-white border border-slate-200 rounded px-3 py-2 text-sm" /></Campo>
       </div>
-      <div className="flex justify-end gap-2 mt-4"><button onClick={onClose} className="px-4 py-2 rounded-lg text-sm bg-slate-700 hover:bg-slate-600">Cancelar</button><button onClick={submit} className={`px-4 py-2 rounded-lg text-sm font-medium ${parcelado ? 'bg-purple-600 hover:bg-purple-500' : 'bg-amber-600 hover:bg-amber-500'}`}>{parcelado ? (isEdicao ? `Migrar para ${parcelaTotal} parcelas` : `Criar ${parcelaTotal} parcelas`) : 'Salvar'}</button></div>
+      <div className="flex justify-end gap-2 mt-4"><button onClick={onClose} className="px-4 py-2 rounded-lg text-sm bg-slate-100 hover:bg-slate-200 text-slate-700">Cancelar</button><button onClick={submit} className={`px-4 py-2 rounded-lg text-sm font-medium ${parcelado ? 'bg-purple-600 hover:bg-purple-500' : 'bg-amber-600 hover:bg-amber-500'}`}>{parcelado ? (isEdicao ? `Migrar para ${parcelaTotal} parcelas` : `Criar ${parcelaTotal} parcelas`) : 'Salvar'}</button></div>
     </ModalBase>
   );
 }
@@ -6209,8 +6209,8 @@ function ModalProposta({ dados, clientes, servicos, onSave, onClose }) {
               {f.categoria === 'ESCOLTA' && !readOnly && (
                 <div className="flex items-center gap-3 mb-2">
                   <span className="text-[11px] text-slate-400">Tipo de item:</span>
-                  <button type="button" onClick={() => atualizarItem(idx, '_modoCatalogo', false)} className={`text-[11px] px-2 py-1 rounded ${!it._modoCatalogo ? 'bg-indigo-600 text-white' : 'bg-slate-800 text-slate-400 hover:bg-slate-100'}`}>Personalizado</button>
-                  <button type="button" onClick={() => atualizarItem(idx, '_modoCatalogo', true)} className={`text-[11px] px-2 py-1 rounded ${it._modoCatalogo ? 'bg-indigo-600 text-white' : 'bg-slate-800 text-slate-400 hover:bg-slate-100'}`}>Do catálogo</button>
+                  <button type="button" onClick={() => atualizarItem(idx, '_modoCatalogo', false)} className={`text-[11px] px-2 py-1 rounded ${!it._modoCatalogo ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}>Personalizado</button>
+                  <button type="button" onClick={() => atualizarItem(idx, '_modoCatalogo', true)} className={`text-[11px] px-2 py-1 rounded ${it._modoCatalogo ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}>Do catálogo</button>
                 </div>
               )}
               <div className="grid sm:grid-cols-12 gap-2 items-end">
@@ -6258,7 +6258,7 @@ function ModalProposta({ dados, clientes, servicos, onSave, onClose }) {
                 </div>
               )}
               {f.categoria === 'ESCOLTA' && (
-                <div className="mt-2 p-2 bg-slate-900/40 border border-slate-200 rounded">
+                <div className="mt-2 p-2 bg-white border border-slate-200 rounded">
                   <div className="text-[10px] text-indigo-600 font-semibold mb-1.5 uppercase tracking-wide">Valores excedentes</div>
                   <div className="grid sm:grid-cols-3 gap-2">
                     <div>
@@ -6302,7 +6302,7 @@ function ModalProposta({ dados, clientes, servicos, onSave, onClose }) {
           {isEdicao && <button onClick={() => gerarPropostaPDF({ ...f, itens, numero_formatado: dados?.numero_formatado, criado_em: dados?.criado_em })} className="px-3 py-2 rounded-lg text-sm bg-rose-700 hover:bg-rose-600 flex items-center gap-1.5"><Printer className="w-4 h-4" />Gerar PDF</button>}
         </div>
         <div className="flex gap-2">
-          <button onClick={onClose} className="px-4 py-2 rounded-lg text-sm bg-slate-700 hover:bg-slate-600">{readOnly ? 'Fechar' : 'Cancelar'}</button>
+          <button onClick={onClose} className="px-4 py-2 rounded-lg text-sm bg-slate-100 hover:bg-slate-200 text-slate-700">{readOnly ? 'Fechar' : 'Cancelar'}</button>
           {!readOnly && <button onClick={submit} className="px-4 py-2 rounded-lg text-sm bg-indigo-600 hover:bg-indigo-500 font-medium">{isEdicao ? 'Salvar alterações' : 'Criar proposta'}</button>}
         </div>
       </div>
@@ -6476,7 +6476,7 @@ function ModalCriarServicosDeProposta({ proposta, clientes, onCriar, onClose }) 
       )}
 
       <div className="flex justify-end gap-2 mt-4">
-        <button onClick={onClose} className="px-4 py-2 rounded-lg text-sm bg-slate-700 hover:bg-slate-600">Cancelar</button>
+        <button onClick={onClose} className="px-4 py-2 rounded-lg text-sm bg-slate-100 hover:bg-slate-200 text-slate-700">Cancelar</button>
         {naoConvertidos.length > 0 && <button onClick={submit} className="px-4 py-2 rounded-lg text-sm bg-indigo-600 hover:bg-indigo-500 font-medium">Criar serviços marcados</button>}
       </div>
     </ModalBase>
@@ -6503,8 +6503,8 @@ function ModalDetalheFolha({ dados, onSave, onProcessar, onRecibo, onClose }) {
   return (
     <ModalBase titulo={`${f.nome} · ${fmtMes(dados.periodo)}`} onClose={onClose} grande>
       <div className="grid sm:grid-cols-2 gap-3 text-sm mb-4">
-        <div className="bg-slate-800/40 rounded p-3"><div className="text-xs text-slate-400 uppercase mb-1">Funcionário</div><div className="font-semibold">{f.nome}</div><div className="text-xs text-slate-500">{f.categoria}</div>{f.cpf && <div className="text-xs text-slate-500 font-mono mt-1">CPF {f.cpf}</div>}</div>
-        <div className="bg-slate-800/40 rounded p-3"><div className="text-xs text-slate-400 uppercase mb-1">Pagamento</div>{f.chavePix ? <><div className="text-xs text-slate-500">{f.tipoPix}</div><div className="font-mono text-sm">{f.chavePix}</div></> : <div className="text-xs text-slate-500 italic">Pix não cadastrado</div>}</div>
+        <div className="bg-slate-50 rounded p-3"><div className="text-xs text-slate-400 uppercase mb-1">Funcionário</div><div className="font-semibold">{f.nome}</div><div className="text-xs text-slate-500">{f.categoria}</div>{f.cpf && <div className="text-xs text-slate-500 font-mono mt-1">CPF {f.cpf}</div>}</div>
+        <div className="bg-slate-50 rounded p-3"><div className="text-xs text-slate-400 uppercase mb-1">Pagamento</div>{f.chavePix ? <><div className="text-xs text-slate-500">{f.tipoPix}</div><div className="font-mono text-sm">{f.chavePix}</div></> : <div className="text-xs text-slate-500 italic">Pix não cadastrado</div>}</div>
       </div>
       <h4 className="text-xs uppercase font-semibold text-slate-400 mb-2">Lançamentos ({dados.lancs.length})</h4>
       <div className="overflow-x-auto mb-4 max-h-60">
@@ -6545,7 +6545,7 @@ function ModalDetalheFolha({ dados, onSave, onProcessar, onRecibo, onClose }) {
         <div className="flex gap-2 flex-wrap">
           {onProcessar && <button onClick={() => { setStatus('processada'); onSave({ funcionarioId: dados.funcionario.id, periodo: dados.periodo, ajustes, status: 'processada', dataProcessamento: new Date().toISOString() }); onProcessar({ ...dados, ajustes, vales: dados.vales, totalVales: dados.totalVales, adicionais, descontos: descontosTotal, descontosManuais, liquido }); }} className="px-4 py-2 rounded-lg text-sm bg-emerald-600 hover:bg-emerald-500 font-medium flex items-center gap-2"><Printer className="w-4 h-4" />Processar e gerar PDF</button>}
           {onRecibo && <button onClick={() => onRecibo({ ...dados, ajustes, vales: dados.vales, totalVales: dados.totalVales, adicionais, descontos: descontosTotal, descontosManuais, liquido })} className="px-4 py-2 rounded-lg text-sm bg-amber-600 hover:bg-amber-500 font-medium flex items-center gap-2"><Receipt className="w-4 h-4" />Gerar recibo</button>}
-          <button onClick={onClose} className="px-4 py-2 rounded-lg text-sm bg-slate-700 hover:bg-slate-600">Cancelar</button>
+          <button onClick={onClose} className="px-4 py-2 rounded-lg text-sm bg-slate-100 hover:bg-slate-200 text-slate-700">Cancelar</button>
           <button onClick={salvar} className="px-4 py-2 rounded-lg text-sm bg-indigo-600 hover:bg-indigo-500 font-medium">Salvar</button>
         </div>
       </div>
@@ -6582,8 +6582,8 @@ function ModalDetalheFatura({ dados, servicos, onClose }) {
       {vista === 'fatura' && (
         <div className="space-y-4">
           <div className="grid grid-cols-2 gap-3 text-sm">
-            <div className="bg-slate-800/40 rounded p-3"><div className="text-xs text-slate-400 uppercase mb-1">Cliente</div><div className="font-semibold">{dados.cliente}</div><div className="text-xs text-slate-500">{itens[0]?.cnpj || ''}</div></div>
-            <div className="bg-slate-800/40 rounded p-3"><div className="text-xs text-slate-400 uppercase mb-1">Período</div><div className="font-semibold">{fmtPeriodo(dados.periodo, t)}</div><div className="text-xs text-slate-500">{dados.qtd} lançamentos · {t?.nome}</div></div>
+            <div className="bg-slate-50 rounded p-3"><div className="text-xs text-slate-400 uppercase mb-1">Cliente</div><div className="font-semibold">{dados.cliente}</div><div className="text-xs text-slate-500">{itens[0]?.cnpj || ''}</div></div>
+            <div className="bg-slate-50 rounded p-3"><div className="text-xs text-slate-400 uppercase mb-1">Período</div><div className="font-semibold">{fmtPeriodo(dados.periodo, t)}</div><div className="text-xs text-slate-500">{dados.qtd} lançamentos · {t?.nome}</div></div>
           </div>
           <div className="overflow-x-auto">
             <h4 className="text-xs uppercase font-semibold text-slate-400 mb-2">Resumo por Serviço</h4>
@@ -6616,7 +6616,7 @@ function ModalDetalheFatura({ dados, servicos, onClose }) {
           </div>
         </div>
       )}
-      <div className="flex justify-end mt-4"><button onClick={onClose} className="px-4 py-2 rounded-lg text-sm bg-slate-700 hover:bg-slate-600">Fechar</button></div>
+      <div className="flex justify-end mt-4"><button onClick={onClose} className="px-4 py-2 rounded-lg text-sm bg-slate-100 hover:bg-slate-200 text-slate-700">Fechar</button></div>
     </ModalBase>
   );
 }
@@ -6652,7 +6652,7 @@ function ModalFaturaIntervalo({ clientes, proximoNumero, onSave, onClose }) {
         <Campo label="Data fim *"><input type="date" value={dataFim} onChange={e => setDataFim(e.target.value)} className="w-full bg-white border border-slate-200 rounded px-3 py-2 text-sm" /></Campo>
         <Campo label="Competência (para resumo) *" full><input type="month" value={competencia} onChange={e => setCompetencia(e.target.value)} className="w-full bg-white border border-slate-200 rounded px-3 py-2 text-sm" /></Campo>
       </div>
-      <div className="flex justify-end gap-2 mt-4"><button onClick={onClose} className="px-4 py-2 rounded-lg text-sm bg-slate-700 hover:bg-slate-600">Cancelar</button><button onClick={submit} className="px-4 py-2 rounded-lg text-sm bg-indigo-600 hover:bg-indigo-500 font-medium">Gerar fatura {proximoNumero}</button></div>
+      <div className="flex justify-end gap-2 mt-4"><button onClick={onClose} className="px-4 py-2 rounded-lg text-sm bg-slate-100 hover:bg-slate-200 text-slate-700">Cancelar</button><button onClick={submit} className="px-4 py-2 rounded-lg text-sm bg-indigo-600 hover:bg-indigo-500 font-medium">Gerar fatura {proximoNumero}</button></div>
     </ModalBase>
   );
 }
@@ -6683,7 +6683,7 @@ function ModalEscolherCompetencia({ funcionario, folhasPorFunc, onSelecionar, on
           ))}
         </div>
       )}
-      <div className="flex justify-end mt-4"><button onClick={onClose} className="px-4 py-2 rounded-lg text-sm bg-slate-700 hover:bg-slate-600">Cancelar</button></div>
+      <div className="flex justify-end mt-4"><button onClick={onClose} className="px-4 py-2 rounded-lg text-sm bg-slate-100 hover:bg-slate-200 text-slate-700">Cancelar</button></div>
     </ModalBase>
   );
 }
@@ -7150,7 +7150,7 @@ function ModalImportarSalariosFixos({ funcionariosExistentes = [], onImportar, o
                 placeholder={"Nome\tSalário\tGrupo Folha\nJOÃO DA SILVA\t1500,00\tARMADA\nMARIA SANTOS\t2200,00\tESCRITÓRIO"}
                 className="w-full bg-white border border-slate-200 rounded px-3 py-2 text-sm font-mono"
               />
-              <button onClick={handleTexto} disabled={!textoColado.trim()} className="w-full bg-blue-600 hover:bg-blue-500 disabled:bg-slate-700 disabled:cursor-not-allowed px-4 py-2 rounded text-sm font-medium flex items-center justify-center gap-2"><Search className="w-4 h-4" />Analisar texto</button>
+              <button onClick={handleTexto} disabled={!textoColado.trim()} className="w-full bg-blue-600 hover:bg-blue-500 disabled:opacity-40 disabled:cursor-not-allowed px-4 py-2 rounded text-sm font-medium flex items-center justify-center gap-2"><Search className="w-4 h-4" />Analisar texto</button>
             </>
           )}
         </div>
@@ -7177,7 +7177,7 @@ function ModalImportarSalariosFixos({ funcionariosExistentes = [], onImportar, o
               <h4 className="text-xs uppercase text-slate-400 font-semibold mb-1.5">Atualizações</h4>
               <div className="bg-white rounded max-h-48 overflow-y-auto">
                 <table className="w-full text-xs">
-                  <thead className="text-slate-400 sticky top-0 bg-slate-900"><tr><th className="text-left py-1.5 px-2">Nome</th><th className="text-right px-2">Sal. atual</th><th className="text-right px-2">Sal. novo</th><th className="text-left px-2">Grupo</th></tr></thead>
+                  <thead className="text-slate-500 sticky top-0 bg-slate-50"><tr><th className="text-left py-1.5 px-2">Nome</th><th className="text-right px-2">Sal. atual</th><th className="text-right px-2">Sal. novo</th><th className="text-left px-2">Grupo</th></tr></thead>
                   <tbody>{analise.atualizar.map((u, i) => (
                     <tr key={i} className="border-t border-slate-200/50">
                       <td className="py-1 px-2">{u.existente.nome}</td>
@@ -7199,8 +7199,8 @@ function ModalImportarSalariosFixos({ funcionariosExistentes = [], onImportar, o
             </div>
           )}
           <div className="flex gap-2 pt-2 border-t border-slate-200">
-            <button onClick={() => setAnalise(null)} className="flex-1 bg-slate-700 hover:bg-slate-600 px-4 py-2 rounded text-sm">Voltar</button>
-            <button onClick={confirmar} disabled={analise.atualizar.length === 0} className="flex-1 bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-700 disabled:cursor-not-allowed px-4 py-2 rounded text-sm font-semibold">Confirmar atualização ({analise.atualizar.length})</button>
+            <button onClick={() => setAnalise(null)} className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded text-sm">Voltar</button>
+            <button onClick={confirmar} disabled={analise.atualizar.length === 0} className="flex-1 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-40 disabled:cursor-not-allowed px-4 py-2 rounded text-sm font-semibold">Confirmar atualização ({analise.atualizar.length})</button>
           </div>
         </div>
       )}
@@ -7266,7 +7266,7 @@ function ModalImportarDespesasChefiaXLSX({ onImportar, onClose }) {
               <textarea value={textoColado} onChange={e => setTextoColado(e.target.value)} rows={9}
                 placeholder={"Data\tDescrição\tTipo\tValor\tOrigem\n01/04/2026\tCombustível\tAVULSA\t450,00\tMANHÃES\n03/04/2026\tJantar\tAVULSA\t280,00\tRICARDO"}
                 className="w-full bg-white border border-slate-200 rounded px-3 py-2 text-sm font-mono" />
-              <button onClick={() => { if (!textoColado.trim()) return; setAnalise(parseDespesasChefiaFromText(textoColado)); }} disabled={!textoColado.trim()} className="w-full bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-700 disabled:cursor-not-allowed px-4 py-2 rounded text-sm font-medium flex items-center justify-center gap-2"><Search className="w-4 h-4" />Analisar texto</button>
+              <button onClick={() => { if (!textoColado.trim()) return; setAnalise(parseDespesasChefiaFromText(textoColado)); }} disabled={!textoColado.trim()} className="w-full bg-emerald-600 hover:bg-emerald-500 disabled:opacity-40 disabled:cursor-not-allowed px-4 py-2 rounded text-sm font-medium flex items-center justify-center gap-2"><Search className="w-4 h-4" />Analisar texto</button>
             </>
           )}
         </div>
@@ -7285,12 +7285,12 @@ function ModalImportarDespesasChefiaXLSX({ onImportar, onClose }) {
           {analise.itens?.length > 0 && (
             <div className="bg-white rounded max-h-56 overflow-y-auto">
               <table className="w-full text-xs">
-                <thead className="text-slate-400 sticky top-0 bg-slate-900"><tr><th className="text-left py-1.5 px-2">Compet.</th><th className="text-left px-2">Descrição</th><th className="text-left px-2">Origem</th><th className="text-right px-2">Valor</th></tr></thead>
+                <thead className="text-slate-500 sticky top-0 bg-slate-50"><tr><th className="text-left py-1.5 px-2">Compet.</th><th className="text-left px-2">Descrição</th><th className="text-left px-2">Origem</th><th className="text-right px-2">Valor</th></tr></thead>
                 <tbody>{analise.itens.map((it, i) => (
                   <tr key={i} className="border-t border-slate-200/50">
                     <td className="py-1 px-2 font-mono text-[10px]">{it.competencia}</td>
                     <td className="px-2">{it.descricao}</td>
-                    <td className="px-2"><span className={`text-[10px] px-1.5 py-0.5 rounded ${it.origem === 'MANHÃES' ? 'bg-emerald-500/20 text-emerald-300' : 'bg-blue-500/20 text-blue-600'}`}>{it.origem}</span></td>
+                    <td className="px-2"><span className={`text-[10px] px-1.5 py-0.5 rounded ${it.origem === 'MANHÃES' ? 'bg-emerald-500/20 text-emerald-700' : 'bg-blue-500/20 text-blue-600'}`}>{it.origem}</span></td>
                     <td className="px-2 text-right text-red-300 font-medium">{fmt(it.valor)}</td>
                   </tr>
                 ))}</tbody>
@@ -7298,8 +7298,8 @@ function ModalImportarDespesasChefiaXLSX({ onImportar, onClose }) {
             </div>
           )}
           <div className="flex gap-2 pt-2 border-t border-slate-200">
-            <button onClick={() => setAnalise(null)} className="flex-1 bg-slate-700 hover:bg-slate-600 px-4 py-2 rounded text-sm">Voltar</button>
-            <button onClick={confirmar} disabled={!analise.itens?.length} className="flex-1 bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-700 disabled:cursor-not-allowed px-4 py-2 rounded text-sm font-semibold">Confirmar ({analise.itens?.length || 0})</button>
+            <button onClick={() => setAnalise(null)} className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded text-sm">Voltar</button>
+            <button onClick={confirmar} disabled={!analise.itens?.length} className="flex-1 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-40 disabled:cursor-not-allowed px-4 py-2 rounded text-sm font-semibold">Confirmar ({analise.itens?.length || 0})</button>
           </div>
         </div>
       )}
@@ -7390,7 +7390,7 @@ function ModalImportarDiariasXLSX({ funcionariosExistentes = [], onImportar, onC
                 placeholder={"data\tColaborador\tValor\tGrupo Folha\n01/04/2026\tJOÃO DA SILVA\tR$ 2.090,00\tESCOLTA ARMADA\n01/04/2026\tMARIA SANTOS\t1850,00\tCONDOMÍNIO SPRING PARK"}
                 className="w-full bg-white border border-slate-200 rounded px-3 py-2 text-sm font-mono"
               />
-              <button onClick={handleTexto} disabled={!textoColado.trim()} className="w-full bg-blue-600 hover:bg-blue-500 disabled:bg-slate-700 disabled:cursor-not-allowed px-4 py-2 rounded text-sm font-medium flex items-center justify-center gap-2"><Search className="w-4 h-4" />Analisar texto</button>
+              <button onClick={handleTexto} disabled={!textoColado.trim()} className="w-full bg-blue-600 hover:bg-blue-500 disabled:opacity-40 disabled:cursor-not-allowed px-4 py-2 rounded text-sm font-medium flex items-center justify-center gap-2"><Search className="w-4 h-4" />Analisar texto</button>
             </>
           )}
         </div>
@@ -7417,7 +7417,7 @@ function ModalImportarDiariasXLSX({ funcionariosExistentes = [], onImportar, onC
               <h4 className="text-xs uppercase text-slate-400 font-semibold mb-1.5">Lançamentos a importar</h4>
               <div className="bg-white rounded max-h-48 overflow-y-auto">
                 <table className="w-full text-xs">
-                  <thead className="text-slate-400 sticky top-0 bg-slate-900"><tr><th className="text-left py-1.5 px-2">Data</th><th className="text-left px-2">Colaborador</th><th className="text-right px-2">Valor</th><th className="text-left px-2">Grupo Folha</th></tr></thead>
+                  <thead className="text-slate-500 sticky top-0 bg-slate-50"><tr><th className="text-left py-1.5 px-2">Data</th><th className="text-left px-2">Colaborador</th><th className="text-right px-2">Valor</th><th className="text-left px-2">Grupo Folha</th></tr></thead>
                   <tbody>{analise.validos.map((it, i) => (
                     <tr key={i} className="border-t border-slate-200/50">
                       <td className="py-1 px-2 font-mono text-[10px]">{it.data ? it.data.split('-').reverse().join('/') : '—'}</td>
@@ -7439,8 +7439,8 @@ function ModalImportarDiariasXLSX({ funcionariosExistentes = [], onImportar, onC
             </div>
           )}
           <div className="flex gap-2 pt-2 border-t border-slate-200">
-            <button onClick={() => setAnalise(null)} className="flex-1 bg-slate-700 hover:bg-slate-600 px-4 py-2 rounded text-sm">Voltar</button>
-            <button onClick={confirmar} disabled={analise.validos.length === 0} className="flex-1 bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-700 disabled:cursor-not-allowed px-4 py-2 rounded text-sm font-semibold">Confirmar importação ({analise.validos.length})</button>
+            <button onClick={() => setAnalise(null)} className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded text-sm">Voltar</button>
+            <button onClick={confirmar} disabled={analise.validos.length === 0} className="flex-1 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-40 disabled:cursor-not-allowed px-4 py-2 rounded text-sm font-semibold">Confirmar importação ({analise.validos.length})</button>
           </div>
         </div>
       )}
@@ -7531,7 +7531,7 @@ function ModalImportarFuncionarios({ funcionariosExistentes = [], onImportar, on
                   <div className="text-2xl font-bold text-amber-300">{analise.atualizar.length}</div>
                   <div className="text-[10px] uppercase text-slate-400">Atualizar</div>
                 </div>
-                <div className="bg-slate-700/30 border border-slate-200 rounded p-3 text-center">
+                <div className="bg-slate-50 border border-slate-200 rounded p-3 text-center">
                   <div className="text-2xl font-bold text-slate-700">{total}</div>
                   <div className="text-[10px] uppercase text-slate-400">Total</div>
                 </div>
@@ -7541,7 +7541,7 @@ function ModalImportarFuncionarios({ funcionariosExistentes = [], onImportar, on
                   <h4 className="text-xs uppercase text-slate-400 font-semibold mb-1.5 flex items-center gap-1.5"><Plus className="w-3 h-3 text-emerald-600" />Novos funcionários ({analise.novos.length})</h4>
                   <div className="bg-white rounded max-h-48 overflow-y-auto">
                     <table className="w-full text-xs">
-                      <thead className="text-slate-400 sticky top-0 bg-slate-900"><tr><th className="text-left py-1.5 px-2">Nome</th><th className="text-left px-2">Categoria</th><th className="text-left px-2">CPF</th><th className="text-right px-2">Sal. Fixo</th></tr></thead>
+                      <thead className="text-slate-500 sticky top-0 bg-slate-50"><tr><th className="text-left py-1.5 px-2">Nome</th><th className="text-left px-2">Categoria</th><th className="text-left px-2">CPF</th><th className="text-right px-2">Sal. Fixo</th></tr></thead>
                       <tbody>{analise.novos.map((f, i) => (
                         <tr key={i} className="border-t border-slate-200/50">
                           <td className="py-1 px-2">{f.nome}</td>
@@ -7559,7 +7559,7 @@ function ModalImportarFuncionarios({ funcionariosExistentes = [], onImportar, on
                   <h4 className="text-xs uppercase text-slate-400 font-semibold mb-1.5 flex items-center gap-1.5"><Edit2 className="w-3 h-3 text-amber-600" />Funcionários a atualizar ({analise.atualizar.length})</h4>
                   <div className="bg-white rounded max-h-48 overflow-y-auto">
                     <table className="w-full text-xs">
-                      <thead className="text-slate-400 sticky top-0 bg-slate-900"><tr><th className="text-left py-1.5 px-2">Nome</th><th className="text-left px-2">ID atual</th><th className="text-left px-2">Mudanças detectadas</th></tr></thead>
+                      <thead className="text-slate-500 sticky top-0 bg-slate-50"><tr><th className="text-left py-1.5 px-2">Nome</th><th className="text-left px-2">ID atual</th><th className="text-left px-2">Mudanças detectadas</th></tr></thead>
                       <tbody>{analise.atualizar.map((u, i) => {
                         const mudancas = [];
                         ['categoria', 'cpf', 'rg', 'telefone', 'email', 'endereco', 'salarioFixo', 'chavePix'].forEach(k => {
@@ -7582,9 +7582,9 @@ function ModalImportarFuncionarios({ funcionariosExistentes = [], onImportar, on
             </>
           )}
           <div className="flex justify-between gap-2 mt-4">
-            <button onClick={() => { setAnalise(null); if (fileRef.current) fileRef.current.value = ''; }} className="px-4 py-2 rounded-lg text-sm bg-slate-700 hover:bg-slate-600">← Escolher outro arquivo</button>
+            <button onClick={() => { setAnalise(null); if (fileRef.current) fileRef.current.value = ''; }} className="px-4 py-2 rounded-lg text-sm bg-slate-100 hover:bg-slate-200 text-slate-700">← Escolher outro arquivo</button>
             <div className="flex gap-2">
-              <button onClick={onClose} className="px-4 py-2 rounded-lg text-sm bg-slate-700 hover:bg-slate-600">Cancelar</button>
+              <button onClick={onClose} className="px-4 py-2 rounded-lg text-sm bg-slate-100 hover:bg-slate-200 text-slate-700">Cancelar</button>
               <button onClick={confirmar} disabled={total === 0} className="px-4 py-2 rounded-lg text-sm bg-emerald-600 hover:bg-emerald-500 font-medium flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"><CheckCircle2 className="w-4 h-4" />Importar {total} funcionário{total !== 1 ? 's' : ''}</button>
             </div>
           </div>
@@ -7596,7 +7596,7 @@ function ModalImportarFuncionarios({ funcionariosExistentes = [], onImportar, on
 
 function ModalConfirm({ titulo, mensagem, onConfirm, onClose, cor = 'red' }) {
   const corBtn = { red: 'bg-red-600 hover:bg-red-500', emerald: 'bg-emerald-600 hover:bg-emerald-500', amber: 'bg-amber-600 hover:bg-amber-500' }[cor];
-  return <ModalBase titulo={titulo} onClose={onClose} pequeno><p className="text-sm text-slate-600 mb-4">{mensagem}</p><div className="flex justify-end gap-2"><button onClick={onClose} className="px-4 py-2 rounded-lg text-sm bg-slate-700 hover:bg-slate-600">Cancelar</button><button onClick={onConfirm} className={`px-4 py-2 rounded-lg text-sm font-medium ${corBtn}`}>Confirmar</button></div></ModalBase>;
+  return <ModalBase titulo={titulo} onClose={onClose} pequeno><p className="text-sm text-slate-600 mb-4">{mensagem}</p><div className="flex justify-end gap-2"><button onClick={onClose} className="px-4 py-2 rounded-lg text-sm bg-slate-100 hover:bg-slate-200 text-slate-700">Cancelar</button><button onClick={onConfirm} className={`px-4 py-2 rounded-lg text-sm font-medium ${corBtn}`}>Confirmar</button></div></ModalBase>;
 }
 
 function ModalBase({ titulo, children, onClose, pequeno, grande }) {
@@ -7793,7 +7793,7 @@ function ModalImportar({ destino = 'lancamento', servicos, onSaveLanc, onSaveDes
                 <Campo label="Serviço padrão (opcional)"><select value={defaultCod} onChange={e => setDefaultCod(e.target.value)} disabled={!templateId} className="w-full bg-white border border-slate-200 rounded px-3 py-2 text-sm disabled:opacity-50"><option value="">— sem padrão —</option>{servicosT.map(s => <option key={s.cod} value={s.cod}>#{s.cod} · {s.descricao}</option>)}</select></Campo>
               </div>
               {template && (
-                <div className="bg-slate-800/40 rounded p-3 text-xs">
+                <div className="bg-slate-50 rounded p-3 text-xs">
                   <div className="text-slate-400 mb-1.5">Colunas reconhecidas:</div>
                   <div className="flex flex-wrap gap-1">
                     <span className="font-mono text-[10px] px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300">DATA</span>
@@ -7806,7 +7806,7 @@ function ModalImportar({ destino = 'lancamento', servicos, onSaveLanc, onSaveDes
           ) : (
             <>
               <Campo label="Competência padrão (opcional — usada quando não vier na planilha)"><input type="month" value={defaultCompetencia} onChange={e => setDefaultCompetencia(e.target.value)} className="w-full bg-white border border-slate-200 rounded px-3 py-2 text-sm" /></Campo>
-              <div className="bg-slate-800/40 rounded p-3 text-xs">
+              <div className="bg-slate-50 rounded p-3 text-xs">
                 <div className="text-slate-400 mb-1.5">Colunas esperadas:</div>
                 <div className="font-mono text-[10px] text-slate-600">{colsEsperadas}</div>
                 <div className="text-slate-500 mt-2 italic">A competência vem da coluna COMPETÊNCIA. Se ausente, usa o mês da DATA. Se nem isso, usa a "Competência padrão" acima.</div>
@@ -7814,17 +7814,17 @@ function ModalImportar({ destino = 'lancamento', servicos, onSaveLanc, onSaveDes
             </>
           )}
           <Campo label="Cole aqui os dados (com cabeçalho)" full><textarea value={rawText} onChange={e => setRawText(e.target.value)} rows={10} placeholder="Cabeçalho na primeira linha..." className="w-full bg-white border border-slate-200 rounded px-3 py-2 text-xs font-mono" /></Campo>
-          <div className="flex justify-end gap-2"><button onClick={onClose} className="px-4 py-2 rounded-lg text-sm bg-slate-700 hover:bg-slate-600">Cancelar</button><button onClick={analisar} disabled={(isLanc && !templateId) || !rawText.trim()} className="px-4 py-2 rounded-lg text-sm bg-indigo-600 hover:bg-indigo-500 font-medium disabled:opacity-50">Analisar →</button></div>
+          <div className="flex justify-end gap-2"><button onClick={onClose} className="px-4 py-2 rounded-lg text-sm bg-slate-100 hover:bg-slate-200 text-slate-700">Cancelar</button><button onClick={analisar} disabled={(isLanc && !templateId) || !rawText.trim()} className="px-4 py-2 rounded-lg text-sm bg-indigo-600 hover:bg-indigo-500 font-medium disabled:opacity-50">Analisar →</button></div>
         </div>
       )}
       {step === 'preview' && parsed && (
         <div className="space-y-3">
           <div className="grid grid-cols-3 gap-2 text-xs"><Stat label="Total" valor={parsed.allRows.length} /><Stat label="Válidos" valor={parsed.valid.length} cor="text-emerald-600" /><Stat label="Inválidos" valor={parsed.invalid.length} cor="text-red-600" /></div>
-          <div className="bg-slate-800/40 rounded p-2 text-xs">
+          <div className="bg-slate-50 rounded p-2 text-xs">
             <div className="text-slate-400 mb-1">Mapeamento:</div>
-            <div className="flex flex-wrap gap-1">{parsed.headers.map((h, i) => { const norm = normCol(h); const mapped = parsed.headerMap[norm]; const isMapped = mapped && mapped !== '@skip'; const isSkip = mapped === '@skip'; return <span key={i} className={`px-2 py-0.5 rounded font-mono text-[10px] ${isMapped ? 'bg-emerald-500/20 text-emerald-300' : isSkip ? 'bg-slate-700 text-slate-500' : 'bg-amber-500/20 text-amber-300'}`} title={isMapped ? `→ ${mapped.replace('extras.', '').replace('@', '')}` : isSkip ? 'ignorada' : 'não reconhecida'}>{h || '(vazia)'}</span>; })}</div>
+            <div className="flex flex-wrap gap-1">{parsed.headers.map((h, i) => { const norm = normCol(h); const mapped = parsed.headerMap[norm]; const isMapped = mapped && mapped !== '@skip'; const isSkip = mapped === '@skip'; return <span key={i} className={`px-2 py-0.5 rounded font-mono text-[10px] ${isMapped ? 'bg-emerald-500/20 text-emerald-700' : isSkip ? 'bg-slate-200 text-slate-500' : 'bg-amber-500/20 text-amber-700'}`} title={isMapped ? `→ ${mapped.replace('extras.', '').replace('@', '')}` : isSkip ? 'ignorada' : 'não reconhecida'}>{h || '(vazia)'}</span>; })}</div>
           </div>
-          <div className="max-h-80 overflow-auto bg-slate-900/50 rounded border border-slate-200">
+          <div className="max-h-80 overflow-auto bg-white rounded border border-slate-200">
             <table className="w-full text-xs">
               <thead className="text-[10px] text-slate-400 bg-white sticky top-0"><tr><th className="text-left px-2 py-1.5">#</th><th className="text-center px-2">OK</th>{isLanc && <th className="text-left px-2">Data</th>}{isLanc ? <><th className="text-left px-2">Cód.</th><th className="text-left px-2">Detalhes</th></> : <><th className="text-left px-2">Compet.</th><th className="text-left px-2">{destino === 'despesa' ? 'Lançamento' : 'Beneficiário'}</th><th className="text-left px-2">Tipo</th><th className="text-right px-2">Valor</th></>}<th className="text-left px-2">Problemas</th></tr></thead>
               <tbody>{parsed.allRows.map((r, i) => { const e = r.dados.extras || {}; return (
@@ -7838,7 +7838,7 @@ function ModalImportar({ destino = 'lancamento', servicos, onSaveLanc, onSaveDes
               ); })}</tbody>
             </table>
           </div>
-          <div className="flex justify-between gap-2"><button onClick={() => setStep('input')} className="px-4 py-2 rounded-lg text-sm bg-slate-700 hover:bg-slate-600">← Voltar</button><div className="flex gap-2"><button onClick={onClose} className="px-4 py-2 rounded-lg text-sm bg-slate-700 hover:bg-slate-600">Cancelar</button><button onClick={importar} disabled={!parsed.valid.length} className="px-4 py-2 rounded-lg text-sm bg-emerald-600 hover:bg-emerald-500 font-medium disabled:opacity-50">Importar {parsed.valid.length}</button></div></div>
+          <div className="flex justify-between gap-2"><button onClick={() => setStep('input')} className="px-4 py-2 rounded-lg text-sm bg-slate-100 hover:bg-slate-200 text-slate-700">← Voltar</button><div className="flex gap-2"><button onClick={onClose} className="px-4 py-2 rounded-lg text-sm bg-slate-100 hover:bg-slate-200 text-slate-700">Cancelar</button><button onClick={importar} disabled={!parsed.valid.length} className="px-4 py-2 rounded-lg text-sm bg-emerald-600 hover:bg-emerald-500 font-medium disabled:opacity-50">Importar {parsed.valid.length}</button></div></div>
         </div>
       )}
     </ModalBase>
@@ -7850,7 +7850,7 @@ function ModalImportarDiarias({ onImportar, onFechar }) {
   const [texto, setTexto] = React.useState('');
   return (
     <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
-      <div className="bg-slate-900 border border-slate-200 rounded-2xl w-full max-w-2xl shadow-2xl flex flex-col gap-4 p-6">
+      <div className="bg-white border border-slate-200 rounded-2xl w-full max-w-2xl shadow-2xl flex flex-col gap-4 p-6">
         <div className="flex items-center justify-between">
           <h3 className="text-lg font-bold">Importar Lançamentos Avulsos</h3>
           <button onClick={onFechar} className="p-1.5 hover:bg-slate-100 rounded"><X className="w-5 h-5" /></button>
@@ -7867,7 +7867,7 @@ function ModalImportarDiarias({ onImportar, onFechar }) {
           className="w-full h-52 bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm font-mono resize-none focus:outline-none focus:ring-2 focus:ring-orange-500"
         />
         <div className="flex justify-end gap-2">
-          <button onClick={onFechar} className="px-4 py-2 rounded-lg text-sm bg-slate-700 hover:bg-slate-600">Cancelar</button>
+          <button onClick={onFechar} className="px-4 py-2 rounded-lg text-sm bg-slate-100 hover:bg-slate-200 text-slate-700">Cancelar</button>
           <button onClick={() => onImportar(texto)} disabled={!texto.trim()} className="px-4 py-2 rounded-lg text-sm bg-orange-600 hover:bg-orange-500 font-medium disabled:opacity-50 flex items-center gap-2"><Upload className="w-4 h-4" />Importar</button>
         </div>
       </div>
@@ -7893,7 +7893,7 @@ function ModalDiaria({ dados, funcionarios, categoriasFolha = [], onSalvar, onFe
   };
   return (
     <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
-      <div className="bg-slate-900 border border-slate-200 rounded-2xl w-full max-w-lg shadow-2xl flex flex-col gap-4 p-6">
+      <div className="bg-white border border-slate-200 rounded-2xl w-full max-w-lg shadow-2xl flex flex-col gap-4 p-6">
         <div className="flex items-center justify-between">
           <h3 className="text-lg font-bold">{dados ? 'Editar Lançamento Avulso' : 'Novo Lançamento Avulso'}</h3>
           <button onClick={onFechar} className="p-1.5 hover:bg-slate-100 rounded"><X className="w-5 h-5" /></button>
@@ -7924,7 +7924,7 @@ function ModalDiaria({ dados, funcionarios, categoriasFolha = [], onSalvar, onFe
           </label>
         </div>
         <div className="flex justify-end gap-2">
-          <button onClick={onFechar} className="px-4 py-2 rounded-lg text-sm bg-slate-700 hover:bg-slate-600">Cancelar</button>
+          <button onClick={onFechar} className="px-4 py-2 rounded-lg text-sm bg-slate-100 hover:bg-slate-200 text-slate-700">Cancelar</button>
           <button onClick={salvar} disabled={!f.funcionarioId || !f.data || !f.valor} className="px-4 py-2 rounded-lg text-sm bg-orange-600 hover:bg-orange-500 font-medium disabled:opacity-50 flex items-center gap-2"><Save className="w-4 h-4" />Salvar</button>
         </div>
       </div>
@@ -8609,7 +8609,7 @@ function ModalEditarClienteFatura({ clienteAtual, clientes, onSave, onClose }) {
         </Campo>
         <div className="flex gap-2 pt-1">
           <button onClick={() => { if (!cliente) return; onSave(cliente); }} disabled={!cliente} className="flex-1 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 py-2 rounded-lg text-sm font-medium">Salvar</button>
-          <button onClick={onClose} className="px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg text-sm">Cancelar</button>
+          <button onClick={onClose} className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm">Cancelar</button>
         </div>
       </div>
     </ModalBase>
@@ -8627,7 +8627,7 @@ function ModalEditarCompetenciaFatura({ periodoAtual, onSave, onClose }) {
         </Campo>
         <div className="flex gap-2 pt-1">
           <button onClick={() => { if (!periodo) return; onSave(periodo); }} disabled={!periodo} className="flex-1 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 py-2 rounded-lg text-sm font-medium">Salvar</button>
-          <button onClick={onClose} className="px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg text-sm">Cancelar</button>
+          <button onClick={onClose} className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm">Cancelar</button>
         </div>
       </div>
     </ModalBase>
@@ -8657,7 +8657,7 @@ function ModalInformarNF({ onConfirmar, onClose }) {
         </Campo>
         <div className="flex gap-2 pt-1">
           <button onClick={() => { if (!nfNumero.trim()) return; onConfirmar(nfNumero.trim(), nfData, empresa || undefined); }} className="flex-1 bg-purple-600 hover:bg-purple-500 py-2 rounded-lg text-sm font-medium disabled:opacity-50" disabled={!nfNumero.trim()}>Confirmar NF-emitida</button>
-          <button onClick={onClose} className="px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg text-sm">Cancelar</button>
+          <button onClick={onClose} className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm">Cancelar</button>
         </div>
       </div>
     </ModalBase>
@@ -8811,7 +8811,7 @@ function ModalImportarXMLNF({ clientes, onSave, onClose }) {
           <button onClick={() => { if (!valido) return; onSave(form); }} disabled={!valido} className="flex-1 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 py-2 rounded-lg text-sm font-medium flex items-center justify-center gap-2">
             <FileCheck className="w-4 h-4" />Gerar Fatura {form.nfNumero ? `— NF ${form.nfNumero}` : ''}
           </button>
-          <button onClick={onClose} className="px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg text-sm">Cancelar</button>
+          <button onClick={onClose} className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm">Cancelar</button>
         </div>
       </div>
     </ModalBase>
@@ -8943,8 +8943,8 @@ function ModalEnviarMedicao({ fechamento, lancamentos, servicos, funcionarios, e
         </Campo>
 
         <div className="flex justify-end gap-2 pt-2 border-t border-slate-200">
-          <button onClick={onClose} disabled={enviando} className="px-4 py-2 rounded-lg text-sm bg-slate-700 hover:bg-slate-600">Cancelar</button>
-          <button onClick={enviar} disabled={enviando || destinatarios.length === 0} className="px-4 py-2 rounded-lg text-sm bg-blue-600 hover:bg-blue-500 disabled:bg-slate-700 disabled:cursor-not-allowed flex items-center gap-2 font-medium">
+          <button onClick={onClose} disabled={enviando} className="px-4 py-2 rounded-lg text-sm bg-slate-100 hover:bg-slate-200 text-slate-700">Cancelar</button>
+          <button onClick={enviar} disabled={enviando || destinatarios.length === 0} className="px-4 py-2 rounded-lg text-sm bg-blue-600 hover:bg-blue-500 disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2 font-medium">
             {enviando ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
             {enviando ? 'Enviando...' : `Enviar (${destinatarios.length})`}
           </button>
@@ -9044,7 +9044,7 @@ function ModalMassaFolhaCategoria({ chaves = [], grupos = [], onSave, onClose })
           <datalist id="grupos-massa">{grupos.map(g => <option key={g} value={g} />)}</datalist>
         </Campo>
         <div className="flex justify-end gap-2 pt-2 border-t border-slate-200">
-          <button onClick={onClose} className="px-4 py-2 rounded text-sm bg-slate-700 hover:bg-slate-600">Cancelar</button>
+          <button onClick={onClose} className="px-4 py-2 rounded text-sm bg-slate-100 hover:bg-slate-200 text-slate-700">Cancelar</button>
           <button onClick={() => onSave(valor.trim())} className="px-4 py-2 rounded text-sm bg-blue-600 hover:bg-blue-500 font-medium flex items-center gap-2"><Save className="w-4 h-4" />Aplicar</button>
         </div>
       </div>
@@ -9064,8 +9064,8 @@ function ModalMassaFolhaCompetencia({ chaves = [], onSave, onClose }) {
           <input type="month" value={valor} onChange={e => setValor(e.target.value)} className="w-full bg-white border border-slate-200 rounded px-3 py-2 text-sm" />
         </Campo>
         <div className="flex justify-end gap-2 pt-2 border-t border-slate-200">
-          <button onClick={onClose} className="px-4 py-2 rounded text-sm bg-slate-700 hover:bg-slate-600">Cancelar</button>
-          <button onClick={() => onSave(valor)} disabled={!valor} className="px-4 py-2 rounded text-sm bg-blue-600 hover:bg-blue-500 disabled:bg-slate-700 font-medium flex items-center gap-2"><Save className="w-4 h-4" />Aplicar</button>
+          <button onClick={onClose} className="px-4 py-2 rounded text-sm bg-slate-100 hover:bg-slate-200 text-slate-700">Cancelar</button>
+          <button onClick={() => onSave(valor)} disabled={!valor} className="px-4 py-2 rounded text-sm bg-blue-600 hover:bg-blue-500 disabled:opacity-40 font-medium flex items-center gap-2"><Save className="w-4 h-4" />Aplicar</button>
         </div>
       </div>
     </ModalBase>
@@ -9083,7 +9083,7 @@ function ModalCategoriaFolha({ dados, onSave, onClose }) {
         </Campo>
         <p className="text-xs text-slate-500">Categorias de folha agrupam lançamentos e funcionários numa mesma folha de pagamento, independente do mês original do lançamento (basta marcar a competência).</p>
         <div className="flex justify-end gap-2 pt-2 border-t border-slate-200">
-          <button onClick={onClose} className="px-4 py-2 rounded text-sm bg-slate-700 hover:bg-slate-600">Cancelar</button>
+          <button onClick={onClose} className="px-4 py-2 rounded text-sm bg-slate-100 hover:bg-slate-200 text-slate-700">Cancelar</button>
           <button onClick={() => onSave({ ...dados, nome })} disabled={!nome.trim()} className="px-4 py-2 rounded text-sm bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-700 disabled:cursor-not-allowed font-medium flex items-center gap-2"><Save className="w-4 h-4" />Salvar</button>
         </div>
       </div>
@@ -9104,9 +9104,9 @@ function ModalMassaLancCompetencia({ ids = [], onSave, onClose }) {
         </Campo>
         <p className="text-xs text-amber-300">⚠ Para limpar a competência (voltar a usar a data do lançamento), deixe em branco e clique em "Aplicar".</p>
         <div className="flex justify-end gap-2 pt-2 border-t border-slate-200">
-          <button onClick={() => onSave(ids, '')} className="px-4 py-2 rounded text-sm bg-slate-700 hover:bg-slate-600">Limpar</button>
-          <button onClick={onClose} className="px-4 py-2 rounded text-sm bg-slate-700 hover:bg-slate-600">Cancelar</button>
-          <button onClick={() => onSave(ids, valor)} disabled={!valor} className="px-4 py-2 rounded text-sm bg-blue-600 hover:bg-blue-500 disabled:bg-slate-700 font-medium flex items-center gap-2"><Save className="w-4 h-4" />Aplicar</button>
+          <button onClick={() => onSave(ids, '')} className="px-4 py-2 rounded text-sm bg-slate-100 hover:bg-slate-200 text-slate-700">Limpar</button>
+          <button onClick={onClose} className="px-4 py-2 rounded text-sm bg-slate-100 hover:bg-slate-200 text-slate-700">Cancelar</button>
+          <button onClick={() => onSave(ids, valor)} disabled={!valor} className="px-4 py-2 rounded text-sm bg-blue-600 hover:bg-blue-500 disabled:opacity-40 font-medium flex items-center gap-2"><Save className="w-4 h-4" />Aplicar</button>
         </div>
       </div>
     </ModalBase>
@@ -9281,7 +9281,7 @@ function ModalTransferirCora({ folhas = [], onSucesso, onClose }) {
           </Campo>
           <div>
             <h4 className="text-xs uppercase font-semibold text-slate-400 mb-2">{folhas.length} folha(s) elegível(is)</h4>
-            <div className="overflow-x-auto bg-slate-900/40 rounded-lg border border-slate-200 max-h-80">
+            <div className="overflow-x-auto bg-white rounded-lg border border-slate-200 max-h-80">
               <table className="w-full text-xs">
                 <thead className="text-[10px] text-slate-400 bg-slate-50 border-b border-slate-200"><tr>
                   <th className="text-left py-2 px-2">Funcionário</th>
@@ -9299,7 +9299,7 @@ function ModalTransferirCora({ folhas = [], onSucesso, onClose }) {
                     <td className="px-2 text-right font-semibold text-emerald-300" title="Líquido = bruto + adicionais − descontos">{fmt(f.liquido)}</td>
                   </tr>
                 ))}</tbody>
-                <tfoot className="border-t-2 border-slate-200 font-bold bg-slate-900/60"><tr>
+                <tfoot className="border-t-2 border-slate-200 font-bold bg-slate-100"><tr>
                   <td colSpan={4} className="py-2 px-2 uppercase">TOTAL LÍQUIDO</td>
                   <td className="text-right px-2 text-emerald-300 text-sm">{fmt(totalLiquido)}</td>
                 </tr></tfoot>
@@ -9308,8 +9308,8 @@ function ModalTransferirCora({ folhas = [], onSucesso, onClose }) {
           </div>
           {erro && <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 text-xs text-red-700">{erro}</div>}
           <div className="flex justify-end gap-2 pt-2 border-t border-slate-200">
-            <button onClick={onClose} disabled={enviando} className="px-4 py-2 rounded text-sm bg-slate-700 hover:bg-slate-600">Cancelar</button>
-            <button onClick={enviar} disabled={enviando || folhas.length === 0} className="px-4 py-2 rounded text-sm bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-700 font-semibold flex items-center gap-2">
+            <button onClick={onClose} disabled={enviando} className="px-4 py-2 rounded text-sm bg-slate-100 hover:bg-slate-200 text-slate-700">Cancelar</button>
+            <button onClick={enviar} disabled={enviando || folhas.length === 0} className="px-4 py-2 rounded text-sm bg-emerald-600 hover:bg-emerald-500 disabled:opacity-40 font-semibold flex items-center gap-2">
               {enviando ? <><RefreshCw className="w-4 h-4 animate-spin" />Enviando...</> : <><Send className="w-4 h-4" />Transferir {folhas.length}</>}
             </button>
           </div>
@@ -9321,7 +9321,7 @@ function ModalTransferirCora({ folhas = [], onSucesso, onClose }) {
             <div className="bg-amber-500/10 border border-amber-500/30 rounded p-2 text-center"><div className="text-[10px] text-amber-300 uppercase">Duplicadas</div><div className="text-2xl font-bold text-amber-700">{resultado.resumo.duplicadas}</div></div>
             <div className="bg-red-500/10 border border-red-500/30 rounded p-2 text-center"><div className="text-[10px] text-red-300 uppercase">Erros</div><div className="text-2xl font-bold text-red-700">{resultado.resumo.erros}</div></div>
           </div>
-          <div className="overflow-x-auto bg-slate-900/40 rounded-lg border border-slate-200 max-h-80">
+          <div className="overflow-x-auto bg-white rounded-lg border border-slate-200 max-h-80">
             <table className="w-full text-xs">
               <thead className="text-[10px] text-slate-400 bg-slate-50 border-b border-slate-200"><tr>
                 <th className="text-left py-2 px-2">Funcionário</th>
@@ -9332,7 +9332,7 @@ function ModalTransferirCora({ folhas = [], onSucesso, onClose }) {
               <tbody>{resultado.resultados.map((r, i) => (
                 <tr key={i} className="border-b border-slate-200/40">
                   <td className="py-1.5 px-2 font-medium">{r.funcionario_nome}</td>
-                  <td className="px-2 text-center"><span className={`text-[10px] px-2 py-0.5 rounded-full ${r.status === 'enviada' ? 'bg-emerald-500/20 text-emerald-300' : r.status === 'duplicada' ? 'bg-amber-500/20 text-amber-300' : 'bg-red-500/20 text-red-300'}`}>{r.status}</span></td>
+                  <td className="px-2 text-center"><span className={`text-[10px] px-2 py-0.5 rounded-full ${r.status === 'enviada' ? 'bg-emerald-500/20 text-emerald-700' : r.status === 'duplicada' ? 'bg-amber-500/20 text-amber-700' : 'bg-red-500/20 text-red-700'}`}>{r.status}</span></td>
                   <td className="px-2 text-slate-600">{r.mensagem || '—'}</td>
                   <td className="px-2 font-mono text-slate-500 text-[10px]">{r.cora_transfer_id || '—'}</td>
                 </tr>
@@ -9411,11 +9411,11 @@ function ModalHistoricoCora({ onAbrirWebhooks, onClose }) {
   };
 
   const corStatus = (s) => ({
-    'enviada': 'bg-emerald-500/20 text-emerald-300',
+    'enviada': 'bg-emerald-500/20 text-emerald-700',
     'aguardando_aprovacao': 'bg-blue-500/20 text-blue-600',
     'concluida': 'bg-emerald-700/40 text-emerald-700',
-    'rejeitada': 'bg-red-500/20 text-red-300',
-    'cancelada': 'bg-slate-700 text-slate-400',
+    'rejeitada': 'bg-red-500/20 text-red-700',
+    'cancelada': 'bg-slate-100 text-slate-500',
     'erro': 'bg-rose-600/30 text-rose-200',
   })[s] || 'bg-slate-100 text-slate-700';
 
@@ -9438,12 +9438,12 @@ function ModalHistoricoCora({ onAbrirWebhooks, onClose }) {
             <option value="erro">Erro</option>
           </select>
           <input type="month" value={filtro.competencia} onChange={e => setFiltro(f => ({ ...f, competencia: e.target.value }))} className="bg-white border border-slate-200 rounded px-3 py-1.5 text-xs" />
-          <button onClick={carregar} className="bg-slate-700 hover:bg-slate-600 px-3 py-1.5 rounded text-xs flex items-center gap-1.5"><RefreshCw className={`w-3.5 h-3.5 ${carregando ? 'animate-spin' : ''}`} />Atualizar</button>
+          <button onClick={carregar} className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded text-xs flex items-center gap-1.5"><RefreshCw className={`w-3.5 h-3.5 ${carregando ? 'animate-spin' : ''}`} />Atualizar</button>
           <div className="flex-1" />
           <button onClick={onAbrirWebhooks} className="bg-blue-700/40 hover:bg-blue-600/60 text-blue-700 px-3 py-1.5 rounded text-xs flex items-center gap-1.5"><FileText className="w-3.5 h-3.5" />Ver webhooks</button>
         </div>
         {erro && <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 text-xs text-red-700">{erro}</div>}
-        <div className="overflow-x-auto bg-slate-900/40 rounded-lg border border-slate-200 max-h-[60vh]">
+        <div className="overflow-x-auto bg-white rounded-lg border border-slate-200 max-h-[60vh]">
           <table className="w-full text-xs">
             <thead className="text-[10px] text-slate-400 bg-slate-50 border-b border-slate-200 sticky top-0"><tr>
               <th className="text-left py-2 px-2">Data</th>
@@ -9538,12 +9538,12 @@ function ModalWebhooksCora({ onVoltar, onClose }) {
             <option value="1">Processado</option>
             <option value="0">Não processado</option>
           </select>
-          <button onClick={carregar} className="bg-slate-700 hover:bg-slate-600 px-3 py-1.5 rounded text-xs flex items-center gap-1.5"><RefreshCw className={`w-3.5 h-3.5 ${carregando ? 'animate-spin' : ''}`} />Atualizar</button>
+          <button onClick={carregar} className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded text-xs flex items-center gap-1.5"><RefreshCw className={`w-3.5 h-3.5 ${carregando ? 'animate-spin' : ''}`} />Atualizar</button>
           <div className="flex-1" />
-          <button onClick={onVoltar} className="bg-slate-700 hover:bg-slate-600 px-3 py-1.5 rounded text-xs">← Voltar p/ histórico</button>
+          <button onClick={onVoltar} className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded text-xs">← Voltar p/ histórico</button>
         </div>
         {erro && <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 text-xs text-red-700">{erro}</div>}
-        <div className="overflow-x-auto bg-slate-900/40 rounded-lg border border-slate-200 max-h-[60vh]">
+        <div className="overflow-x-auto bg-white rounded-lg border border-slate-200 max-h-[60vh]">
           <table className="w-full text-xs">
             <thead className="text-[10px] text-slate-400 bg-slate-50 border-b border-slate-200 sticky top-0"><tr>
               <th className="text-left py-2 px-2">Recebido</th>
@@ -9589,8 +9589,8 @@ function ModalSalvarResumo({ competencia, onSave, onClose }) {
         <input value={nome} onChange={e => setNome(e.target.value)} placeholder="Ex: Fechamento abril 2026" className="w-full bg-white border border-slate-200 rounded px-3 py-2 text-sm" autoFocus />
       </Campo>
       <div className="flex justify-end gap-2 pt-3 border-t border-slate-200 mt-4">
-        <button onClick={onClose} className="px-4 py-2 rounded text-sm bg-slate-700 hover:bg-slate-600">Cancelar</button>
-        <button onClick={() => nome.trim() && onSave(nome.trim())} disabled={!nome.trim()} className="px-4 py-2 rounded text-sm bg-blue-600 hover:bg-blue-500 disabled:bg-slate-700 font-medium flex items-center gap-2"><Save className="w-4 h-4" />Salvar</button>
+        <button onClick={onClose} className="px-4 py-2 rounded text-sm bg-slate-100 hover:bg-slate-200 text-slate-700">Cancelar</button>
+        <button onClick={() => nome.trim() && onSave(nome.trim())} disabled={!nome.trim()} className="px-4 py-2 rounded text-sm bg-blue-600 hover:bg-blue-500 disabled:opacity-40 font-medium flex items-center gap-2"><Save className="w-4 h-4" />Salvar</button>
       </div>
     </ModalBase>
   );
@@ -9605,7 +9605,7 @@ function ModalCarregarResumos({ resumos = [], onVer, onExcluir, onClose }) {
       ) : (
         <div className="space-y-2 max-h-[60vh] overflow-y-auto">
           {ordenados.map(r => (
-            <div key={r.id} className="bg-slate-800/40 border border-slate-200 rounded-lg p-3 flex items-center gap-3">
+            <div key={r.id} className="bg-slate-50 border border-slate-200 rounded-lg p-3 flex items-center gap-3">
               <div className="flex-1 min-w-0">
                 <div className="font-semibold text-slate-900 truncate">{r.nome}</div>
                 <div className="text-xs text-slate-400 mt-0.5">Competência <b className="text-slate-600">{r.competencia || '—'}</b> · salvo em {new Date(r.criadoEm).toLocaleString('pt-BR')}</div>
@@ -9618,7 +9618,7 @@ function ModalCarregarResumos({ resumos = [], onVer, onExcluir, onClose }) {
         </div>
       )}
       <div className="flex justify-end pt-3 border-t border-slate-200 mt-4">
-        <button onClick={onClose} className="px-4 py-2 rounded text-sm bg-slate-700 hover:bg-slate-600">Fechar</button>
+        <button onClick={onClose} className="px-4 py-2 rounded text-sm bg-slate-100 hover:bg-slate-200 text-slate-700">Fechar</button>
       </div>
     </ModalBase>
   );
@@ -9637,7 +9637,7 @@ function ModalVisualizarResumo({ resumo, onClose }) {
             <tr className="border-b-2 border-slate-200"></tr>
             <tr className="border-b border-slate-200"><td className="py-2 px-3 text-slate-600">Folha total (bruto)</td><td className="text-right px-3 font-medium text-blue-600">{fmt(resumo.totalFolha)}</td></tr>
             <tr className="border-b border-slate-200"><td className="py-2 px-3 text-slate-400 pl-6">(−) Vales / Adiantamentos</td><td className="text-right px-3 text-red-600">−{fmt(resumo.totalVales)}</td></tr>
-            <tr className="border-b-2 border-slate-200 bg-slate-800/40"><td className="py-2 px-3 font-semibold text-slate-700">= Folha líquida a pagar</td><td className="text-right px-3 font-bold text-amber-300">{fmt(resumo.folhaLiquida)}</td></tr>
+            <tr className="border-b-2 border-slate-200 bg-slate-50"><td className="py-2 px-3 font-semibold text-slate-700">= Folha líquida a pagar</td><td className="text-right px-3 font-bold text-amber-300">{fmt(resumo.folhaLiquida)}</td></tr>
             <tr className="border-b border-slate-200"><td className="py-2 px-3 text-slate-600">(+) Despesas do mês</td><td className="text-right px-3 font-medium text-orange-600">{fmt(resumo.totalCartaoEmpresa)}</td></tr>
             <tr className="border-b border-slate-200"><td className="py-2 px-3 text-slate-600">(+) Galop (combustível)</td><td className="text-right px-3 font-medium text-orange-600">{fmt(resumo.totalGalop)}</td></tr>
             <tr className="border-b border-slate-200"><td className="py-2 px-3 text-slate-600">(+) Despesas Manhães</td><td className="text-right px-3 font-medium text-violet-600">{fmt(resumo.totalManhaes)}</td></tr>
@@ -9647,7 +9647,7 @@ function ModalVisualizarResumo({ resumo, onClose }) {
         </table>
       </div>
       <div className="flex justify-end pt-3 border-t border-slate-200 mt-4">
-        <button onClick={onClose} className="px-4 py-2 rounded text-sm bg-slate-700 hover:bg-slate-600">Voltar</button>
+        <button onClick={onClose} className="px-4 py-2 rounded text-sm bg-slate-100 hover:bg-slate-200 text-slate-700">Voltar</button>
       </div>
     </ModalBase>
   );
@@ -9679,8 +9679,8 @@ function ModalMassaLancPrestador({ ids = [], funcionarios = [], onSave, onClose 
         </Campo>
         <p className="text-xs text-amber-300">⚠ Modo "Primeiro vazio" pula lançamentos com todos os slots preenchidos. Modos específicos sobrescrevem o slot mesmo se já tiver alguém.</p>
         <div className="flex justify-end gap-2 pt-2 border-t border-slate-200">
-          <button onClick={onClose} className="px-4 py-2 rounded text-sm bg-slate-700 hover:bg-slate-600">Cancelar</button>
-          <button onClick={() => onSave(ids, nome, slot)} disabled={!nome} className="px-4 py-2 rounded text-sm bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-700 font-medium flex items-center gap-2"><Save className="w-4 h-4" />Aplicar em {ids.length}</button>
+          <button onClick={onClose} className="px-4 py-2 rounded text-sm bg-slate-100 hover:bg-slate-200 text-slate-700">Cancelar</button>
+          <button onClick={() => onSave(ids, nome, slot)} disabled={!nome} className="px-4 py-2 rounded text-sm bg-emerald-600 hover:bg-emerald-500 disabled:opacity-40 font-medium flex items-center gap-2"><Save className="w-4 h-4" />Aplicar em {ids.length}</button>
         </div>
       </div>
     </ModalBase>
@@ -9705,9 +9705,9 @@ function ModalMassaLancCatFolha({ ids = [], categorias = [], onSave, onClose }) 
         </Campo>
         <p className="text-xs text-amber-300">⚠ Deixe em branco e clique "Limpar" para remover a categoria dos selecionados.</p>
         <div className="flex justify-end gap-2 pt-2 border-t border-slate-200">
-          <button onClick={() => onSave(ids, '')} className="px-4 py-2 rounded text-sm bg-slate-700 hover:bg-slate-600">Limpar</button>
-          <button onClick={onClose} className="px-4 py-2 rounded text-sm bg-slate-700 hover:bg-slate-600">Cancelar</button>
-          <button onClick={() => onSave(ids, valor)} disabled={!valor.trim()} className="px-4 py-2 rounded text-sm bg-blue-600 hover:bg-blue-500 disabled:bg-slate-700 font-medium flex items-center gap-2"><Save className="w-4 h-4" />Aplicar</button>
+          <button onClick={() => onSave(ids, '')} className="px-4 py-2 rounded text-sm bg-slate-100 hover:bg-slate-200 text-slate-700">Limpar</button>
+          <button onClick={onClose} className="px-4 py-2 rounded text-sm bg-slate-100 hover:bg-slate-200 text-slate-700">Cancelar</button>
+          <button onClick={() => onSave(ids, valor)} disabled={!valor.trim()} className="px-4 py-2 rounded text-sm bg-blue-600 hover:bg-blue-500 disabled:opacity-40 font-medium flex items-center gap-2"><Save className="w-4 h-4" />Aplicar</button>
         </div>
       </div>
     </ModalBase>
@@ -9736,8 +9736,8 @@ function ModalEditarPagoLancamento({ dados, onSave, onClose }) {
           <p>Você pode editar os valores pagos para ajustar a folha do funcionário. <b>A fatura NÃO é alterada</b> — apenas o que você paga internamente.</p>
         </div>
         <div className="grid grid-cols-2 gap-3 text-xs">
-          <div className="bg-slate-800/40 rounded p-2"><div className="text-slate-500 uppercase text-[10px]">OS · Data</div><div className="font-mono text-sm">{l.os || '—'} · {l.data ? l.data.split('-').reverse().join('/') : ''}</div></div>
-          <div className="bg-slate-800/40 rounded p-2"><div className="text-slate-500 uppercase text-[10px]">Cliente · Serviço</div><div className="text-sm truncate">{l.cliente} · #{l.codServico}</div></div>
+          <div className="bg-slate-50 rounded p-2"><div className="text-slate-500 uppercase text-[10px]">OS · Data</div><div className="font-mono text-sm">{l.os || '—'} · {l.data ? l.data.split('-').reverse().join('/') : ''}</div></div>
+          <div className="bg-slate-50 rounded p-2"><div className="text-slate-500 uppercase text-[10px]">Cliente · Serviço</div><div className="text-sm truncate">{l.cliente} · #{l.codServico}</div></div>
           <div className="bg-emerald-500/10 border border-emerald-500/30 rounded p-2"><div className="text-slate-500 uppercase text-[10px]">Total Faturado</div><div className="font-bold text-emerald-600 text-base">{fmt(totalFatura)}</div></div>
           <div className="bg-orange-500/10 border border-orange-500/30 rounded p-2"><div className="text-slate-500 uppercase text-[10px]">Total Pago (novo)</div><div className="font-bold text-orange-400 text-base">{fmt(totalCalc)}</div></div>
         </div>
@@ -9748,13 +9748,13 @@ function ModalEditarPagoLancamento({ dados, onSave, onClose }) {
           <Campo label="Adicional dom/feriado pago"><input type="number" step="0.01" value={f.adicDomPago} onChange={e => setF({ ...f, adicDomPago: e.target.value })} className="w-full bg-white border border-slate-200 rounded px-3 py-2 text-sm font-mono" /></Campo>
           <Campo label="Reembolso de pedágio" full><input type="number" step="0.01" value={f.pedagioReembolso} onChange={e => setF({ ...f, pedagioReembolso: e.target.value })} className="w-full bg-white border border-slate-200 rounded px-3 py-2 text-sm font-mono" /></Campo>
         </div>
-        <div className="bg-slate-800/40 rounded p-3 text-xs grid grid-cols-3 gap-3">
+        <div className="bg-slate-50 rounded p-3 text-xs grid grid-cols-3 gap-3">
           <div><div className="text-slate-500 uppercase text-[10px]">Imposto</div><div className="font-mono">{fmt(imposto)}</div></div>
           <div><div className="text-slate-500 uppercase text-[10px]">Lucro recalculado</div><div className={`font-mono font-bold ${novoLucro >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>{fmt(novoLucro)}</div></div>
           <div><div className="text-slate-500 uppercase text-[10px]">Δ Pago</div><div className={`font-mono ${(totalCalc - num(l.totalPago)) >= 0 ? 'text-amber-600' : 'text-emerald-600'}`}>{(totalCalc - num(l.totalPago)) >= 0 ? '+' : ''}{fmt(totalCalc - num(l.totalPago))}</div></div>
         </div>
         <div className="flex justify-end gap-2 pt-2 border-t border-slate-200">
-          <button onClick={onClose} className="px-4 py-2 rounded text-sm bg-slate-700 hover:bg-slate-600">Cancelar</button>
+          <button onClick={onClose} className="px-4 py-2 rounded text-sm bg-slate-100 hover:bg-slate-200 text-slate-700">Cancelar</button>
           <button onClick={() => onSave(l.id, f)} className="px-4 py-2 rounded text-sm bg-orange-600 hover:bg-orange-500 font-medium flex items-center gap-2"><Save className="w-4 h-4" />Salvar valores pagos</button>
         </div>
       </div>
@@ -9831,7 +9831,7 @@ function ModalImportarDespesasXLSX({ onImportar, onClose }) {
                 placeholder={"Data\tDescrição\tTipo\tValor\tCentro de Custo\tOrigem\n01/04/2026\tAluguel escritório\tFIXA\t3500,00\tAdministrativo\tCARTÃO CORPORATIVO"}
                 className="w-full bg-white border border-slate-200 rounded px-3 py-2 text-sm font-mono"
               />
-              <button onClick={handleTexto} disabled={!textoColado.trim()} className="w-full bg-blue-600 hover:bg-blue-500 disabled:bg-slate-700 disabled:cursor-not-allowed px-4 py-2 rounded text-sm font-medium flex items-center justify-center gap-2"><Search className="w-4 h-4" />Analisar texto</button>
+              <button onClick={handleTexto} disabled={!textoColado.trim()} className="w-full bg-blue-600 hover:bg-blue-500 disabled:opacity-40 disabled:cursor-not-allowed px-4 py-2 rounded text-sm font-medium flex items-center justify-center gap-2"><Search className="w-4 h-4" />Analisar texto</button>
             </>
           )}
         </div>
@@ -9850,7 +9850,7 @@ function ModalImportarDespesasXLSX({ onImportar, onClose }) {
           {analise.itens?.length > 0 && (
             <div className="bg-white rounded max-h-64 overflow-y-auto">
               <table className="w-full text-xs">
-                <thead className="text-slate-400 sticky top-0 bg-slate-900"><tr><th className="text-left py-1.5 px-2">Compet.</th><th className="text-left px-2">Descrição</th><th className="text-left px-2">Tipo</th><th className="text-right px-2">Valor</th></tr></thead>
+                <thead className="text-slate-500 sticky top-0 bg-slate-50"><tr><th className="text-left py-1.5 px-2">Compet.</th><th className="text-left px-2">Descrição</th><th className="text-left px-2">Tipo</th><th className="text-right px-2">Valor</th></tr></thead>
                 <tbody>{analise.itens.map((it, i) => (
                   <tr key={i} className="border-t border-slate-200/50">
                     <td className="py-1 px-2 font-mono text-[10px]">{it.competencia}</td>
@@ -9863,8 +9863,8 @@ function ModalImportarDespesasXLSX({ onImportar, onClose }) {
             </div>
           )}
           <div className="flex gap-2 pt-2 border-t border-slate-200">
-            <button onClick={() => setAnalise(null)} className="flex-1 bg-slate-700 hover:bg-slate-600 px-4 py-2 rounded text-sm">Voltar</button>
-            <button onClick={confirmar} disabled={!analise.itens?.length} className="flex-1 bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-700 disabled:cursor-not-allowed px-4 py-2 rounded text-sm font-semibold">Confirmar ({analise.itens?.length || 0})</button>
+            <button onClick={() => setAnalise(null)} className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded text-sm">Voltar</button>
+            <button onClick={confirmar} disabled={!analise.itens?.length} className="flex-1 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-40 disabled:cursor-not-allowed px-4 py-2 rounded text-sm font-semibold">Confirmar ({analise.itens?.length || 0})</button>
           </div>
         </div>
       )}
@@ -9906,7 +9906,7 @@ function ModalHistoricoEmail({ onClose }) {
             <p className="text-xs text-slate-500">{total} registro(s) no total</p>
             <div className="overflow-x-auto rounded-lg border border-slate-200">
               <table className="w-full text-xs">
-                <thead className="bg-slate-900 text-slate-400 border-b border-slate-200">
+                <thead className="bg-slate-50 text-slate-500 border-b border-slate-200">
                   <tr>
                     <th className="text-left py-2 px-3">Data/Hora</th>
                     <th className="text-left px-3">Tipo</th>
@@ -9924,11 +9924,11 @@ function ModalHistoricoEmail({ onClose }) {
                       <td className="px-3 max-w-[200px] truncate">{item.assunto}</td>
                       <td className="px-3">
                         <div className="flex flex-wrap gap-1">
-                          {(item.destinatarios || []).map(e => <span key={e} className="text-[10px] bg-slate-700/60 px-1.5 py-0.5 rounded">{e}</span>)}
+                          {(item.destinatarios || []).map(e => <span key={e} className="text-[10px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded">{e}</span>)}
                         </div>
                       </td>
                       <td className="text-center px-3">
-                        <span className={`text-[10px] px-1.5 py-0.5 rounded font-semibold ${item.status === 'ok' ? 'bg-emerald-500/20 text-emerald-300' : 'bg-red-500/20 text-red-300'}`}>{item.status}</span>
+                        <span className={`text-[10px] px-1.5 py-0.5 rounded font-semibold ${item.status === 'ok' ? 'bg-emerald-500/20 text-emerald-700' : 'bg-red-500/20 text-red-700'}`}>{item.status}</span>
                       </td>
                       <td className="px-3 text-slate-400">{item.enviado_por_nome || '—'}</td>
                     </tr>
@@ -9938,9 +9938,9 @@ function ModalHistoricoEmail({ onClose }) {
             </div>
             {total > limit && (
               <div className="flex gap-2 justify-center pt-2">
-                <button onClick={() => carregar(Math.max(0, offset - limit))} disabled={offset === 0} className="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 disabled:opacity-40 rounded text-xs">Anterior</button>
+                <button onClick={() => carregar(Math.max(0, offset - limit))} disabled={offset === 0} className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 disabled:opacity-40 rounded text-xs">Anterior</button>
                 <span className="text-xs text-slate-500 self-center">{Math.floor(offset / limit) + 1} / {Math.ceil(total / limit)}</span>
-                <button onClick={() => carregar(offset + limit)} disabled={offset + limit >= total} className="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 disabled:opacity-40 rounded text-xs">Próxima</button>
+                <button onClick={() => carregar(offset + limit)} disabled={offset + limit >= total} className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 disabled:opacity-40 rounded text-xs">Próxima</button>
               </div>
             )}
           </>

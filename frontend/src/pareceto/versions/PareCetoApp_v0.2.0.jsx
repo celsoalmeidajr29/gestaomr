@@ -573,10 +573,10 @@ function computeScorePlacas(records, cfg) {
 }
 
 function getScoreColors(nivel) {
-  if (nivel === 'critico') return { bg: 'bg-red-500/20', text: 'text-red-300', border: 'border-red-500/40', bar: 'bg-red-500', label: 'Crítico' }
+  if (nivel === 'critico') return { bg: 'bg-red-500/20', text: 'text-red-700', border: 'border-red-500/40', bar: 'bg-red-500', label: 'Crítico' }
   if (nivel === 'alto')    return { bg: 'bg-orange-500/20', text: 'text-orange-600', border: 'border-orange-500/40', bar: 'bg-orange-400', label: 'Alto' }
   if (nivel === 'medio')   return { bg: 'bg-yellow-500/20', text: 'text-yellow-700', border: 'border-yellow-500/40', bar: 'bg-yellow-400', label: 'Médio' }
-  return { bg: 'bg-emerald-500/20', text: 'text-emerald-300', border: 'border-emerald-500/30', bar: 'bg-emerald-500', label: 'Baixo' }
+  return { bg: 'bg-emerald-500/20', text: 'text-emerald-700', border: 'border-emerald-500/30', bar: 'bg-emerald-500', label: 'Baixo' }
 }
 
 function ScoreBadge({ score, nivel }) {
@@ -592,7 +592,7 @@ function MiniScoreBar({ score, nivel }) {
   const c = getScoreColors(nivel)
   return (
     <div className="flex items-center gap-2">
-      <div className="flex-1 h-1.5 bg-slate-700 rounded-full overflow-hidden">
+      <div className="flex-1 h-1.5 bg-slate-200 rounded-full overflow-hidden">
         <div className={`h-full rounded-full ${c.bar} transition-all`} style={{ width: `${score}%` }} />
       </div>
       <span className={`text-xs font-bold w-6 text-right ${c.text}`}>{score}</span>
@@ -622,7 +622,7 @@ function DeltaBadge({ valA, valB, inverso, suffix }) {
   const positivo = inverso ? pct < 0 : pct > 0
   const zero = Math.abs(pct) < 0.05
   return (
-    <span className={`inline-flex items-center gap-0.5 text-xs font-semibold px-1.5 py-0.5 rounded ${zero ? 'bg-slate-700/60 text-slate-400' : positivo ? 'bg-emerald-500/20 text-emerald-300' : 'bg-red-500/20 text-red-300'}`}>
+    <span className={`inline-flex items-center gap-0.5 text-xs font-semibold px-1.5 py-0.5 rounded ${zero ? 'bg-slate-100 text-slate-500' : positivo ? 'bg-emerald-500/20 text-emerald-700' : 'bg-red-500/20 text-red-700'}`}>
       {zero ? '=' : pct > 0 ? '▲' : '▼'} {Math.abs(pct) < 0.1 ? '0' : fmtNum(Math.abs(pct))}%{suffix || ''}
     </span>
   )
@@ -650,7 +650,7 @@ function RankingCompar({ title, listA, listB, nameKey, valueKey, fmtVal }) {
   const mapB = Object.fromEntries(listB.map(x => [x[nameKey], x[valueKey]]))
   const f = fmtVal || (v => v?.toLocaleString('pt-BR'))
   return (
-    <div className="bg-slate-800/40 border border-slate-200/50 rounded-xl p-4">
+    <div className="bg-white border border-slate-200 rounded-xl p-4">
       <div className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-3">{title}</div>
       {allNames.map(n => (
         <div key={n} className="py-1.5 border-b border-slate-200/30 last:border-0">
@@ -660,10 +660,10 @@ function RankingCompar({ title, listA, listB, nameKey, valueKey, fmtVal }) {
             <span className="text-purple-600 w-20 text-right">{mapB[n] != null ? f(mapB[n]) : '—'}</span>
           </div>
           <div className="flex gap-1">
-            <div className="flex-1 h-1 bg-slate-700 rounded-full overflow-hidden">
+            <div className="flex-1 h-1 bg-slate-200 rounded-full overflow-hidden">
               <div className="h-full bg-blue-500/70 rounded-full" style={{ width: `${mapA[n] && Math.max(...allNames.map(x => mapA[x]||0)) ? mapA[n]/Math.max(...allNames.map(x => mapA[x]||0))*100 : 0}%` }} />
             </div>
-            <div className="flex-1 h-1 bg-slate-700 rounded-full overflow-hidden">
+            <div className="flex-1 h-1 bg-slate-200 rounded-full overflow-hidden">
               <div className="h-full bg-purple-500/70 rounded-full" style={{ width: `${mapB[n] && Math.max(...allNames.map(x => mapB[x]||0)) ? mapB[n]/Math.max(...allNames.map(x => mapB[x]||0))*100 : 0}%` }} />
             </div>
           </div>
@@ -731,7 +731,7 @@ function ComparacaoPeriodos({ records, tipo }) {
         <div className="flex flex-wrap gap-1">
           {[['7d','7d'],['30d','30d'],['mes','Mês'],['tudo','Tudo']].map(([v,l]) => (
             <button key={v} onClick={() => preset(v, setP)}
-              className="px-2 py-0.5 text-xs rounded bg-slate-700 hover:bg-slate-600 text-slate-600 transition">{l}</button>
+              className="px-2 py-0.5 text-xs rounded bg-slate-100 hover:bg-slate-200 text-slate-700 transition">{l}</button>
           ))}
         </div>
         {p.de && p.ate && <div className="text-xs text-slate-500 mt-2">{recA !== undefined ? (color === 'A' ? recA : recB).length.toLocaleString('pt-BR') : 0} registros</div>}
@@ -760,7 +760,7 @@ function ComparacaoPeriodos({ records, tipo }) {
           </div>
 
           {/* KPIs header */}
-          <div className="bg-slate-800/40 border border-slate-200/50 rounded-xl p-4">
+          <div className="bg-white border border-slate-200 rounded-xl p-4">
             <div className="flex items-center justify-between text-xs font-semibold text-slate-400 uppercase tracking-wide mb-2 pb-2 border-b border-slate-200">
               <span>Indicador</span>
               <div className="flex gap-2">
@@ -914,7 +914,7 @@ function RelatorioSemanal({ records, scorePlacas }) {
                 <Download className="w-3.5 h-3.5" /> XLSX
               </button>
               <button onClick={() => exportRelatorioSemanalTXT(semana, analise, top20, scorePlacas)}
-                className="px-3 py-2 bg-slate-700 hover:bg-slate-600 text-slate-700 rounded-lg text-xs font-medium transition flex items-center gap-1.5">
+                className="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-medium transition flex items-center gap-1.5">
                 <FileText className="w-3.5 h-3.5" /> TXT
               </button>
             </>
@@ -951,12 +951,12 @@ function RelatorioSemanal({ records, scorePlacas }) {
 
           {/* Top 20 inadimplentes */}
           <div className="overflow-x-auto rounded-xl border border-slate-200">
-            <div className="px-4 py-3 bg-slate-800/60 border-b border-slate-200 flex items-center justify-between">
+            <div className="px-4 py-3 bg-white border-b border-slate-200 flex items-center justify-between">
               <span className="text-sm font-semibold text-slate-700">Top 20 placas inadimplentes — {semana}</span>
               <span className="text-xs text-slate-500">{top20.length} placas</span>
             </div>
             <table className="w-full text-sm">
-              <thead className="bg-slate-800/40">
+              <thead className="bg-slate-50">
                 <tr className="text-left text-xs text-slate-400 uppercase tracking-wide">
                   <th className="px-4 py-2.5">#</th>
                   <th className="px-4 py-2.5">Placa</th>
@@ -991,7 +991,7 @@ function RelatorioSemanal({ records, scorePlacas }) {
 
           {/* Top emissores da semana */}
           {analise.rankingEmissores.length > 0 && (
-            <div className="bg-slate-800/40 border border-slate-200/50 rounded-xl p-4">
+            <div className="bg-white border border-slate-200 rounded-xl p-4">
               <div className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-3">Top emissores da semana</div>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
@@ -1025,10 +1025,10 @@ function RelatorioSemanal({ records, scorePlacas }) {
 
 // ---- MÓDULO INADIMPLÊNCIA ----
 const AGING_BANDS = [
-  { key: 'recente',  label: 'Recente',  desc: '≤ 30 dias', cor: { bg: 'bg-emerald-500/20', text: 'text-emerald-300', bar: 'bg-emerald-500' } },
+  { key: 'recente',  label: 'Recente',  desc: '≤ 30 dias', cor: { bg: 'bg-emerald-500/20', text: 'text-emerald-700', bar: 'bg-emerald-500' } },
   { key: 'moderado', label: 'Moderado', desc: '31–60 dias', cor: { bg: 'bg-yellow-500/20',  text: 'text-yellow-700',  bar: 'bg-yellow-400' } },
   { key: 'antigo',   label: 'Antigo',   desc: '61–90 dias', cor: { bg: 'bg-orange-500/20',  text: 'text-orange-600',  bar: 'bg-orange-400' } },
-  { key: 'critico',  label: 'Crítico',  desc: '> 90 dias',  cor: { bg: 'bg-red-500/20',     text: 'text-red-300',     bar: 'bg-red-500' } },
+  { key: 'critico',  label: 'Crítico',  desc: '> 90 dias',  cor: { bg: 'bg-red-500/20',     text: 'text-red-700',     bar: 'bg-red-500' } },
 ]
 
 function computeInadimplencia(records) {
@@ -1141,7 +1141,7 @@ function AbaInadimplencia({ records, scorePlacas }) {
             <Download className="w-3.5 h-3.5"/>XLSX
           </button>
           <button onClick={() => exportInadimplenciaTXT(analise, scorePlacas)}
-            className="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-slate-700 rounded-lg text-xs font-medium transition flex items-center gap-1.5">
+            className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-medium transition flex items-center gap-1.5">
             <FileText className="w-3.5 h-3.5"/>TXT
           </button>
         </div>
@@ -1152,7 +1152,7 @@ function AbaInadimplencia({ records, scorePlacas }) {
           {/* KPIs */}
           <div className="grid grid-cols-3 gap-3">
             <div className="bg-white border border-slate-200/50 rounded-xl p-4 text-center">
-              <div className="text-2xl font-bold text-red-300">{analise.total.toLocaleString('pt-BR')}</div>
+              <div className="text-2xl font-bold text-red-700">{analise.total.toLocaleString('pt-BR')}</div>
               <div className="text-xs text-slate-400 mt-1">Irregulações pendentes</div>
             </div>
             <div className="bg-white border border-slate-200/50 rounded-xl p-4 text-center">
@@ -1160,13 +1160,13 @@ function AbaInadimplencia({ records, scorePlacas }) {
               <div className="text-xs text-slate-400 mt-1">Valor total pendente</div>
             </div>
             <div className="bg-white border border-slate-200/50 rounded-xl p-4 text-center">
-              <div className="text-2xl font-bold text-amber-300">{analise.totalPlacas.toLocaleString('pt-BR')}</div>
+              <div className="text-2xl font-bold text-amber-700">{analise.totalPlacas.toLocaleString('pt-BR')}</div>
               <div className="text-xs text-slate-400 mt-1">Placas únicas inadimplentes</div>
             </div>
           </div>
 
           {/* Aging */}
-          <div className="bg-slate-800/40 border border-slate-200/50 rounded-xl p-4">
+          <div className="bg-white border border-slate-200 rounded-xl p-4">
             <div className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-3">Envelhecimento das irregulações</div>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               {AGING_BANDS.map(b => {
@@ -1176,7 +1176,7 @@ function AbaInadimplencia({ records, scorePlacas }) {
                     <div className={`text-xl font-bold ${b.cor.text}`}>{analise.agingCount[b.key]}</div>
                     <div className="text-xs font-medium mt-0.5">{b.label}</div>
                     <div className="text-xs opacity-60 mb-2">{b.desc}</div>
-                    <div className="h-1 bg-slate-700/50 rounded-full overflow-hidden">
+                    <div className="h-1 bg-slate-200 rounded-full overflow-hidden">
                       <div className={`h-full rounded-full ${b.cor.bar}`} style={{width:`${pct}%`}}/>
                     </div>
                     <div className="text-xs opacity-60 mt-1">{fmtBRL(analise.agingValor[b.key])}</div>
@@ -1188,7 +1188,7 @@ function AbaInadimplencia({ records, scorePlacas }) {
 
           {/* Top trechos */}
           {analise.porTrecho.length > 0 && (
-            <div className="bg-slate-800/40 border border-slate-200/50 rounded-xl overflow-hidden">
+            <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
               <div className="px-4 py-3 border-b border-slate-200 text-xs font-semibold text-slate-400 uppercase tracking-wide">
                 Pendências por trecho (top {Math.min(10, analise.porTrecho.length)})
               </div>
@@ -1234,7 +1234,7 @@ function AbaInadimplencia({ records, scorePlacas }) {
 
           <div className="overflow-x-auto rounded-xl border border-slate-200">
             <table className="w-full text-sm">
-              <thead className="bg-slate-800/60">
+              <thead className="bg-slate-50">
                 <tr className="text-left text-xs text-slate-400 uppercase tracking-wide">
                   <th className="px-4 py-3">#</th><th className="px-4 py-3">Placa</th>
                   <th className="px-4 py-3">Score</th><th className="px-4 py-3">Aging</th>
@@ -1348,14 +1348,14 @@ function ComparacaoTrechos({ records, tipo }) {
           <div className="flex items-center justify-between mb-2">
             <span className="text-xs text-slate-400">Selecione até 8 trechos</span>
             <div className="flex gap-2">
-              <button onClick={() => setSelected(allTrechos.slice(0,6))} className="text-xs text-emerald-600 hover:text-emerald-300">Top 6</button>
+              <button onClick={() => setSelected(allTrechos.slice(0,6))} className="text-xs text-emerald-600 hover:text-emerald-700">Top 6</button>
               <button onClick={() => setSelected([])} className="text-xs text-slate-500 hover:text-slate-600">Limpar</button>
             </div>
           </div>
           <div className="flex flex-wrap gap-1.5 max-h-36 overflow-y-auto">
             {allTrechos.map(t => (
               <button key={t} onClick={() => toggleTrecho(t)}
-                className={`px-2 py-1 rounded-lg text-xs font-medium transition ${selected.includes(t) ? 'bg-emerald-600 text-white' : 'bg-slate-700 text-slate-600 hover:bg-slate-600'}`}>
+                className={`px-2 py-1 rounded-lg text-xs font-medium transition ${selected.includes(t) ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-600'}`}>
                 {t}
               </button>
             ))}
@@ -1385,7 +1385,7 @@ function ComparacaoTrechos({ records, tipo }) {
           {/* Tabela completa */}
           <div className="overflow-x-auto rounded-xl border border-slate-200">
             <table className="w-full text-sm">
-              <thead className="bg-slate-800/60">
+              <thead className="bg-slate-50">
                 <tr className="text-left text-xs text-slate-400 uppercase tracking-wide">
                   <th className="px-4 py-3">Trecho</th>
                   {metricasDisp.map(([k,l]) => <th key={k} className="px-4 py-3 text-right">{l}</th>)}
@@ -1399,7 +1399,7 @@ function ComparacaoTrechos({ records, tipo }) {
                       {m.trecho}
                     </td>
                     {metricasDisp.map(([k]) => (
-                      <td key={k} className={`px-4 py-2.5 text-right font-mono text-xs ${k===metrica?'font-bold text-emerald-300':''}`}>
+                      <td key={k} className={`px-4 py-2.5 text-right font-mono text-xs ${k===metrica?'font-bold text-emerald-700':''}`}>
                         {fmtMetrica(k, m[k])}
                       </td>
                     ))}
@@ -1612,14 +1612,14 @@ function CargoBadge({ cargo }) {
   const cls = cargo === 'Supervisor' ? 'bg-purple-500/20 text-purple-600'
     : cargo === 'Fiscal' ? 'bg-blue-500/20 text-blue-600'
     : cargo === 'Operador' ? 'bg-slate-100 text-slate-700'
-    : 'bg-amber-500/20 text-amber-300'
+    : 'bg-amber-500/20 text-amber-700'
   return <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${cls}`}>{cargo || 'Não cadastrado'}</span>
 }
 
 function ConvBar({ pct }) {
   return (
     <div className="flex items-center gap-1.5">
-      <div className="w-12 h-1.5 bg-slate-700 rounded-full overflow-hidden">
+      <div className="w-12 h-1.5 bg-slate-200 rounded-full overflow-hidden">
         <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${Math.min(100, pct || 0)}%` }} />
       </div>
       <span className="text-xs">{fmtNum(pct || 0)}%</span>
@@ -1742,7 +1742,7 @@ function AbaFuncionarios({ funcionarios, todos, loading, busca, setBusca, filtro
       ) : (
         <div className="overflow-x-auto rounded-xl border border-slate-200">
           <table className="w-full text-sm">
-            <thead className="bg-slate-800/60">
+            <thead className="bg-slate-50">
               <tr className="text-left text-xs text-slate-400 uppercase tracking-wide">
                 <th className="px-4 py-3">Nome</th><th className="px-4 py-3">Login</th>
                 <th className="px-4 py-3">Cargo</th><th className="px-4 py-3">Status</th>
@@ -1783,33 +1783,33 @@ function AbaFuncionarios({ funcionarios, todos, loading, busca, setBusca, filtro
 function FilterBar({ meses, agentes, trechos, filtroMes, setFiltroMes, filtroDe, setFiltroDe, filtroAte, setFiltroAte, filtroAgente, setFiltroAgente, filtroTrecho, setFiltroTrecho, onLimpar, labelAgente = 'Agente' }) {
   const temFiltro = !!(filtroMes || filtroDe || filtroAte || filtroAgente || filtroTrecho)
   return (
-    <div className="flex flex-wrap gap-2 items-center mb-4 p-3 bg-slate-800/40 border border-slate-200/50 rounded-xl">
+    <div className="flex flex-wrap gap-2 items-center mb-4 p-3 bg-slate-50 border border-slate-200 rounded-xl">
       <Filter className="w-3.5 h-3.5 text-slate-500 flex-shrink-0"/>
-      <select value={filtroMes} onChange={e => setFiltroMes(e.target.value)} className="text-xs bg-slate-700 border border-slate-600 rounded px-2 py-1.5 text-slate-600">
+      <select value={filtroMes} onChange={e => setFiltroMes(e.target.value)} className="text-xs bg-white border border-slate-200 text-slate-900 rounded px-2 py-1">
         <option value="">Todos os meses</option>
         {meses.map(m => <option key={m} value={m}>{m}</option>)}
       </select>
-      <input type="date" value={filtroDe} onChange={e => setFiltroDe(e.target.value)} className="text-xs bg-slate-700 border border-slate-600 rounded px-2 py-1.5 text-slate-600" title="Data inicial"/>
+      <input type="date" value={filtroDe} onChange={e => setFiltroDe(e.target.value)} className="text-xs bg-white border border-slate-200 text-slate-900 rounded px-2 py-1" title="Data inicial"/>
       <span className="text-xs text-slate-500">até</span>
-      <input type="date" value={filtroAte} onChange={e => setFiltroAte(e.target.value)} className="text-xs bg-slate-700 border border-slate-600 rounded px-2 py-1.5 text-slate-600" title="Data final"/>
+      <input type="date" value={filtroAte} onChange={e => setFiltroAte(e.target.value)} className="text-xs bg-white border border-slate-200 text-slate-900 rounded px-2 py-1" title="Data final"/>
       {agentes.length > 0 && (
-        <select value={filtroAgente} onChange={e => setFiltroAgente(e.target.value)} className="text-xs bg-slate-700 border border-slate-600 rounded px-2 py-1.5 text-slate-600 max-w-[160px]">
+        <select value={filtroAgente} onChange={e => setFiltroAgente(e.target.value)} className="text-xs bg-white border border-slate-200 text-slate-900 rounded px-2 py-1">
           <option value="">Todos os {labelAgente.toLowerCase()}s</option>
           {agentes.map(a => <option key={a} value={a}>{a}</option>)}
         </select>
       )}
       {trechos.length > 0 && (
-        <select value={filtroTrecho} onChange={e => setFiltroTrecho(e.target.value)} className="text-xs bg-slate-700 border border-slate-600 rounded px-2 py-1.5 text-slate-600 max-w-[160px]">
+        <select value={filtroTrecho} onChange={e => setFiltroTrecho(e.target.value)} className="text-xs bg-white border border-slate-200 text-slate-900 rounded px-2 py-1">
           <option value="">Todos os trechos</option>
           {trechos.map(t => <option key={t} value={t}>{t}</option>)}
         </select>
       )}
       {temFiltro && (
-        <button onClick={onLimpar} className="text-xs text-red-600 hover:text-red-300 flex items-center gap-1 ml-1">
+        <button onClick={onLimpar} className="text-xs text-red-600 hover:text-red-700 flex items-center gap-1 ml-1">
           <X className="w-3 h-3"/> Limpar
         </button>
       )}
-      {temFiltro && <span className="text-xs bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded-full font-medium">Filtro ativo</span>}
+      {temFiltro && <span className="text-xs bg-amber-500/20 text-amber-700 px-2 py-0.5 rounded-full font-medium">Filtro ativo</span>}
     </div>
   )
 }
@@ -1962,7 +1962,7 @@ function VendasHoraExtra({ a }) {
   const series = view === 'dia' ? he.porDia : view === 'semana' ? he.porSemana : he.porMes
   if (!he.total) return (
     <div className="space-y-4">
-      <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/30 text-xs text-amber-300">
+      <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/30 text-xs text-amber-700">
         <strong>Períodos de hora extra:</strong> Seg–Sex das 17h às 18h · Sábados das 13h às 18h
       </div>
       <div className="text-center py-12 text-slate-500 text-sm">Nenhuma transação nos períodos de hora extra.</div>
@@ -1970,7 +1970,7 @@ function VendasHoraExtra({ a }) {
   )
   return (
     <div className="space-y-5">
-      <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/30 text-xs text-amber-300">
+      <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/30 text-xs text-amber-700">
         <strong>Períodos de hora extra:</strong> Seg–Sex das 17h às 18h · Sábados das 13h às 18h
       </div>
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -1982,7 +1982,7 @@ function VendasHoraExtra({ a }) {
       <div className="flex gap-2">
         {[['mes','Por Mês'],['semana','Por Semana'],['dia','Por Dia']].map(([id, label]) => (
           <button key={id} onClick={() => setView(id)}
-            className={`px-3 py-1.5 text-xs rounded font-medium transition ${view === id ? 'bg-amber-500/30 text-amber-300 border border-amber-500/40' : 'bg-slate-700 text-slate-400 hover:bg-slate-600'}`}>
+            className={`px-3 py-1.5 text-xs rounded font-medium transition ${view === id ? 'bg-amber-500/30 text-amber-700 border border-amber-400/50' : 'bg-slate-100 text-slate-600 border border-transparent'}`}>
             {label}
           </button>
         ))}
@@ -2005,7 +2005,7 @@ function VendasHoraExtra({ a }) {
       )}
       <div className="overflow-x-auto rounded-xl border border-slate-200">
         <table className="w-full text-sm">
-          <thead className="bg-slate-800/60">
+          <thead className="bg-slate-50">
             <tr className="text-left text-xs text-slate-400 uppercase tracking-wide">
               <th className="px-4 py-3">Período</th>
               <th className="px-4 py-3 text-right">Transações</th>
@@ -2148,7 +2148,7 @@ function VendasFuncionarioDetalhe({ nome, cargo, records, analise, onVoltar }) {
       )}
 
       {a.melhorDia && (
-        <div className="bg-slate-800/40 border border-slate-200/50 rounded-xl p-4 text-sm text-slate-400">
+        <div className="bg-white border border-slate-200 rounded-xl p-4 text-sm text-slate-400">
           <span className="text-slate-600 font-medium">Melhor dia: </span>
           {a.melhorDia.date} — {a.melhorDia.count.toLocaleString('pt-BR')} trans. · {fmtBRL(a.melhorDia.valor)}
         </div>
@@ -2174,7 +2174,7 @@ function PeriodoDBSelector({ periodo, onRecarregar, loading, label = 'Período d
   }
   const pct = progresso?.total ? Math.min(100, Math.round((progresso.carregados / progresso.total) * 100)) : null
   return (
-    <div className="flex flex-col gap-2 mb-4 p-3 rounded-xl bg-slate-800/60 border border-slate-200">
+    <div className="flex flex-col gap-2 mb-4 p-3 rounded-xl bg-slate-50 border border-slate-200">
       <div className="flex flex-wrap items-center gap-2">
         <span className="text-xs text-slate-400 font-medium whitespace-nowrap">{label}:</span>
         <div className="flex items-center gap-1">
@@ -2193,7 +2193,7 @@ function PeriodoDBSelector({ periodo, onRecarregar, loading, label = 'Período d
             className="px-2 py-1 rounded bg-indigo-700 hover:bg-indigo-600 disabled:opacity-40 text-xs text-slate-700">mês atual</button>
           {[[7,'7d'],[30,'30d'],[60,'60d'],[90,'90d']].map(([d,l]) => (
             <button key={d} onClick={() => atalho(d)} disabled={loading}
-              className="px-2 py-1 rounded bg-slate-700 hover:bg-slate-600 disabled:opacity-40 text-xs text-slate-600">{l}</button>
+              className="px-2 py-1 rounded bg-slate-100 hover:bg-slate-200 disabled:opacity-40 text-xs text-slate-600">{l}</button>
           ))}
         </div>
       </div>
@@ -2207,7 +2207,7 @@ function PeriodoDBSelector({ periodo, onRecarregar, loading, label = 'Período d
             {pct !== null && <span>{pct}%</span>}
           </div>
           {pct !== null && (
-            <div className="h-1.5 bg-slate-700 rounded-full overflow-hidden">
+            <div className="h-1.5 bg-slate-200 rounded-full overflow-hidden">
               <div className="h-full bg-emerald-500 rounded-full transition-all duration-300" style={{ width: `${pct}%` }} />
             </div>
           )}
@@ -2253,7 +2253,7 @@ function AbaVendas({ funcionarios, dados, premissas, analise, jornada, subAba, s
         {progresso && progresso.total ? (
           <div className="flex flex-col items-center gap-2 w-64">
             <span className="text-sm text-slate-600">{progresso.carregados.toLocaleString('pt-BR')} / {progresso.total.toLocaleString('pt-BR')} registros</span>
-            <div className="w-full h-2 bg-slate-700 rounded-full overflow-hidden">
+            <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
               <div className="h-full bg-emerald-500 rounded-full transition-all duration-300"
                 style={{ width: `${Math.min(100, Math.round(progresso.carregados/progresso.total*100))}%` }} />
             </div>
@@ -2271,7 +2271,7 @@ function AbaVendas({ funcionarios, dados, premissas, analise, jornada, subAba, s
           <PeriodoDBSelector periodo={periodo} onRecarregar={onRecarregarDB} loading={loading} label="Carregar do banco" progresso={progresso} />
         )}
         {funcionarios.length === 0 && (
-          <div className="mb-4 p-3 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-300 text-sm flex items-start gap-2">
+          <div className="mb-4 p-3 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-700 text-sm flex items-start gap-2">
             <AlertTriangle className="w-4 h-4 mt-0.5 flex-shrink-0" />
             Cadastre funcionários na aba Funcionários para habilitar análise por cargo.
           </div>
@@ -2349,7 +2349,7 @@ function RankingRow({ label, count, total, valor, alert }) {
         <span>{count.toLocaleString('pt-BR')} <span className="text-slate-400 text-xs">({fmtNum(pct)}%)</span></span>
       </div>
       <div className="flex items-center gap-2">
-        <div className="flex-1 h-1.5 bg-slate-700 rounded-full overflow-hidden">
+        <div className="flex-1 h-1.5 bg-slate-200 rounded-full overflow-hidden">
           <div className={`h-full rounded-full ${alert ? 'bg-red-500' : 'bg-emerald-500'}`} style={{ width: `${Math.min(100, pct)}%` }} />
         </div>
         <span className="text-xs text-emerald-600">{fmtBRL(valor)}</span>
@@ -2373,16 +2373,16 @@ function VendasKPIs({ a }) {
         <StatCard label="Trans. / dia" value={fmtNum(a.transPorDiaMedia, 0)} />
       </div>
       <div className="grid sm:grid-cols-2 gap-4">
-        <div className="bg-slate-800/40 rounded-xl border border-slate-200/50 p-4">
+        <div className="bg-white rounded-xl border border-slate-200 p-4">
           <div className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-3">Por canal</div>
           {Object.entries(a.porCanal).map(([c, d]) => <RankingRow key={c} label={c} count={d.count} total={a.totalTrans} valor={d.valor} />)}
         </div>
-        <div className="bg-slate-800/40 rounded-xl border border-slate-200/50 p-4">
+        <div className="bg-white rounded-xl border border-slate-200 p-4">
           <div className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-3">Por zona</div>
           {Object.entries(a.porZona).sort((a2, b2) => b2[1].count - a2[1].count).map(([z, d]) => <RankingRow key={z} label={z} count={d.count} total={a.totalTrans} valor={d.valor} />)}
         </div>
       </div>
-      <div className="bg-slate-800/40 rounded-xl border border-slate-200/50 p-4">
+      <div className="bg-white rounded-xl border border-slate-200 p-4">
         <div className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-3">Tipo de transação</div>
         {Object.entries(a.porTipo).sort((a2, b2) => b2[1].count - a2[1].count).map(([t, d]) =>
           <RankingRow key={t} label={t} count={d.count} total={a.totalTrans} valor={d.valor} alert={t.includes('ALERTA')} />)}
@@ -2395,7 +2395,7 @@ function VendasAgentes({ a }) {
   return (
     <div className="overflow-x-auto rounded-xl border border-slate-200">
       <table className="w-full text-sm">
-        <thead className="bg-slate-800/60">
+        <thead className="bg-slate-50">
           <tr className="text-left text-xs text-slate-400 uppercase tracking-wide">
             <th className="px-4 py-3">#</th><th className="px-4 py-3">Agente</th><th className="px-4 py-3">Cargo</th>
             <th className="px-4 py-3 text-right">Trans.</th><th className="px-4 py-3 text-right">Valor</th>
@@ -2424,7 +2424,7 @@ function VendasTrechos({ a }) {
   return (
     <div className="overflow-x-auto rounded-xl border border-slate-200">
       <table className="w-full text-sm">
-        <thead className="bg-slate-800/60">
+        <thead className="bg-slate-50">
           <tr className="text-left text-xs text-slate-400 uppercase tracking-wide">
             <th className="px-4 py-3">#</th><th className="px-4 py-3">Trecho</th>
             <th className="px-4 py-3 text-right">Trans.</th><th className="px-4 py-3 text-right">Valor</th><th className="px-4 py-3 text-right">% total</th>
@@ -2451,7 +2451,7 @@ function VendasJornada({ jornada }) {
   return (
     <div className="overflow-x-auto rounded-xl border border-slate-200">
       <table className="w-full text-sm">
-        <thead className="bg-slate-800/60">
+        <thead className="bg-slate-50">
           <tr className="text-left text-xs text-slate-400 uppercase tracking-wide">
             <th className="px-4 py-3">Agente</th><th className="px-4 py-3">Cargo</th><th className="px-4 py-3">Data</th>
             <th className="px-4 py-3">Início</th><th className="px-4 py-3">Término</th>
@@ -2492,7 +2492,7 @@ const fmtK = v => v >= 1000 ? `R$${(v/1000).toFixed(1)}k` : `R$${v.toFixed(0)}`
 
 function ChartCard({ title, children, height = 240 }) {
   return (
-    <div className="bg-slate-800/60 border border-slate-200/50 rounded-xl p-4">
+    <div className="bg-white border border-slate-200 rounded-xl p-4">
       {title && <div className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-3">{title}</div>}
       <div style={{ height }}>{children}</div>
     </div>
@@ -2504,7 +2504,7 @@ function FaixaCards({ porFaixa, totalTrans }) {
   return (
     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
       {porFaixa.map((f, i) => (
-        <div key={f.faixa} className="bg-slate-800/60 border border-slate-200/50 rounded-xl p-3 text-center">
+        <div key={f.faixa} className="bg-white border border-slate-200 rounded-xl p-3 text-center">
           <div className="text-lg mb-1">{icons[i]}</div>
           <div className="text-xs text-slate-400">{f.faixa}</div>
           <div className="text-sm text-slate-500 mb-1">{f.label}</div>
@@ -2644,9 +2644,9 @@ function VendasPagamentos({ a }) {
         </ChartCard>
       </div>
 
-      <div className="bg-slate-800/40 border border-slate-200/50 rounded-xl overflow-hidden">
+      <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
         <table className="w-full text-sm">
-          <thead className="bg-slate-800/60">
+          <thead className="bg-slate-50">
             <tr className="text-left text-xs text-slate-400 uppercase tracking-wide">
               <th className="px-4 py-3">Forma de pagamento</th>
               <th className="px-4 py-3 text-right">Trans.</th>
@@ -2695,7 +2695,7 @@ function VendasAgentesChart({ a, onSelectAgente }) {
       )}
       <div className="overflow-x-auto rounded-xl border border-slate-200">
         <table className="w-full text-sm">
-          <thead className="bg-slate-800/60">
+          <thead className="bg-slate-50">
             <tr className="text-left text-xs text-slate-400 uppercase tracking-wide">
               <th className="px-4 py-3">#</th><th className="px-4 py-3">Agente</th><th className="px-4 py-3">Cargo</th>
               <th className="px-4 py-3 text-right">Trans.</th><th className="px-4 py-3 text-right">Valor</th>
@@ -2745,7 +2745,7 @@ function VendasTrechosChart({ a }) {
       </ChartCard>
       <div className="overflow-x-auto rounded-xl border border-slate-200">
         <table className="w-full text-sm">
-          <thead className="bg-slate-800/60">
+          <thead className="bg-slate-50">
             <tr className="text-left text-xs text-slate-400 uppercase tracking-wide">
               <th className="px-4 py-3">#</th><th className="px-4 py-3">Trecho</th>
               <th className="px-4 py-3 text-right">Trans.</th><th className="px-4 py-3 text-right">Valor</th><th className="px-4 py-3 text-right">% total</th>
@@ -2804,7 +2804,7 @@ function AbaIrregularidades({ funcionarios, dados, premissas, analise, subAba, s
         {progresso && progresso.total ? (
           <div className="flex flex-col items-center gap-2 w-64">
             <span className="text-sm text-slate-600">{progresso.carregados.toLocaleString('pt-BR')} / {progresso.total.toLocaleString('pt-BR')} registros</span>
-            <div className="w-full h-2 bg-slate-700 rounded-full overflow-hidden">
+            <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
               <div className="h-full bg-blue-500 rounded-full transition-all duration-300"
                 style={{ width: `${Math.min(100, Math.round(progresso.carregados/progresso.total*100))}%` }} />
             </div>
@@ -2822,7 +2822,7 @@ function AbaIrregularidades({ funcionarios, dados, premissas, analise, subAba, s
           <PeriodoDBSelector periodo={periodo} onRecarregar={onRecarregarDB} loading={loading} label="Carregar do banco" progresso={progresso} />
         )}
         {funcionarios.length === 0 && (
-          <div className="mb-4 p-3 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-300 text-sm flex items-start gap-2">
+          <div className="mb-4 p-3 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-700 text-sm flex items-start gap-2">
             <AlertTriangle className="w-4 h-4 mt-0.5 flex-shrink-0" />
             Cadastre funcionários na aba Funcionários para habilitar análise por cargo.
           </div>
@@ -2893,10 +2893,10 @@ function IrregKPIs({ a }) {
         <StatCard label="Média diária" value={fmtNum(a.mediaDiaria)} />
         <StatCard label="Média semanal" value={fmtNum(a.mediaSemanais)} />
       </div>
-      <div className="bg-slate-800/40 rounded-xl border border-slate-200/50 p-4">
+      <div className="bg-white rounded-xl border border-slate-200 p-4">
         <div className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-3">Conversão geral</div>
         <div className="flex items-center gap-3">
-          <div className="flex-1 h-3 bg-slate-700 rounded-full overflow-hidden">
+          <div className="flex-1 h-3 bg-slate-200 rounded-full overflow-hidden">
             <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${Math.min(100, a.pctConversao)}%` }} />
           </div>
           <span className="text-xl font-bold text-emerald-600">{fmtNum(a.pctConversao)}%</span>
@@ -2904,7 +2904,7 @@ function IrregKPIs({ a }) {
         <div className="text-xs text-slate-500 mt-1">{a.totalPaga} pagas de {a.total} emitidas</div>
       </div>
       <div className="grid sm:grid-cols-2 gap-4">
-        <div className="bg-slate-800/40 rounded-xl border border-slate-200/50 p-4">
+        <div className="bg-white rounded-xl border border-slate-200 p-4">
           <div className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-3">Por origem</div>
           {Object.values(a.porOrigem).map(o => (
             <div key={o.origem} className="flex items-center justify-between py-1.5 border-b border-slate-200/40 last:border-0 text-sm">
@@ -2913,7 +2913,7 @@ function IrregKPIs({ a }) {
             </div>
           ))}
         </div>
-        <div className="bg-slate-800/40 rounded-xl border border-slate-200/50 p-4">
+        <div className="bg-white rounded-xl border border-slate-200 p-4">
           <div className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-3">Por cargo do emissor</div>
           {Object.values(a.porCargo).map(c => (
             <div key={c.cargo} className="flex items-center justify-between py-1.5 border-b border-slate-200/40 last:border-0 text-sm">
@@ -2931,7 +2931,7 @@ function IrregSemanas({ a }) {
   return (
     <div className="overflow-x-auto rounded-xl border border-slate-200">
       <table className="w-full text-sm">
-        <thead className="bg-slate-800/60">
+        <thead className="bg-slate-50">
           <tr className="text-left text-xs text-slate-400 uppercase tracking-wide">
             <th className="px-4 py-3">Semana</th><th className="px-4 py-3 text-right">Total</th>
             <th className="px-4 py-3 text-right">Irreg.</th><th className="px-4 py-3 text-right">Paga</th>
@@ -2962,7 +2962,7 @@ function IrregEmissores({ a }) {
   return (
     <div className="overflow-x-auto rounded-xl border border-slate-200">
       <table className="w-full text-sm">
-        <thead className="bg-slate-800/60">
+        <thead className="bg-slate-50">
           <tr className="text-left text-xs text-slate-400 uppercase tracking-wide">
             <th className="px-4 py-3">#</th><th className="px-4 py-3">Emissor</th><th className="px-4 py-3">Cargo</th>
             <th className="px-4 py-3 text-right">Total</th><th className="px-4 py-3 text-right">Paga</th>
@@ -2991,7 +2991,7 @@ function IrregTrechos({ a }) {
   return (
     <div className="overflow-x-auto rounded-xl border border-slate-200">
       <table className="w-full text-sm">
-        <thead className="bg-slate-800/60">
+        <thead className="bg-slate-50">
           <tr className="text-left text-xs text-slate-400 uppercase tracking-wide">
             <th className="px-4 py-3">#</th><th className="px-4 py-3">Trecho</th>
             <th className="px-4 py-3 text-right">Total</th><th className="px-4 py-3 text-right">Paga</th>
@@ -3019,7 +3019,7 @@ function IrregPlacas({ a, scorePlacas }) {
   return (
     <div className="overflow-x-auto rounded-xl border border-slate-200">
       <table className="w-full text-sm">
-        <thead className="bg-slate-800/60">
+        <thead className="bg-slate-50">
           <tr className="text-left text-xs text-slate-400 uppercase tracking-wide">
             <th className="px-4 py-3">#</th><th className="px-4 py-3">Placa</th>
             {scorePlacas && <th className="px-4 py-3">Score / Risco</th>}
@@ -3091,7 +3091,7 @@ function IrregRisco({ scorePlacas, config }) {
           const c = getScoreColors(nivel)
           return (
             <button key={nivel} onClick={() => setFiltroNivel(filtroNivel === nivel ? 'todos' : nivel)}
-              className={`p-3 rounded-xl border text-left transition ${filtroNivel === nivel ? `${c.bg} ${c.border} border` : 'bg-slate-800/40 border-slate-200/50 hover:bg-slate-100/70'}`}>
+              className={`p-3 rounded-xl border text-left transition ${filtroNivel === nivel ? `${c.bg} ${c.border} border` : 'bg-white border-slate-200'}`}>
               <div className={`text-2xl font-bold ${c.text}`}>{count}</div>
               <div className="text-xs text-slate-400 mt-0.5">{label}</div>
             </button>
@@ -3109,7 +3109,7 @@ function IrregRisco({ scorePlacas, config }) {
 
       <div className="overflow-x-auto rounded-xl border border-slate-200">
         <table className="w-full text-sm">
-          <thead className="bg-slate-800/60">
+          <thead className="bg-slate-50">
             <tr className="text-left text-xs text-slate-400 uppercase tracking-wide">
               <th className="px-4 py-3">#</th><th className="px-4 py-3">Placa</th>
               <th className="px-4 py-3 min-w-[160px]">Score / Risco</th>
@@ -3154,7 +3154,7 @@ function AlertasPanel({ scorePlacas, onDismiss }) {
       <div className="flex items-center justify-between px-4 py-3 bg-red-500/10 border-b border-red-500/20">
         <div className="flex items-center gap-2">
           <Bell className="w-4 h-4 text-red-600 flex-shrink-0" />
-          <span className="text-sm font-semibold text-red-300">
+          <span className="text-sm font-semibold text-red-700">
             {reincidentes.length > 0 && `${reincidentes.length} placa${reincidentes.length > 1 ? 's reincidentes' : ' reincidente'} (3+ em 90 dias)`}
             {reincidentes.length > 0 && criticas.length > 0 && ' · '}
             {criticas.length > 0 && `${criticas.length} placa${criticas.length > 1 ? 's' : ''} nível crítico`}
@@ -3167,7 +3167,7 @@ function AlertasPanel({ scorePlacas, onDismiss }) {
       {reincidentes.length > 0 && (
         <div className="px-4 py-3 flex flex-wrap gap-2">
           {reincidentes.slice(0, 20).map(p => (
-            <span key={p.placa} className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-red-500/15 border border-red-500/25 text-xs font-mono font-medium text-red-300">
+            <span key={p.placa} className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-red-500/15 border border-red-500/25 text-xs font-mono font-medium text-red-700">
               {p.placa} <span className="opacity-60">{p.rec90}x</span>
             </span>
           ))}
@@ -3200,7 +3200,7 @@ function AbaHistorico({ historico, loading, onExcluir, onRecarregar }) {
       ) : (
         <div className="overflow-x-auto rounded-xl border border-slate-200">
           <table className="w-full text-sm">
-            <thead className="bg-slate-800/60">
+            <thead className="bg-slate-50">
               <tr className="text-left text-xs text-slate-400 uppercase tracking-wide">
                 <th className="px-4 py-3">Módulo</th><th className="px-4 py-3">Período</th>
                 <th className="px-4 py-3 text-right">Registros</th><th className="px-4 py-3">Arquivo</th>
@@ -3211,7 +3211,7 @@ function AbaHistorico({ historico, loading, onExcluir, onRecarregar }) {
               {historico.map(r => (
                 <tr key={r.id} className="hover:bg-slate-50">
                   <td className="px-4 py-3">
-                    <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${r.modulo === 'vendas' ? 'bg-blue-500/20 text-blue-600' : 'bg-amber-500/20 text-amber-300'}`}>
+                    <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${r.modulo === 'vendas' ? 'bg-blue-500/20 text-blue-600' : 'bg-amber-500/20 text-amber-700'}`}>
                       {r.modulo === 'vendas' ? 'Vendas' : 'Irregularidades'}
                     </span>
                   </td>
@@ -3237,9 +3237,9 @@ function AbaHistorico({ historico, loading, onExcluir, onRecarregar }) {
 // ---- DASHBOARD EXECUTIVO ----
 function InsightBadge({ text, tipo }) {
   const styles = {
-    ok:     'bg-emerald-500/15 border-emerald-500/30 text-emerald-300',
-    alerta: 'bg-amber-500/15 border-amber-500/30 text-amber-300',
-    critico:'bg-red-500/15 border-red-500/30 text-red-300',
+    ok:     'bg-emerald-500/15 border-emerald-500/30 text-emerald-700',
+    alerta: 'bg-amber-500/15 border-amber-500/30 text-amber-700',
+    critico:'bg-red-500/15 border-red-500/30 text-red-700',
     info:   'bg-blue-500/15 border-blue-500/30 text-blue-600',
   }
   const Icon = tipo === 'ok' ? TrendingUp : tipo === 'critico' ? TrendingDown : tipo === 'alerta' ? Bell : Activity
@@ -3252,7 +3252,7 @@ function InsightBadge({ text, tipo }) {
 }
 
 function DashKpi({ label, value, sub, cor, icon: Icon }) {
-  const corText = cor === 'emerald' ? 'text-emerald-300' : cor === 'red' ? 'text-red-300' : cor === 'amber' ? 'text-amber-300' : cor === 'blue' ? 'text-blue-600' : cor === 'purple' ? 'text-purple-600' : 'text-slate-900'
+  const corText = cor === 'emerald' ? 'text-emerald-700' : cor === 'red' ? 'text-red-700' : cor === 'amber' ? 'text-amber-700' : cor === 'blue' ? 'text-blue-600' : cor === 'purple' ? 'text-purple-600' : 'text-slate-900'
   return (
     <div className="bg-white border border-slate-200/50 rounded-xl p-4 flex flex-col gap-1 min-w-0">
       <div className="flex items-center justify-between gap-2">
@@ -3409,10 +3409,10 @@ function AbaDashboard({ recordsVendas, recordsIrreg, scorePlacas, scoreConfig })
       {/* Status */}
       <div className="flex flex-wrap gap-2 items-center">
         <span className="text-sm font-semibold text-slate-600">Dados carregados:</span>
-        <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${temV ? 'bg-emerald-500/20 text-emerald-300' : 'bg-slate-700 text-slate-500'}`}>
+        <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${temV ? 'bg-emerald-500/20 text-emerald-700' : 'bg-slate-100 text-slate-600'}`}>
           {temV ? `✓ Vendas — ${analiseVendas.totalTrans.toLocaleString('pt-BR')} / ${fmtBRL(analiseVendas.totalValor)}` : '— Vendas não carregado'}
         </span>
-        <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${temI ? 'bg-blue-500/20 text-blue-600' : 'bg-slate-700 text-slate-500'}`}>
+        <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${temI ? 'bg-blue-500/20 text-blue-600' : 'bg-slate-100 text-slate-600'}`}>
           {temI ? `✓ Irregularidades — ${analiseIrreg.total.toLocaleString('pt-BR')} / ${fmtBRL(analiseIrreg.valorTotal)}` : '— Irregularidades não carregado'}
         </span>
         {scorePlacas && <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-purple-500/20 text-purple-600">✓ Score — {scoreResumo.total} placas</span>}
@@ -3484,7 +3484,7 @@ function AbaDashboard({ recordsVendas, recordsIrreg, scorePlacas, scoreConfig })
       {/* Rankings */}
       <div className="grid sm:grid-cols-2 gap-4">
         {temV && (
-          <div className="bg-slate-800/40 border border-slate-200/50 rounded-xl overflow-hidden">
+          <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
             <div className="px-4 py-3 border-b border-slate-200 text-xs font-semibold text-slate-400 uppercase tracking-wide">Top 5 agentes</div>
             <table className="w-full text-sm">
               <tbody className="divide-y divide-slate-800">
@@ -3501,7 +3501,7 @@ function AbaDashboard({ recordsVendas, recordsIrreg, scorePlacas, scoreConfig })
         )}
 
         {temI && (
-          <div className="bg-slate-800/40 border border-slate-200/50 rounded-xl overflow-hidden">
+          <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
             <div className="px-4 py-3 border-b border-slate-200 text-xs font-semibold text-slate-400 uppercase tracking-wide">Top 5 trechos — irregulações</div>
             <table className="w-full text-sm">
               <tbody className="divide-y divide-slate-800">
@@ -3541,7 +3541,7 @@ function AbaDashboard({ recordsVendas, recordsIrreg, scorePlacas, scoreConfig })
 
       {/* Aging resumo */}
       {inadimplencia && (
-        <div className="bg-slate-800/40 border border-slate-200/50 rounded-xl p-4">
+        <div className="bg-white border border-slate-200 rounded-xl p-4">
           <div className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-3">Envelhecimento das pendências</div>
           <div className="flex gap-2 items-end">
             {AGING_BANDS.map(b => {
@@ -3550,7 +3550,7 @@ function AbaDashboard({ recordsVendas, recordsIrreg, scorePlacas, scoreConfig })
               return (
                 <div key={b.key} className="flex-1 text-center">
                   <div className={`text-lg font-bold ${b.cor.text}`}>{n}</div>
-                  <div className="h-16 bg-slate-700/50 rounded-t flex items-end overflow-hidden mt-1">
+                  <div className="h-16 bg-slate-100 rounded-t flex items-end overflow-hidden mt-1">
                     <div className={`w-full ${b.cor.bar} rounded-t transition-all`} style={{height:`${Math.max(4,pct)}%`}}/>
                   </div>
                   <div className="text-xs text-slate-400 mt-1">{b.label}</div>
@@ -3610,7 +3610,7 @@ function AbaConfiguracoes({ scoreConfig, onSaveScore, metas, onSaveMeta, onDelet
   return (
     <div>
       <div className="flex items-center gap-3 mb-6">
-        <div className="w-9 h-9 rounded-lg bg-slate-700/60 flex items-center justify-center flex-shrink-0">
+        <div className="w-9 h-9 rounded-lg bg-slate-100 flex items-center justify-center flex-shrink-0">
           <Settings className="w-5 h-5 text-slate-600" />
         </div>
         <div>
@@ -3624,12 +3624,12 @@ function AbaConfiguracoes({ scoreConfig, onSaveScore, metas, onSaveMeta, onDelet
       {subAba === 'score' && (
         <div className="space-y-6 mt-4">
           {/* Pesos */}
-          <div className="bg-slate-800/40 border border-slate-200/50 rounded-xl p-5">
+          <div className="bg-white border border-slate-200 rounded-xl p-5">
             <div className="flex items-center justify-between mb-1">
               <div className="text-sm font-semibold text-slate-700 flex items-center gap-2">
                 <Shield className="w-4 h-4 text-emerald-600" /> Pesos da fórmula de score
               </div>
-              <span className={`text-xs px-2 py-0.5 rounded-full font-mono ${totalPesos === 100 ? 'bg-emerald-500/20 text-emerald-300' : 'bg-amber-500/20 text-amber-300'}`}>
+              <span className={`text-xs px-2 py-0.5 rounded-full font-mono ${totalPesos === 100 ? 'bg-emerald-500/20 text-emerald-700' : 'bg-amber-500/20 text-amber-700'}`}>
                 Soma: {totalPesos}
               </span>
             </div>
@@ -3652,7 +3652,7 @@ function AbaConfiguracoes({ scoreConfig, onSaveScore, metas, onSaveMeta, onDelet
           </div>
 
           {/* Limiares */}
-          <div className="bg-slate-800/40 border border-slate-200/50 rounded-xl p-5">
+          <div className="bg-white border border-slate-200 rounded-xl p-5">
             <div className="text-sm font-semibold text-slate-700 mb-1 flex items-center gap-2">
               <Bell className="w-4 h-4 text-amber-600" /> Limiares de risco
             </div>
@@ -3687,7 +3687,7 @@ function AbaConfiguracoes({ scoreConfig, onSaveScore, metas, onSaveMeta, onDelet
 
           <div className="flex items-center gap-3">
             <button onClick={handleSaveScore} disabled={!dirty}
-              className={`px-5 py-2 rounded-lg text-sm font-medium transition ${dirty ? 'bg-emerald-600 hover:bg-emerald-500 text-white' : 'bg-slate-700 text-slate-500 cursor-not-allowed'}`}>
+              className={`px-5 py-2 rounded-lg text-sm font-medium transition ${dirty ? 'bg-emerald-600 hover:bg-emerald-500 text-white' : 'bg-slate-100 text-slate-500 cursor-not-allowed'}`}>
               Salvar configuração
             </button>
             {!dirty && <span className="text-xs text-slate-500">Configuração salva no navegador</span>}
@@ -3702,7 +3702,7 @@ function AbaConfiguracoes({ scoreConfig, onSaveScore, metas, onSaveMeta, onDelet
 
       {subAba === 'metas' && (
         <div className="space-y-4 mt-4">
-          <div className="bg-slate-800/40 border border-slate-200/50 rounded-xl p-5">
+          <div className="bg-white border border-slate-200 rounded-xl p-5">
             <div className="text-sm font-semibold text-slate-700 mb-4 flex items-center gap-2">
               <Target className="w-4 h-4 text-blue-600" /> {editandoMeta ? 'Editar meta' : 'Nova meta mensal'}
             </div>
@@ -3739,7 +3739,7 @@ function AbaConfiguracoes({ scoreConfig, onSaveScore, metas, onSaveMeta, onDelet
                   </button>
                   {editandoMeta && (
                     <button type="button" onClick={() => { setEditandoMeta(null); setMetaForm({ funcionario_nome:'', mes: new Date().toISOString().slice(0,7), meta_trans:'', meta_valor:'' }) }}
-                      className="px-3 py-2 bg-slate-700 hover:bg-slate-600 text-slate-600 rounded-lg text-sm transition flex-shrink-0">
+                      className="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm transition flex-shrink-0">
                       <X className="w-4 h-4"/>
                     </button>
                   )}
@@ -3750,7 +3750,7 @@ function AbaConfiguracoes({ scoreConfig, onSaveScore, metas, onSaveMeta, onDelet
 
           <div className="overflow-x-auto rounded-xl border border-slate-200">
             <table className="w-full text-sm">
-              <thead className="bg-slate-800/60">
+              <thead className="bg-slate-50">
                 <tr className="text-left text-xs text-slate-400 uppercase tracking-wide">
                   <th className="px-4 py-3">Funcionário</th><th className="px-4 py-3">Mês</th>
                   <th className="px-4 py-3 text-right">Meta Trans.</th><th className="px-4 py-3 text-right">Meta Receita</th>
@@ -3784,7 +3784,7 @@ function AbaConfiguracoes({ scoreConfig, onSaveScore, metas, onSaveMeta, onDelet
 
       {subAba === 'exportar' && (
         <div className="space-y-4 mt-4">
-          <div className="bg-slate-800/40 border border-slate-200/50 rounded-xl p-5">
+          <div className="bg-white border border-slate-200 rounded-xl p-5">
             <div className="text-sm font-semibold text-slate-700 mb-1 flex items-center gap-2">
               <Download className="w-4 h-4 text-teal-400" /> Exportar configurações
             </div>
@@ -3798,12 +3798,12 @@ function AbaConfiguracoes({ scoreConfig, onSaveScore, metas, onSaveMeta, onDelet
               <Download className="w-4 h-4"/> Baixar pareceto_config.json
             </button>
           </div>
-          <div className="bg-slate-800/40 border border-slate-200/50 rounded-xl p-5">
+          <div className="bg-white border border-slate-200 rounded-xl p-5">
             <div className="text-sm font-semibold text-slate-700 mb-1 flex items-center gap-2">
               <Upload className="w-4 h-4 text-blue-600" /> Importar configurações
             </div>
             <p className="text-xs text-slate-400 mb-4">Restaura configurações a partir de um backup JSON exportado anteriormente.</p>
-            <label className="cursor-pointer px-4 py-2 bg-slate-700 hover:bg-slate-600 text-slate-700 rounded-lg text-sm font-medium transition flex items-center gap-2 w-fit">
+            <label className="cursor-pointer px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm font-medium transition flex items-center gap-2 w-fit">
               <Upload className="w-4 h-4"/> Carregar JSON
               <input type="file" accept=".json" className="hidden" onChange={e => {
                 const file = e.target.files?.[0]; if (!file) return
@@ -4349,7 +4349,7 @@ export default function PareCetoApp({ usuario, onVoltarHub, onLogout }) {
             <div className="bg-white border border-slate-200 rounded-2xl p-8 text-center w-80 shadow-2xl">
               <div className="text-base font-semibold text-emerald-600 mb-1">Processando planilha</div>
               <div className="text-sm text-slate-400 mb-4 h-5">{p.label}</div>
-              <div className="w-full bg-slate-700 rounded-full h-2">
+              <div className="w-full bg-slate-200 rounded-full h-2">
                 <div className="bg-emerald-500 h-2 rounded-full transition-all duration-200" style={{ width: `${p.pct}%` }} />
               </div>
               <div className="text-xs text-slate-500 mt-2">{p.pct}%</div>
