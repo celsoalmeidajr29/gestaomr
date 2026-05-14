@@ -1,3 +1,3 @@
-// Versão ativa: v0.2.0 — Tema claro corporativo (header branco, bg-slate-50, cards brancos)
-import PareCetoApp from './versions/PareCetoApp_v0.2.0.jsx'
+// Versão ativa: v0.3.0 — Dark mode toggle Sol/Lua
+import PareCetoApp from './versions/PareCetoApp_v0.3.0.jsx'
 export default PareCetoApp

@@ -5,3 +5,56 @@
 @media print {
   body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 }
+
+/* =============================================
+   DARK THEME — aplicado via classe .dark no root
+   ============================================= */
+
+/* Backgrounds principais */
+.dark .bg-white       { background-color: #1e293b !important; }
+.dark .bg-slate-50    { background-color: #0f172a !important; }
+.dark .bg-slate-100   { background-color: #1e293b !important; }
+.dark .bg-slate-200   { background-color: #334155 !important; }
+
+/* Texto */
+.dark .text-slate-900 { color: #f8fafc !important; }
+.dark .text-slate-800 { color: #e2e8f0 !important; }
+.dark .text-slate-700 { color: #cbd5e1 !important; }
+.dark .text-slate-600 { color: #94a3b8 !important; }
+.dark .text-slate-500 { color: #64748b !important; }
+.dark .text-slate-400 { color: #475569 !important; }
+.dark .text-orange-400 { color: #fb923c !important; }
+
+/* Bordas */
+.dark .border-slate-100 { border-color: #1e293b !important; }
+.dark .border-slate-200 { border-color: #334155 !important; }
+.dark .border-slate-300 { border-color: #475569 !important; }
+
+/* Hover de linhas de tabela */
+.dark .hover\:bg-slate-50:hover  { background-color: rgba(255,255,255,0.04) !important; }
+.dark .hover\:bg-slate-100:hover { background-color: rgba(255,255,255,0.07) !important; }
+.dark .hover\:bg-slate-200:hover { background-color: rgba(255,255,255,0.10) !important; }
+
+/* Inputs, selects, textareas */
+.dark input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]),
+.dark select,
+.dark textarea {
+  background-color: #1e293b !important;
+  color: #f8fafc !important;
+  border-color: #475569 !important;
+}
+.dark input::placeholder,
+.dark textarea::placeholder { color: #64748b !important; }
+
+/* Placeholder de input no Safari */
+.dark input::-webkit-input-placeholder { color: #64748b; }
+
+/* Sombras (mais sutis no escuro) */
+.dark .shadow-sm { box-shadow: 0 1px 2px rgba(0,0,0,0.4) !important; }
+.dark .shadow    { box-shadow: 0 1px 3px rgba(0,0,0,0.5) !important; }
+
+/* Scrollbar dark */
+.dark ::-webkit-scrollbar       { width: 6px; height: 6px; }
+.dark ::-webkit-scrollbar-track { background: #1e293b; }
+.dark ::-webkit-scrollbar-thumb { background: #475569; border-radius: 3px; }
+.dark ::-webkit-scrollbar-thumb:hover { background: #64748b; }
