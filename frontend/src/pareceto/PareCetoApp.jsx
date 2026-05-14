@@ -1,3 +1,3 @@
-// Versão ativa: v0.1.4 — sem auto-load no boot; carrega mês atual ao abrir home
-import PareCetoApp from './versions/PareCetoApp_v0.1.4.jsx'
+// Versão ativa: v0.1.5 — auto-cadastro de funcionários ao importar CSV (com toast de feedback)
+import PareCetoApp from './versions/PareCetoApp_v0.1.5.jsx'
 export default PareCetoApp
