@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react'
 import api from './api.js'
 
 // Versão atual do sistema MRSys (atualizada a cada release)
-export const MRSYS_VERSION = 'v1.0.13'
+export const MRSYS_VERSION = 'v1.0.14'
 
 // Versão atual do Pare Certo (atualizada a cada release)
 export const PARECETO_VERSION = 'v0.1.5'
