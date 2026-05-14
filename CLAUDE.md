@@ -37,9 +37,9 @@ Gestor/usuário principal: **Celso Almeida** (`celso.almeida@grupomr.seg.br`)
 
 ### Versão ativa do monolito
 
-**`MRSys_v1.0.17.jsx`** — `frontend/src/App.jsx` é wrapper que repassa props para o monolito:
+**`MRSys_v1.0.18.jsx`** — `frontend/src/App.jsx` é wrapper que repassa props para o monolito:
 ```jsx
-import MRSysApp from './versions/MRSys_v1.0.17.jsx'
+import MRSysApp from './versions/MRSys_v1.0.18.jsx'
 export default function App(props) { return <MRSysApp {...props} /> }
 ```
 
@@ -52,6 +52,12 @@ Histórico recente de versões (renomeação a partir de v1.0.x):
 - **v1.0.15** — Seção "Autorização da Polícia Federal" (alv.png) no PDF da proposta quando prestador = UP VIGILÂNCIA LTDA
 - **v1.0.16** — fix status folha não salvava (ID mismatch `F1` vs `F001` em `apiToFolha` no storage-shim) + import Natura: coluna INÍCIO mapeada para campo `convocacao`
 - **v1.0.17** — Propostas ESCOLTA: valores excedentes sempre visíveis no modal + sub-linha no PDF com franquia/h.extra/km.extra/adic.dom.
+- **v1.0.18** — PDF ESCOLTA: números sem decimais desnecessários (`3h` não `3.00h`) + Adic.dom. sempre visível mesmo quando zero
+
+**UI corporativa (2026-05-14) — não é versão do monolito:**
+- `Login.jsx` reescrito: layout split-screen (painel esquerdo slate-900 com logo/tagline + painel direito branco com form)
+- `SistemasHub.jsx` reescrito: cards corporativos com ícones `lucide-react` (BarChart3/Activity/Brain) em vez de gradiente + emoji. Tabela de usuários com headers `text-[10px] uppercase tracking-widest` e zebra striping. Botão editar como ícone `<Pencil>`
+- `frontend/src/components/Layout.jsx` criado: sidebar slate-900 (colapsável 240px/56px), topbar white com avatar do usuário, área de conteúdo bg-slate-100. Aceita `navItems`, `activeNav`, `onNavChange`, `user`, `onLogout`, `onVoltarHub`, `children`
 
 **Notas técnicas v1.0.16:**
 - `storage-shim.js / apiToFolha`: bug onde `funcVid = 'F' + r.funcionario_id` gerava `'F1'` enquanto `apiToFuncionario` gerava `'F001'`. `folhasPorFunc.find()` nunca casava → status nunca encontrava o registro → criava phantom rows na DB. Fix: consulta `_cache['funcionarios']` para usar o mesmo ID v13 do funcionário.
@@ -60,6 +66,10 @@ Histórico recente de versões (renomeação a partir de v1.0.x):
 **Notas técnicas v1.0.17:**
 - `ModalProposta`: `<details>` removido — seção "Valores excedentes" sempre expandida para itens ESCOLTA. Campos reorganizados em pares lógicos (Franquia horas + H.extra/h | Franquia km + KM extra/km | Adicional dom. | Alíquota).
 - `gerarPropostaPDF`: célula Descrição de cada item ESCOLTA recebe sub-linha (7pt, cinza) com os valores excedentes não-zero: `Franquia: Xh/Ykm • H.extra: R$ A/h • KM extra: R$ B/km • Adic.dom.: R$ C`. Usa `willDrawCell` do autoTable para renderizar as duas linhas com estilos distintos.
+
+**Notas técnicas v1.0.18:**
+- `fmtN(v)`: helper que retorna inteiro sem casas decimais quando `n === Math.floor(n)`, ou `toFixed(2)` com vírgula. Substitui interpolação direta `${v}h` nas sub-linhas do PDF.
+- `Adic.dom.` sempre incluído na sub-linha (condição `> 0` removida) — exibe `R$ 0,00` quando zero.
 
 **Cérebro v1.2.0** (versão ativa — `frontend/src/cerebro/versions/CerebroApp_v1.2.0.jsx`):
 - Gmail: assuntos de e-mails agora aparecem na lista (fix `metadataHeaders` como params separados na URL)
@@ -439,7 +449,7 @@ Se eu (Celso) der uma instrução que conflita com algo nas Decisões já tomada
 
 ---
 
-*Última atualização: 2026-05-14. MRSys em produção na v1.0.17. Pare Certo v0.1.5 deployado. Cérebro v1.2.0 deployado. Migrations 019 e 020 pendentes de execução no phpMyAdmin. Pendentes MRSys:*
+*Última atualização: 2026-05-14. MRSys em produção na v1.0.18. UI corporativa deployada (Login split-screen, SistemasHub cards limpos, Layout.jsx criado). Pare Certo v0.1.5 deployado. Cérebro v1.2.0 deployado. Migrations 019 e 020 pendentes de execução no phpMyAdmin. Pendentes MRSys:*
 - *Rodar migration 013 (`database/migrations/013_proposta_itens_operacionais.sql`) no phpMyAdmin antes de testar v98.*
 - *Rodar migration 012 (`database/migrations/012_parcelas.sql`) no phpMyAdmin antes de testar v96/v97.*
 - *Após rodar migration 012, **rodar uma vez** o botão "Migrar parcelas" em cada uma das 3 abas (Despesas, Desp. Chefia, Vales) para inferir os grupos existentes e criar as parcelas faltantes. Conferir relatório no console + alert. Apagar o botão depois (linhas 3317, 3413, 3481 no v96 + helper `migrarParcelasExistentes`).*
