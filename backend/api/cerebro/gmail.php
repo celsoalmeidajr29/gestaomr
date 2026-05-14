@@ -98,10 +98,7 @@ if ($method === 'GET') {
         foreach ($list['messages'] ?? [] as $msg) {
             $detail = google_http_get(
                 'https://gmail.googleapis.com/gmail/v1/users/me/messages/' . urlencode($msg['id'])
-                . '?' . http_build_query([
-                    'format'          => 'metadata',
-                    'metadataHeaders' => 'From,To,Subject,Date',
-                ]),
+                . '?format=metadata&metadataHeaders=From&metadataHeaders=To&metadataHeaders=Subject&metadataHeaders=Date',
                 $token
             );
             if (!empty($detail['error'])) continue;

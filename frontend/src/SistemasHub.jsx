@@ -8,7 +8,7 @@ export const MRSYS_VERSION = 'v1.0.14'
 export const PARECETO_VERSION = 'v0.1.5'
 
 // Versão atual do Cérebro
-export const CEREBRO_VERSION = 'v1.1.0'
+export const CEREBRO_VERSION = 'v1.2.0'
 
 const SISTEMAS = [
   {

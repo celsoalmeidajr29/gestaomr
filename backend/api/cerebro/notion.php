@@ -273,10 +273,9 @@ if ($method === 'POST') {
         $parentId  = trim((string) ($data['parent_id'] ?? ''));
         if (!$title) json_error('title obrigatório', 400);
 
+        if (!$parentId) json_error('Informe o ID da página pai no Notion (integrações internas não podem criar páginas no workspace raiz).', 422);
         $payload = [
-            'parent' => $parentId
-                ? ['type' => 'page_id', 'page_id' => $parentId]
-                : ['type' => 'workspace', 'workspace' => true],
+            'parent' => ['type' => 'page_id', 'page_id' => $parentId],
             'properties' => [
                 'title' => ['title' => [['type' => 'text', 'text' => ['content' => $title]]]]
             ],
