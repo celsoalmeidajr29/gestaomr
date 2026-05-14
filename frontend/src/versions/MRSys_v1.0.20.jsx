@@ -23,7 +23,7 @@ import {
   Phone, Wallet, TrendingDown, MinusCircle, ClipboardList, Calendar,
   Camera, Paperclip, FileCheck, User, Mail, Grid3x3, LogOut, Send,
   Briefcase, Tag, ChevronLeft, ChevronRight, Pencil, FolderOpen,
-  FileSignature, CheckCircle, XCircle, UserPlus
+  FileSignature, CheckCircle, XCircle, UserPlus, Moon, Sun
 } from 'lucide-react';
 
 // ============ TEMPLATES POR CLIENTE ============
