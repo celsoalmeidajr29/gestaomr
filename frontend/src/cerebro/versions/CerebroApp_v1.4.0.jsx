@@ -9,8 +9,9 @@ import {
 } from 'lucide-react'
 
 const API = '/api/cerebro'
-// C object defined dynamically inside CerebroApp (dark/light)
 const MATRIX_LS = 'cerebro_matrix_v1'
+// C é mutável no módulo para que helpers possam ler; CerebroApp atualiza a cada render
+let C = { bg: '#0f172a', card: '#1e293b', border: '#334155', accent: '#6366f1', accent2: '#a78bfa', text: '#f8fafc', muted: '#94a3b8' }
 
 async function apiFetch(path, opts = {}) {
   const r = await fetch(`${API}${path}`, {
@@ -1920,13 +1921,14 @@ export default function CerebroApp({ usuario, onVoltarHub, onLogout }) {
   const [darkMode, setDarkMode] = useState(() => localStorage.getItem('mr-theme') === 'dark')
   useEffect(() => { localStorage.setItem('mr-theme', darkMode ? 'dark' : 'light') }, [darkMode])
 
-  const C = darkMode ? {
+  // Atualiza C do módulo para que helpers (renderMd, iMd, Field, etc.) usem o tema atual
+  Object.assign(C, darkMode ? {
     bg: '#0f172a', card: '#1e293b', border: '#334155',
     accent: '#6366f1', accent2: '#a78bfa', text: '#f8fafc', muted: '#94a3b8',
   } : {
     bg: '#f8fafc', card: '#ffffff', border: '#e2e8f0',
     accent: '#4f55f7', accent2: '#8b5cf6', text: '#1e293b', muted: '#64748b',
-  }
+  })
 
   const [aba, setAba] = useState('inicio')
   const [clock, setClock] = useState('')
