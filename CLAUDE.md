@@ -37,11 +37,31 @@ Gestor/usuário principal: **Celso Almeida** (`celso.almeida@grupomr.seg.br`)
 
 ### Versão ativa do monolito
 
-**`MRSys_v99.jsx`** — `frontend/src/App.jsx` é wrapper que repassa props para o monolito:
+**`MRSys_v1.0.16.jsx`** — `frontend/src/App.jsx` é wrapper que repassa props para o monolito:
 ```jsx
-import MRSysApp from './versions/MRSys_v99.jsx'
+import MRSysApp from './versions/MRSys_v1.0.16.jsx'
 export default function App(props) { return <MRSysApp {...props} /> }
 ```
+
+Histórico recente de versões (renomeação a partir de v1.0.x):
+
+- **v1.0.11** — logos proporcional no ecossistema + MR Tracker + prestador em escopo + badge EVENTOS + sem status no PDF
+- **v1.0.12** — compressão PNG de imagens no PDF da proposta (`compressImg` helper, Canvas API)
+- **v1.0.13** — PNG sem achatar fundo + padronização dos painéis Tomador/Prestador (PRETO3 fill, OURO left bar)
+- **v1.0.14** — EVENTOS 15+ em "Nossa Experiência em Números" (5 cards, `numColW = (W-2*M-8)/5`)
+- **v1.0.15** — Seção "Autorização da Polícia Federal" (alv.png) no PDF da proposta quando prestador = UP VIGILÂNCIA LTDA
+- **v1.0.16** — fix status folha não salvava (ID mismatch `F1` vs `F001` em `apiToFolha` no storage-shim) + import Natura: coluna INÍCIO mapeada para campo `convocacao`
+
+**Notas técnicas v1.0.16:**
+- `storage-shim.js / apiToFolha`: bug onde `funcVid = 'F' + r.funcionario_id` gerava `'F1'` enquanto `apiToFuncionario` gerava `'F001'`. `folhasPorFunc.find()` nunca casava → status nunca encontrava o registro → criava phantom rows na DB. Fix: consulta `_cache['funcionarios']` para usar o mesmo ID v13 do funcionário.
+- `buildHeaderMapLanc` (JSX): adicionado fallback `if (!map.INICIO && template tem convocacao) map.INICIO = 'extras.convocacao'` — aplica apenas ao NATURA_NOTURNA.
+
+**Cérebro v1.2.0** (versão ativa — `frontend/src/cerebro/versions/CerebroApp_v1.2.0.jsx`):
+- Gmail: assuntos de e-mails agora aparecem na lista (fix `metadataHeaders` como params separados na URL)
+- Notion: criação de página exige `parent_id` (integração interna não pode criar no workspace raiz)
+
+**Pare Certo v0.1.5** (versão ativa — `frontend/src/pareceto/versions/PareCetoApp_v0.1.5.jsx`):
+- Auto-registro de funcionários ao importar CSV corrigido (catch silencioso substituído por `console.warn` + toast)
 
 Novidade v99 (PDF medição sem impostos + conversão de despesa/vale em parcelamento + Resumo/Export com parcelamentos consolidados):
 - **PDF de medição enviado por e-mail não exibe mais impostos** — a linha "Imposto: R$ X" foi removida do `gerarMedicaoPDFBlob`. O documento que chega ao cliente mostra apenas serviços prestados e valor bruto faturado. Alíquota/ISS/retenções/líquido continuam visíveis internamente nos resumos e exports, mas não no PDF enviado ao cliente
@@ -414,7 +434,7 @@ Se eu (Celso) der uma instrução que conflita com algo nas Decisões já tomada
 
 ---
 
-*Última atualização: 2026-05-11. MRSys em produção na v99. Pare Certo v0.1 deployado — fases 1–8 concluídas. Dashboard Executivo é a tela inicial. Migrations 019 e 020 pendentes de execução no phpMyAdmin. Pendentes MRSys:*
+*Última atualização: 2026-05-14. MRSys em produção na v1.0.16. Pare Certo v0.1.5 deployado. Cérebro v1.2.0 deployado. Migrations 019 e 020 pendentes de execução no phpMyAdmin. Pendentes MRSys:*
 - *Rodar migration 013 (`database/migrations/013_proposta_itens_operacionais.sql`) no phpMyAdmin antes de testar v98.*
 - *Rodar migration 012 (`database/migrations/012_parcelas.sql`) no phpMyAdmin antes de testar v96/v97.*
 - *Após rodar migration 012, **rodar uma vez** o botão "Migrar parcelas" em cada uma das 3 abas (Despesas, Desp. Chefia, Vales) para inferir os grupos existentes e criar as parcelas faltantes. Conferir relatório no console + alert. Apagar o botão depois (linhas 3317, 3413, 3481 no v96 + helper `migrarParcelasExistentes`).*
