@@ -570,7 +570,7 @@ function AbaTarefas() {
 // ============================================================
 // ---- Aba Pomodoro ----
 // ============================================================
-const POMO_MODES = { work: { label: 'Foco', mins: 25, color: C.accent }, short: { label: 'Pausa curta', mins: 5, color: '#16a34a' }, long: { label: 'Pausa longa', mins: 15, color: '#0891b2' } }
+const POMO_MODES = { work: { label: 'Foco', mins: 25, color: '#6366f1' }, short: { label: 'Pausa curta', mins: 5, color: '#16a34a' }, long: { label: 'Pausa longa', mins: 15, color: '#0891b2' } }
 
 function TimerCircle({ seconds, total, color }) {
   const r = 70, cx = 80, c = 2 * Math.PI * r
