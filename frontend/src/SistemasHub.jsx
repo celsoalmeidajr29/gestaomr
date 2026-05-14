@@ -2,9 +2,9 @@ import React, { useState, useEffect, useCallback } from 'react'
 import { BarChart3, Activity, Brain, Plus, Users, LogOut, ChevronLeft, ArrowRight, Pencil } from 'lucide-react'
 import api from './api.js'
 
-export const MRSYS_VERSION = 'v1.0.18'
-export const PARECETO_VERSION = 'v0.1.5'
-export const CEREBRO_VERSION = 'v1.2.0'
+export const MRSYS_VERSION = 'v1.0.19'
+export const PARECETO_VERSION = 'v0.2.0'
+export const CEREBRO_VERSION = 'v1.3.0'
 
 const SISTEMAS = [
   {
