@@ -453,7 +453,14 @@ Se eu (Celso) der uma instrução que conflita com algo nas Decisões já tomada
 
 ---
 
-*Última atualização: 2026-05-14. MRSys em produção na v1.0.20. Dark mode toggle Sol/Lua deployado em todos os sistemas (MRSys v1.0.20, Pare Certo v0.3.0, Cérebro v1.4.0). Tema persiste em `localStorage` chave `mr-theme`. Migrations 019 e 020 pendentes de execução no phpMyAdmin. Pendentes MRSys:*
+*Última atualização: 2026-05-15. MRSys em produção na v1.0.20. Dark mode toggle Sol/Lua em TODOS os sistemas + Hub + Login (tema persiste em `localStorage` chave `mr-theme`, compartilhada). Auditoria completa de tema claro/escuro concluída:*
+- *Hub (`SistemasHub.jsx`) e Login (`Login.jsx`) ganharam dark mode + toggle Sol/Lua. `GestaoUsuarios` recebe `darkMode`/`onToggleDark` via props.*
+- *`index.css`: overrides expandidos — backgrounds pastel (indigo/emerald/red/amber/sky/violet/etc), bordas coloridas, `divide-*`, `ring-*`, sombras. Cores `-300` legadas (tema escuro antigo) escurecem no claro e restauram no escuro (cobre ~60 células de dados do MRSys) + variantes `hover:`.*
+- *Cérebro v1.4.0: tokens `C.surface`/`C.surface2`; modal `#0a0d1e` → `C.card`; bold/em/heading hardcoded → `C.*`; `NOTION_CSS` virou função `notionCss()` tema-aware; code blocks com fundo escuro consistente.*
+- *PareCeto v0.3.0: `gridStyle`/`axisStyle`/`PolarGrid` neutralizados (cinza translúcido visível em ambos os temas — antes `#1e293b` invisível no branco). Tooltips de chart permanecem escuros (padrão deliberado).*
+- *MRSys v1.0.20: badges ARMADA/FACILITIES/PRONTA RESPOSTA/Paga/Vencida `-300` → `-600`; chart grid neutralizado.*
+
+*Migrations 019 e 020 pendentes de execução no phpMyAdmin (vendas do Pare Certo só salvam corretamente após rodar a 019). Pendentes MRSys:*
 - *Rodar migration 013 (`database/migrations/013_proposta_itens_operacionais.sql`) no phpMyAdmin antes de testar v98.*
 - *Rodar migration 012 (`database/migrations/012_parcelas.sql`) no phpMyAdmin antes de testar v96/v97.*
 - *Após rodar migration 012, **rodar uma vez** o botão "Migrar parcelas" em cada uma das 3 abas (Despesas, Desp. Chefia, Vales) para inferir os grupos existentes e criar as parcelas faltantes. Conferir relatório no console + alert. Apagar o botão depois (linhas 3317, 3413, 3481 no v96 + helper `migrarParcelasExistentes`).*
