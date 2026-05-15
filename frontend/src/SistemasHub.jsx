@@ -1,6 +1,13 @@
 import React, { useState, useEffect, useCallback } from 'react'
-import { BarChart3, Activity, Brain, Plus, Users, LogOut, ChevronLeft, ArrowRight, Pencil } from 'lucide-react'
+import { BarChart3, Activity, Brain, Plus, Users, LogOut, ChevronLeft, ArrowRight, Pencil, Moon, Sun } from 'lucide-react'
 import api from './api.js'
+
+// Hook compartilhado de tema (persiste em localStorage 'mr-theme')
+function useDarkMode() {
+  const [darkMode, setDarkMode] = useState(() => localStorage.getItem('mr-theme') === 'dark')
+  useEffect(() => { localStorage.setItem('mr-theme', darkMode ? 'dark' : 'light') }, [darkMode])
+  return [darkMode, setDarkMode]
+}
 
 export const MRSYS_VERSION = 'v1.0.20'
 export const PARECETO_VERSION = 'v0.3.0'
@@ -246,7 +253,7 @@ function ModalUsuario({ usuario, perfis, onSalvar, onFechar }) {
 }
 
 // ── Gestão de Usuários ────────────────────────────────────────────────────
-function GestaoUsuarios({ onVoltar }) {
+function GestaoUsuarios({ onVoltar, darkMode, onToggleDark }) {
   const [usuarios, setUsuarios] = useState([])
   const [perfis, setPerfis] = useState([])
   const [carregando, setCarregando] = useState(true)
@@ -285,6 +292,7 @@ function GestaoUsuarios({ onVoltar }) {
   }
 
   return (
+    <div className={darkMode ? 'dark' : ''}>
     <div className="min-h-screen bg-slate-50 text-slate-900">
       <header className="h-14 bg-white border-b border-slate-200 sticky top-0 z-10 shadow-sm flex items-center px-6 gap-4">
         <button
@@ -297,6 +305,15 @@ function GestaoUsuarios({ onVoltar }) {
         <div className="w-px h-5 bg-slate-200" />
         <span className="font-semibold text-slate-900 text-sm">Gestão de Usuários</span>
         <div className="flex-1" />
+        {onToggleDark && (
+          <button
+            onClick={onToggleDark}
+            title={darkMode ? 'Modo claro' : 'Modo escuro'}
+            className="flex items-center justify-center w-7 h-7 rounded-lg bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-500 hover:text-slate-900 transition"
+          >
+            {darkMode ? <Sun className="w-3.5 h-3.5" /> : <Moon className="w-3.5 h-3.5" />}
+          </button>
+        )}
         <button
           onClick={() => { setUsuarioEditando(null); setModalAberto(true) }}
           className="text-sm bg-indigo-600 text-white px-4 py-1.5 rounded-lg hover:bg-indigo-700 transition font-medium"
@@ -400,16 +417,18 @@ function GestaoUsuarios({ onVoltar }) {
         />
       )}
     </div>
+    </div>
   )
 }
 
 // ── Hub principal ─────────────────────────────────────────────────────────
 export default function SistemasHub({ usuario, onSelecionarSistema, onLogout }) {
   const [viewGestao, setViewGestao] = useState(false)
+  const [darkMode, setDarkMode] = useDarkMode()
   const isAdmin = usuario?.perfil_codigo === 'admin'
 
   if (viewGestao) {
-    return <GestaoUsuarios onVoltar={() => setViewGestao(false)} />
+    return <GestaoUsuarios onVoltar={() => setViewGestao(false)} darkMode={darkMode} onToggleDark={() => setDarkMode(v => !v)} />
   }
 
   const sistemasVisiveis = SISTEMAS.map(s => {
@@ -418,6 +437,7 @@ export default function SistemasHub({ usuario, onSelecionarSistema, onLogout }) 
   })
 
   return (
+    <div className={darkMode ? 'dark' : ''}>
     <div className="min-h-screen bg-slate-50 text-slate-900">
       {/* Header */}
       <header className="h-14 bg-white border-b border-slate-200 sticky top-0 z-10 shadow-sm">
@@ -431,6 +451,13 @@ export default function SistemasHub({ usuario, onSelecionarSistema, onLogout }) 
           </div>
 
           <div className="flex items-center gap-1">
+            <button
+              onClick={() => setDarkMode(v => !v)}
+              title={darkMode ? 'Modo claro' : 'Modo escuro'}
+              className="flex items-center justify-center w-7 h-7 rounded-lg bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-500 hover:text-slate-900 transition"
+            >
+              {darkMode ? <Sun className="w-3.5 h-3.5" /> : <Moon className="w-3.5 h-3.5" />}
+            </button>
             {isAdmin && (
               <button
                 onClick={() => setViewGestao(true)}
@@ -505,6 +532,7 @@ export default function SistemasHub({ usuario, onSelecionarSistema, onLogout }) 
           ))}
         </div>
       </main>
+    </div>
     </div>
   )
 }

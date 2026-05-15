@@ -1,12 +1,14 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { auth } from './api.js'
-import { ArrowRight } from 'lucide-react'
+import { ArrowRight, Moon, Sun } from 'lucide-react'
 
 export default function Login({ onLogin }) {
   const [email, setEmail] = useState('')
   const [senha, setSenha] = useState('')
   const [erro, setErro] = useState('')
   const [loading, setLoading] = useState(false)
+  const [darkMode, setDarkMode] = useState(() => localStorage.getItem('mr-theme') === 'dark')
+  useEffect(() => { localStorage.setItem('mr-theme', darkMode ? 'dark' : 'light') }, [darkMode])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -23,6 +25,7 @@ export default function Login({ onLogin }) {
   }
 
   return (
+    <div className={darkMode ? 'dark' : ''}>
     <div className="min-h-screen flex">
       {/* Left panel — brand (hidden on mobile) */}
       <div className="hidden lg:flex lg:w-5/12 xl:w-2/5 bg-slate-900 flex-col items-center justify-center p-12 relative overflow-hidden flex-shrink-0">
@@ -56,7 +59,16 @@ export default function Login({ onLogin }) {
       </div>
 
       {/* Right panel — form */}
-      <div className="flex-1 flex items-center justify-center bg-white p-8">
+      <div className="flex-1 flex items-center justify-center bg-white p-8 relative">
+        {/* Theme toggle (top-right) */}
+        <button
+          onClick={() => setDarkMode(v => !v)}
+          title={darkMode ? 'Modo claro' : 'Modo escuro'}
+          className="absolute top-4 right-4 w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-500 hover:text-slate-900 transition flex items-center justify-center"
+        >
+          {darkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+        </button>
+
         <div className="w-full max-w-sm">
           {/* Mobile-only logo */}
           <div className="lg:hidden text-center mb-10">
@@ -123,6 +135,7 @@ export default function Login({ onLogin }) {
           <p className="mt-10 text-center text-xs text-slate-400">© 2026 celso.cloud</p>
         </div>
       </div>
+    </div>
     </div>
   )
 }
