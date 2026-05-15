@@ -37,9 +37,9 @@ Gestor/usuário principal: **Celso Almeida** (`celso.almeida@grupomr.seg.br`)
 
 ### Versão ativa do monolito
 
-**`MRSys_v1.0.20.jsx`** — `frontend/src/App.jsx` é wrapper que repassa props para o monolito:
+**`MRSys_v1.0.21.jsx`** — `frontend/src/App.jsx` é wrapper que repassa props para o monolito:
 ```jsx
-import MRSysApp from './versions/MRSys_v1.0.20.jsx'
+import MRSysApp from './versions/MRSys_v1.0.21.jsx'
 export default function App(props) { return <MRSysApp {...props} /> }
 ```
 
@@ -55,6 +55,7 @@ Histórico recente de versões (renomeação a partir de v1.0.x):
 - **v1.0.18** — PDF ESCOLTA: números sem decimais desnecessários (`3h` não `3.00h`) + Adic.dom. sempre visível mesmo quando zero
 - **v1.0.19** — Tema claro corporativo (header branco, sidebar slate-900, conteúdo claro)
 - **v1.0.20** — Dark mode toggle Sol/Lua no header + sidebar light/dark (`dark:` variants) + CSS overrides em `index.css` + `tailwind.config.js` com `darkMode: 'class'`; tema persiste em `localStorage` chave `mr-theme` compartilhada entre todos os sistemas
+- **v1.0.21** — Propostas: seleção múltipla (checkbox por linha + select-all) + barra de ações em massa (Duplicar / Rejeitar / Arquivar) + botão **Duplicar** por linha. Duplicação é frontend-only: `postCopiaProposta` busca a proposta completa (`carregarPropostaCompleta` com fallback `item.php`) e faz POST em `/api/propostas/index.php` (reusa geração de número + status `Criada`); itens duplicados omitem `servico_id` (cópia nasce não-convertida). Rejeição em massa ignora Aceitas/Rejeitadas e aplica motivo único
 
 **UI corporativa (2026-05-14) — não é versão do monolito:**
 - `Login.jsx` reescrito: layout split-screen (painel esquerdo slate-900 com logo/tagline + painel direito branco com form)
