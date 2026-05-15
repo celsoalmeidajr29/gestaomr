@@ -5090,7 +5090,7 @@ export default function App({ onVoltarHub, onLogout } = {}) {
                               <div className="truncate max-w-[200px]" title={p.cliente_razao || p.cliente_nome}>{p.cliente_razao || p.cliente_nome || '—'}</div>
                               <div className="text-[10px] text-slate-500">{p.cliente_cnpj}</div>
                             </td>
-                            <td className="px-3">{(() => { const catCor = p.categoria === 'ESCOLTA' ? 'bg-purple-500/20 text-purple-600 border-purple-500/30' : p.categoria === 'FACILITIES' ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30' : p.categoria === 'EVENTOS' ? 'bg-sky-500/20 text-sky-300 border-sky-500/30' : 'bg-amber-500/20 text-amber-300 border-amber-500/30'; return <span className={`text-[10px] px-2 py-0.5 rounded-full border ${catCor}`}>{p.categoria || '—'}</span>; })()}</td>
+                            <td className="px-3">{(() => { const catCor = p.categoria === 'ESCOLTA' ? 'bg-purple-500/20 text-purple-700 border-purple-500/30' : p.categoria === 'FACILITIES' ? 'bg-emerald-500/20 text-emerald-700 border-emerald-500/30' : p.categoria === 'EVENTOS' ? 'bg-sky-500/20 text-sky-700 border-sky-500/30' : 'bg-amber-500/20 text-amber-700 border-amber-500/30'; return <span className={`text-[10px] px-2 py-0.5 rounded-full border ${catCor}`}>{p.categoria || '—'}</span>; })()}</td>
                             <td className="px-3"><span className={`text-[10px] px-2 py-0.5 rounded-full ${stCor}`}>{p.status}</span></td>
                             <td className="text-right px-3 text-indigo-600 font-semibold">{fmt(p.valor_total)}</td>
                             <td className="hidden sm:table-cell px-3 text-xs text-slate-400">{p.qtd_itens}</td>
