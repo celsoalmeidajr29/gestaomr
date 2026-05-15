@@ -11,7 +11,7 @@ import {
 const API = '/api/cerebro'
 const MATRIX_LS = 'cerebro_matrix_v1'
 // C é mutável no módulo para que helpers possam ler; CerebroApp atualiza a cada render
-let C = { bg: '#0f172a', card: '#1e293b', border: '#334155', accent: '#6366f1', accent2: '#a78bfa', text: '#f8fafc', muted: '#94a3b8' }
+let C = { bg: '#0f172a', card: '#1e293b', border: '#334155', accent: '#6366f1', accent2: '#a78bfa', text: '#f8fafc', muted: '#94a3b8', surface: 'rgba(255,255,255,0.05)', surface2: 'rgba(255,255,255,0.02)' }
 
 async function apiFetch(path, opts = {}) {
   const r = await fetch(`${API}${path}`, {
@@ -50,10 +50,10 @@ function iMd(text, base = 0) {
   while (rem) {
     const tests = [
       [/\*\*\*(.+?)\*\*\*/, m => <strong key={k++}><em>{m[1]}</em></strong>],
-      [/\*\*(.+?)\*\*/,     m => <strong key={k++} style={{ color: '#e2e8f0' }}>{m[1]}</strong>],
-      [/\*(.+?)\*/,         m => <em key={k++} style={{ color: '#c4b5fd' }}>{m[1]}</em>],
+      [/\*\*(.+?)\*\*/,     m => <strong key={k++} style={{ color: C.text }}>{m[1]}</strong>],
+      [/\*(.+?)\*/,         m => <em key={k++} style={{ color: C.accent2 }}>{m[1]}</em>],
       [/~~(.+?)~~/,         m => <span key={k++} style={{ textDecoration: 'line-through', opacity: .6 }}>{m[1]}</span>],
-      [/`(.+?)`/,           m => <code key={k++} style={{ background: 'rgba(0,0,0,0.5)', color: '#86efac', fontFamily: "'DM Mono',monospace", fontSize: '0.78em', padding: '1px 5px', borderRadius: 4 }}>{m[1]}</code>],
+      [/`(.+?)`/,           m => <code key={k++} style={{ background: '#1e293b', color: '#86efac', fontFamily: "'DM Mono',monospace", fontSize: '0.78em', padding: '1px 5px', borderRadius: 4 }}>{m[1]}</code>],
       [/\[\[(.+?)\]\]/,     m => <span key={k++} style={{ color: C.accent, borderBottom: `1px dashed ${C.accent}`, cursor: 'default' }}>{m[1]}</span>],
       [/#([\wÀ-ɏ]+)/, m => <span key={k++} style={{ color: C.accent2, fontSize: '0.85em', fontWeight: 600 }}>#{m[1]}</span>],
       [/\[(.+?)\]\((.+?)\)/, m => <a key={k++} href={m[2]} target="_blank" rel="noreferrer" style={{ color: C.accent, textDecoration: 'underline' }}>{m[1]}</a>],
@@ -107,8 +107,8 @@ function renderMd(raw) {
       while (i < lines.length && !lines[i].startsWith('```')) code.push(lines[i++]); i++
       blocks.push(
         <div key={i} className="my-3 rounded-xl overflow-hidden" style={{ border: `1px solid ${C.border}` }}>
-          {lang && <div className="px-3 py-1 text-[10px]" style={{ background: 'rgba(0,0,0,0.6)', color: C.muted, fontFamily: "'DM Mono',monospace" }}>{lang}</div>}
-          <pre className="px-4 py-3 text-xs overflow-x-auto leading-relaxed" style={{ background: 'rgba(0,0,0,0.5)', color: '#86efac', fontFamily: "'DM Mono',monospace", margin: 0 }}>{code.join('\n')}</pre>
+          {lang && <div className="px-3 py-1 text-[10px]" style={{ background: '#0f172a', color: '#94a3b8', fontFamily: "'DM Mono',monospace" }}>{lang}</div>}
+          <pre className="px-4 py-3 text-xs overflow-x-auto leading-relaxed" style={{ background: '#1e293b', color: '#86efac', fontFamily: "'DM Mono',monospace", margin: 0 }}>{code.join('\n')}</pre>
         </div>
       )
       continue
@@ -126,7 +126,7 @@ function renderMd(raw) {
         { fontSize: '1.4rem', fontWeight: 700, marginTop: '1.5rem', marginBottom: '0.5rem', color: C.text, borderBottom: `2px solid ${C.accent}33`, paddingBottom: '0.3rem' },
         { fontSize: '1.2rem', fontWeight: 700, marginTop: '1.2rem', marginBottom: '0.4rem', color: C.text, borderBottom: `1px solid ${C.border}`, paddingBottom: '0.2rem' },
         { fontSize: '1rem',  fontWeight: 600, marginTop: '1rem',   marginBottom: '0.3rem', color: C.text },
-        { fontSize: '0.9rem',fontWeight: 600, marginTop: '0.8rem', marginBottom: '0.25rem',color: '#a5b4fc' },
+        { fontSize: '0.9rem',fontWeight: 600, marginTop: '0.8rem', marginBottom: '0.25rem',color: C.accent2 },
         { fontSize: '0.85rem',fontWeight:600, marginTop: '0.6rem', marginBottom: '0.2rem', color: C.muted },
         { fontSize: '0.8rem', fontWeight:600, marginTop: '0.5rem', marginBottom: '0.15rem',color: C.muted },
       ]
@@ -147,7 +147,7 @@ function renderMd(raw) {
           </div>
         )
       } else {
-        blocks.push(<blockquote key={i} className="border-l-2 pl-4 my-1.5 text-sm italic" style={{ borderColor: C.accent2, color: '#a5b4fc' }}>{iMd(inner, i)}</blockquote>)
+        blocks.push(<blockquote key={i} className="border-l-2 pl-4 my-1.5 text-sm italic" style={{ borderColor: C.accent2, color: C.muted }}>{iMd(inner, i)}</blockquote>)
       }
       continue
     }
@@ -185,7 +185,7 @@ function Card({ children, style, className = '' }) {
 function Btn({ onClick, children, variant = 'default', disabled, className = '', title }) {
   const base = 'inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition disabled:opacity-40 disabled:cursor-not-allowed'
   const vs = {
-    default: { cls: `border hover:opacity-80 ${base}`, st: { borderColor: C.border, color: C.text, background: 'rgba(255,255,255,0.04)' } },
+    default: { cls: `border hover:opacity-80 ${base}`, st: { borderColor: C.border, color: C.text, background: C.surface } },
     accent:  { cls: `text-white ${base}`,               st: { background: C.accent } },
     ghost:   { cls: `hover:bg-white/5 ${base}`,         st: { color: C.muted } },
     danger:  { cls: `border hover:opacity-80 ${base}`,  st: { borderColor: 'rgba(239,68,68,0.3)', color: '#ef4444', background: 'rgba(239,68,68,0.06)' } },
@@ -207,7 +207,7 @@ function ModalWrap({ title, onClose, children, width = 'max-w-lg' }) {
   useEffect(() => { const fn = e => e.key === 'Escape' && onClose(); window.addEventListener('keydown', fn); return () => window.removeEventListener('keydown', fn) }, [onClose])
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center p-4 overflow-y-auto" style={{ background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(4px)' }} onClick={e => e.target === e.currentTarget && onClose()}>
-      <div className={`w-full ${width} rounded-2xl overflow-hidden mt-8 mb-8`} style={{ background: '#0a0d1e', border: `1px solid ${C.border}` }}>
+      <div className={`w-full ${width} rounded-2xl overflow-hidden mt-8 mb-8`} style={{ background: C.card, border: `1px solid ${C.border}` }}>
         <div className="flex items-center justify-between px-5 py-4 border-b" style={{ borderColor: C.border }}>
           <p className="font-semibold text-sm" style={{ color: C.text }}>{title}</p>
           <button onClick={onClose} className="p-1 rounded hover:bg-white/5" style={{ color: C.muted }}><X className="w-4 h-4" /></button>
@@ -218,8 +218,8 @@ function ModalWrap({ title, onClose, children, width = 'max-w-lg' }) {
   )
 }
 function Field({ label, children }) { return <div className="mb-3"><label className="block text-xs mb-1 font-medium" style={{ color: C.muted }}>{label}</label>{children}</div> }
-function FInput(props) { return <input className="w-full rounded-xl px-3 py-2 text-sm outline-none" style={{ background: 'rgba(255,255,255,0.05)', border: `1px solid ${C.border}`, color: C.text }} {...props} /> }
-function FTA(props) { return <textarea className="w-full rounded-xl px-3 py-2 text-sm outline-none resize-none" style={{ background: 'rgba(255,255,255,0.05)', border: `1px solid ${C.border}`, color: C.text }} {...props} /> }
+function FInput(props) { return <input className="w-full rounded-xl px-3 py-2 text-sm outline-none" style={{ background: C.surface, border: `1px solid ${C.border}`, color: C.text }} {...props} /> }
+function FTA(props) { return <textarea className="w-full rounded-xl px-3 py-2 text-sm outline-none resize-none" style={{ background: C.surface, border: `1px solid ${C.border}`, color: C.text }} {...props} /> }
 
 // ---- Tela de conexão ----
 function TelaConectar({ onConnect, connecting }) {
@@ -558,7 +558,7 @@ function AbaTarefas() {
                 onKeyDown={e => e.key === 'Enter' && ta.criar(lista.listId, ta.novas[lista.listId] || '')}
                 placeholder="+ Nova tarefa... (Enter)"
                 className="flex-1 rounded-xl px-3 py-2 text-xs outline-none"
-                style={{ background: 'rgba(255,255,255,0.03)', border: `1px solid ${C.border}`, color: C.text }} />
+                style={{ background: C.surface, border: `1px solid ${C.border}`, color: C.text }} />
               <Btn variant="accent" onClick={() => ta.criar(lista.listId, ta.novas[lista.listId] || '')}><Plus className="w-3.5 h-3.5" /></Btn>
             </div>
           </div>
@@ -579,7 +579,7 @@ function TimerCircle({ seconds, total, color }) {
   return (
     <svg width="160" height="160" viewBox="0 0 160 160"
       style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}>
-      <circle cx={cx} cy={cx} r={r} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="8" />
+      <circle cx={cx} cy={cx} r={r} fill="none" stroke={C.surface} strokeWidth="8" />
       <circle cx={cx} cy={cx} r={r} fill="none" stroke={color} strokeWidth="8"
         strokeDasharray={c} strokeDashoffset={c * (1 - pct)}
         strokeLinecap="round" transform="rotate(-90 80 80)"
@@ -712,7 +712,7 @@ function AbaPomodoro() {
               {allTasks.map(t => (
                 <button key={t.id} onClick={() => { setSelectedTask(t); setTaskModal(false) }}
                   className="w-full text-left px-3 py-2.5 rounded-xl transition hover:opacity-80"
-                  style={{ background: 'rgba(255,255,255,0.04)', border: `1px solid ${C.border}` }}>
+                  style={{ background: C.surface, border: `1px solid ${C.border}` }}>
                   <p className="text-sm" style={{ color: C.text }}>{t.title}</p>
                   <p className="text-xs" style={{ color: C.muted }}>{t.listName}</p>
                 </button>
@@ -871,27 +871,29 @@ function AbaMatriz() {
 // ============================================================
 // ---- AbaNotionNotas (integração Notion) ----
 // ============================================================
-const NOTION_CSS = `
-  .notion-body { font-family: 'Outfit', sans-serif; font-size: 0.875rem; line-height: 1.75; color: #dde1f0; }
-  .notion-body h1 { font-size: 1.5rem; font-weight: 700; margin: 1.25rem 0 0.5rem; color: #fff; }
-  .notion-body h2 { font-size: 1.2rem; font-weight: 600; margin: 1rem 0 0.4rem; color: #e2e8f0; }
-  .notion-body h3 { font-size: 1rem; font-weight: 600; margin: 0.75rem 0 0.3rem; color: #c4b5fd; }
+function notionCss() {
+  return `
+  .notion-body { font-family: 'Outfit', sans-serif; font-size: 0.875rem; line-height: 1.75; color: ${C.text}; }
+  .notion-body h1 { font-size: 1.5rem; font-weight: 700; margin: 1.25rem 0 0.5rem; color: ${C.text}; }
+  .notion-body h2 { font-size: 1.2rem; font-weight: 600; margin: 1rem 0 0.4rem; color: ${C.text}; }
+  .notion-body h3 { font-size: 1rem; font-weight: 600; margin: 0.75rem 0 0.3rem; color: ${C.accent2}; }
   .notion-body p  { margin: 0.35rem 0; }
   .notion-body ul, .notion-body ol { padding-left: 1.4rem; margin: 0.4rem 0; }
   .notion-body li { margin: 0.2rem 0; }
-  .notion-body blockquote { border-left: 3px solid #4f55f7; padding-left: 0.85rem; color: #94a3b8; margin: 0.6rem 0; }
-  .notion-body pre  { background: rgba(0,0,0,0.45); border-radius: 8px; padding: 0.85rem 1rem; overflow-x: auto; }
-  .notion-body code { font-family: 'DM Mono', monospace; font-size: 0.78em; color: #86efac; }
-  .notion-body hr   { border: none; border-top: 1px solid rgba(79,85,247,0.2); margin: 1rem 0; }
-  .notion-body .notion-callout { background: rgba(79,85,247,0.08); border: 1px solid rgba(79,85,247,0.2); border-radius: 8px; padding: 0.75rem 1rem; display: flex; gap: 0.5rem; align-items: flex-start; }
+  .notion-body blockquote { border-left: 3px solid ${C.accent}; padding-left: 0.85rem; color: ${C.muted}; margin: 0.6rem 0; }
+  .notion-body pre  { background: ${C.surface}; border-radius: 8px; padding: 0.85rem 1rem; overflow-x: auto; }
+  .notion-body code { font-family: 'DM Mono', monospace; font-size: 0.78em; color: ${C.accent2}; }
+  .notion-body hr   { border: none; border-top: 1px solid ${C.border}; margin: 1rem 0; }
+  .notion-body .notion-callout { background: ${C.surface}; border: 1px solid ${C.border}; border-radius: 8px; padding: 0.75rem 1rem; display: flex; gap: 0.5rem; align-items: flex-start; }
   .notion-body .notion-todo { display: flex; align-items: center; gap: 0.5rem; margin: 0.25rem 0; }
-  .notion-body .notion-todo input { accent-color: #4f55f7; width: 15px; height: 15px; }
-  .notion-body a { color: #4f55f7; text-decoration: underline; }
+  .notion-body .notion-todo input { accent-color: ${C.accent}; width: 15px; height: 15px; }
+  .notion-body a { color: ${C.accent}; text-decoration: underline; }
   .notion-body img { max-width: 100%; border-radius: 8px; }
   .notion-body figure { margin: 0.75rem 0; }
-  .notion-body figcaption { font-size: 0.75em; color: #3d4470; text-align: center; margin-top: 0.25rem; }
-  .notion-body .notion-child-page { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.3rem 0.75rem; border-radius: 8px; background: rgba(79,85,247,0.1); color: #4f55f7; font-size: 0.82rem; text-decoration: none; }
+  .notion-body figcaption { font-size: 0.75em; color: ${C.muted}; text-align: center; margin-top: 0.25rem; }
+  .notion-body .notion-child-page { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.3rem 0.75rem; border-radius: 8px; background: ${C.surface}; color: ${C.accent}; font-size: 0.82rem; text-decoration: none; }
 `
+}
 
 function AbaNotionNotas() {
   const [pages,   setPages]   = useState(null)
@@ -985,7 +987,7 @@ function AbaNotionNotas() {
           )}
         </div>
 
-        <style>{NOTION_CSS}</style>
+        <style>{notionCss()}</style>
         <Card style={{ padding: '1.5rem 1.75rem', maxHeight: '55vh', overflowY: 'auto' }}>
           <div className="notion-body" dangerouslySetInnerHTML={{ __html: pagina.html || '<p style="color:#3d4470">(página vazia)</p>' }} />
         </Card>
@@ -1249,7 +1251,7 @@ function AbaNotas() {
           <div className="flex flex-wrap gap-2 mb-4">
             {Object.entries(notaMeta).filter(([k]) => k !== 'tags').map(([k, v]) => (
               <span key={k} className="text-[11px] px-2 py-0.5 rounded-lg"
-                style={{ background: 'rgba(255,255,255,0.05)', color: C.muted, border: `1px solid ${C.border}` }}>
+                style={{ background: C.surface, color: C.muted, border: `1px solid ${C.border}` }}>
                 <span style={{ color: C.accent2 }}>{k}:</span> {String(v)}
               </span>
             ))}
@@ -1502,7 +1504,7 @@ function FilePreviewModal({ file, onClose }) {
             </thead>
             <tbody>
               {csvRows.slice(1).map((row, ri) => (
-                <tr key={ri} style={{ background: ri % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.02)' }}>
+                <tr key={ri} style={{ background: ri % 2 === 0 ? 'transparent' : C.surface2 }}>
                   {row.map((c, ci) => (
                     <td key={ci} style={{ color: C.text, padding: '5px 10px', border: `1px solid ${C.border}`, whiteSpace: 'nowrap', maxWidth: 220, overflow: 'hidden', textOverflow: 'ellipsis' }}>{c}</td>
                   ))}
@@ -1925,9 +1927,11 @@ export default function CerebroApp({ usuario, onVoltarHub, onLogout }) {
   Object.assign(C, darkMode ? {
     bg: '#0f172a', card: '#1e293b', border: '#334155',
     accent: '#6366f1', accent2: '#a78bfa', text: '#f8fafc', muted: '#94a3b8',
+    surface: 'rgba(255,255,255,0.05)', surface2: 'rgba(255,255,255,0.02)',
   } : {
     bg: '#f8fafc', card: '#ffffff', border: '#e2e8f0',
     accent: '#4f55f7', accent2: '#8b5cf6', text: '#1e293b', muted: '#64748b',
+    surface: 'rgba(15,23,42,0.04)', surface2: 'rgba(15,23,42,0.02)',
   })
 
   const [aba, setAba] = useState('inicio')

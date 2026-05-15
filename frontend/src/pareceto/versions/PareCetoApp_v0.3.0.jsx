@@ -2110,9 +2110,9 @@ function VendasFuncionarioDetalhe({ nome, cargo, records, analise, onVoltar }) {
           <ChartCard title="Comparativo com a equipe" height={260}>
             <ResponsiveContainer width="100%" height="100%">
               <RadarChart data={a.radar} margin={{top:4,right:24,bottom:4,left:24}}>
-                <PolarGrid stroke="#334155"/>
+                <PolarGrid stroke="rgba(148,163,184,0.30)"/>
                 <PolarAngleAxis dataKey="metric" tick={{fill:'#94a3b8',fontSize:11}}/>
-                <PolarRadiusAxis angle={30} domain={[0,100]} tick={{fill:'#475569',fontSize:9}}/>
+                <PolarRadiusAxis angle={30} domain={[0,100]} tick={{fill:'#94a3b8',fontSize:9}}/>
                 <Radar name={nome.split(' ')[0]} dataKey="eu" stroke="#10b981" fill="#10b981" fillOpacity={0.3} strokeWidth={2}/>
                 <Radar name="Média equipe" dataKey="media" stroke="#64748b" fill="#64748b" fillOpacity={0.1} strokeWidth={1} strokeDasharray="4 4"/>
                 <Legend formatter={v=><span style={{color:'#94a3b8',fontSize:11}}>{v}</span>}/>
@@ -2486,8 +2486,8 @@ const ttStyle = {
   labelStyle: { color:'#94a3b8' },
   itemStyle: { color:'#e2e8f0' },
 }
-const axisStyle = { tick:{ fill:'#64748b', fontSize:11 }, axisLine:{ stroke:'#334155' }, tickLine:false }
-const gridStyle = { strokeDasharray:'3 3', stroke:'#1e293b' }
+const axisStyle = { tick:{ fill:'#94a3b8', fontSize:11 }, axisLine:{ stroke:'rgba(148,163,184,0.35)' }, tickLine:false }
+const gridStyle = { strokeDasharray:'3 3', stroke:'rgba(148,163,184,0.22)' }
 const fmtK = v => v >= 1000 ? `R$${(v/1000).toFixed(1)}k` : `R$${v.toFixed(0)}`
 
 function ChartCard({ title, children, height = 240 }) {

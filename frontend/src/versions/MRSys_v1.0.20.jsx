@@ -128,20 +128,20 @@ const CORES_CATEGORIA_SERVICO = {
   'MOTOLINK RJ':    { bg: 'bg-cyan-500/20',    text: 'text-cyan-600',    border: 'border-cyan-500/40' },
   'VELADA RJ':      { bg: 'bg-blue-500/20',     text: 'text-blue-600',    border: 'border-blue-500/40' },
   'VELADA SP':      { bg: 'bg-violet-500/20',   text: 'text-violet-600',  border: 'border-violet-500/40' },
-  'ARMADA':         { bg: 'bg-red-500/20',      text: 'text-red-300',     border: 'border-red-500/40' },
-  'FACILITIES':     { bg: 'bg-emerald-500/20',  text: 'text-emerald-300', border: 'border-emerald-500/40' },
+  'ARMADA':         { bg: 'bg-red-500/20',      text: 'text-red-600',     border: 'border-red-500/40' },
+  'FACILITIES':     { bg: 'bg-emerald-500/20',  text: 'text-emerald-600', border: 'border-emerald-500/40' },
   // aliases para dados anteriores (mantidos como fallback visual)
   'VELADA':         { bg: 'bg-blue-500/20',     text: 'text-blue-600',    border: 'border-blue-500/40' },
   'MOTOLINK':       { bg: 'bg-cyan-500/20',     text: 'text-cyan-600',    border: 'border-cyan-500/40' },
-  'PRONTA RESPOSTA':{ bg: 'bg-amber-500/20',    text: 'text-amber-300',   border: 'border-amber-500/40' },
+  'PRONTA RESPOSTA':{ bg: 'bg-amber-500/20',    text: 'text-amber-600',   border: 'border-amber-500/40' },
 };
 const STATUS_FATURA = ['Enviada', 'Aprovada', 'NF-emitida', 'Paga', 'Vencida'];
 const CORES_STATUS_FATURA = {
   'Enviada': { bg: 'bg-blue-500/20', text: 'text-blue-600', border: 'border-blue-500/40' },
   'Aprovada': { bg: 'bg-indigo-500/20', text: 'text-indigo-600', border: 'border-indigo-500/40' },
   'NF-emitida': { bg: 'bg-purple-500/20', text: 'text-purple-600', border: 'border-purple-500/40' },
-  'Paga': { bg: 'bg-emerald-500/20', text: 'text-emerald-300', border: 'border-emerald-500/40' },
-  'Vencida': { bg: 'bg-red-500/20', text: 'text-red-300', border: 'border-red-500/40' },
+  'Paga': { bg: 'bg-emerald-500/20', text: 'text-emerald-600', border: 'border-emerald-500/40' },
+  'Vencida': { bg: 'bg-red-500/20', text: 'text-red-600', border: 'border-red-500/40' },
 };
 const FORMAS_PAGAMENTO_VALE = ['CARTÃO CORPORATIVO', 'MANHÃES', 'RICARDO', 'EMPRESA', 'PIX', 'DINHEIRO'];
 const MESES = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
@@ -3376,7 +3376,7 @@ export default function App({ onVoltarHub, onLogout } = {}) {
                 <Painel titulo="Faturamento por Cliente">
                   <ResponsiveContainer width="100%" height={280}>
                     <BarChart data={dadosPorCliente}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
+                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(148,163,184,0.22)" />
                       <XAxis dataKey="cliente" stroke="#64748b" fontSize={10} angle={-15} textAnchor="end" height={70} />
                       <YAxis stroke="#64748b" fontSize={11} tickFormatter={v => `${(v / 1000).toFixed(0)}k`} />
                       <Tooltip contentStyle={{ background: '#0f172a', border: '1px solid #334155', borderRadius: 8 }} formatter={v => fmt(v)} />

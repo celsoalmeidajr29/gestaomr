@@ -90,6 +90,43 @@
 .dark .text-pink-700    { color: #f9a8d4 !important; }
 .dark .text-green-700   { color: #86efac !important; }
 
+/* ── Cores "-300" legadas (tema escuro antigo): escurece no claro p/ contraste
+   sobre fundo branco, restaura a versão clara dentro de .dark ─────────────── */
+.text-emerald-300 { color: #059669 !important; }
+.text-red-300     { color: #dc2626 !important; }
+.text-amber-300   { color: #b45309 !important; }
+.text-sky-300     { color: #0284c7 !important; }
+.text-blue-300    { color: #2563eb !important; }
+.text-violet-300  { color: #7c3aed !important; }
+.text-indigo-300  { color: #4f46e5 !important; }
+.text-green-300   { color: #16a34a !important; }
+.text-cyan-300    { color: #0891b2 !important; }
+.text-teal-300    { color: #0d9488 !important; }
+.text-orange-300  { color: #ea580c !important; }
+.text-rose-300    { color: #e11d48 !important; }
+.text-pink-300    { color: #db2777 !important; }
+.text-purple-300  { color: #9333ea !important; }
+.dark .text-emerald-300 { color: #6ee7b7 !important; }
+.dark .text-red-300     { color: #fca5a5 !important; }
+.dark .text-amber-300   { color: #fcd34d !important; }
+.dark .text-sky-300     { color: #7dd3fc !important; }
+.dark .text-blue-300    { color: #93c5fd !important; }
+.dark .text-violet-300  { color: #c4b5fd !important; }
+.dark .text-indigo-300  { color: #a5b4fc !important; }
+.dark .text-green-300   { color: #86efac !important; }
+.dark .text-cyan-300    { color: #67e8f9 !important; }
+.dark .text-teal-300    { color: #5eead4 !important; }
+.dark .text-orange-300  { color: #fdba74 !important; }
+.dark .text-rose-300    { color: #fda4af !important; }
+.dark .text-pink-300    { color: #f9a8d4 !important; }
+.dark .text-purple-300  { color: #d8b4fe !important; }
+
+/* hover: variantes "-300" legadas */
+.hover\:text-amber-300:hover { color: #b45309 !important; }
+.hover\:text-red-300:hover   { color: #dc2626 !important; }
+.dark .hover\:text-amber-300:hover { color: #fcd34d !important; }
+.dark .hover\:text-red-300:hover   { color: #fca5a5 !important; }
+
 /* ── Bordas ───────────────────────────────────────────────────────────────── */
 .dark .border-slate-50  { border-color: #1e293b !important; }
 .dark .border-slate-100 { border-color: #1e293b !important; }
