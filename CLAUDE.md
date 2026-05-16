@@ -37,9 +37,9 @@ Gestor/usuário principal: **Celso Almeida** (`celso.almeida@grupomr.seg.br`)
 
 ### Versão ativa do monolito
 
-**`MRSys_v1.0.24.jsx`** — `frontend/src/App.jsx` é wrapper que repassa props para o monolito:
+**`MRSys_v1.0.25.jsx`** — `frontend/src/App.jsx` é wrapper que repassa props para o monolito:
 ```jsx
-import MRSysApp from './versions/MRSys_v1.0.24.jsx'
+import MRSysApp from './versions/MRSys_v1.0.25.jsx'
 export default function App(props) { return <MRSysApp {...props} /> }
 ```
 
