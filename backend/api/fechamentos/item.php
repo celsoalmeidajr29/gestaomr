@@ -59,10 +59,22 @@ if ($method === 'PUT' || $method === 'PATCH') {
 
     $novoClienteId = isset($d['cliente_id']) && $d['cliente_id'] ? (int) $d['cliente_id'] : $row_atual['cliente_id'];
 
+    // Pagamento parcial (migration 025). Mantém valor atual se não enviado.
+    $valRecebido = array_key_exists('valor_recebido', $d)
+        ? (float) $d['valor_recebido']
+        : null;
+    $pagsRecebidos = array_key_exists('pagamentos_recebidos', $d)
+        ? (is_string($d['pagamentos_recebidos'])
+            ? $d['pagamentos_recebidos']
+            : json_encode($d['pagamentos_recebidos'] ?? []))
+        : null;
+
     $stmt = $pdo->prepare(
         'UPDATE fechamentos SET status_fatura=:status, numero_nf=:nf,
          data_vencimento=:dv, data_pagamento=:dp, observacoes=:obs,
-         competencia=:comp, cliente_id=:cid
+         competencia=:comp, cliente_id=:cid,
+         valor_recebido=COALESCE(:vr, valor_recebido),
+         pagamentos_recebidos=COALESCE(:pr, pagamentos_recebidos)
          WHERE id=:id'
     );
     $stmt->execute([
@@ -73,6 +85,8 @@ if ($method === 'PUT' || $method === 'PATCH') {
         ':obs'    => $d['observacoes'] ?? null,
         ':comp'   => $novaComp,
         ':cid'    => $novoClienteId,
+        ':vr'     => $valRecebido,
+        ':pr'     => $pagsRecebidos,
         ':id'     => $id,
     ]);
 

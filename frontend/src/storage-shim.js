@@ -177,6 +177,12 @@ function apiToFechamento(r) {
     totalFatura: n(r.total_fatura),
     totalPago: n(r.total_pago),
     totalImposto: n(r.total_imposto),
+    valorRecebido: n(r.valor_recebido),
+    pagamentosRecebidos: Array.isArray(r.pagamentos_recebidos)
+      ? r.pagamentos_recebidos
+      : (typeof r.pagamentos_recebidos === 'string' && r.pagamentos_recebidos
+          ? (() => { try { return JSON.parse(r.pagamentos_recebidos) } catch { return [] } })()
+          : []),
     lucro: n(r.lucro),
     qtdLancamentos: n(r.qtd_lancamentos),
     lancamentos,
@@ -449,6 +455,8 @@ function toApiFechamento(v, clientesByNome) {
     total_fatura: n(v.totalFatura),
     total_pago: n(v.totalPago),
     total_imposto: n(v.totalImposto),
+    valor_recebido: n(v.valorRecebido),
+    pagamentos_recebidos: Array.isArray(v.pagamentosRecebidos) ? v.pagamentosRecebidos : [],
     lucro: n(v.lucro),
     status_fatura: v.statusFatura || 'Enviada',
     numero_nf: v.nfNumero || null,
