@@ -10,7 +10,7 @@ function useDarkMode() {
 }
 
 export const MRSYS_VERSION = 'v1.0.23'
-export const PARECETO_VERSION = 'v0.3.0'
+export const PARECETO_VERSION = 'v0.4.0'
 export const CEREBRO_VERSION = 'v1.4.0'
 
 const SISTEMAS = [

@@ -55,8 +55,10 @@ $hasMig019 = (bool)db()->query(
        AND COLUMN_NAME  = 'hash_dedup'"
 )->fetchColumn();
 
+// Monta statements conforme schema disponível
 if ($hasMig019) {
-    $stmt = db()->prepare(
+    // Schema novo (019): dedup por hash_dedup = SHA1(dt_registro|placa|valor)
+    $stmtIns = db()->prepare(
         'INSERT INTO pc_vendas
            (hash_dedup, placa, dt_registro, dt_inicial, periodo, usuario, cargo,
             origem, trecho, forma_pag, valor, irregular, canal, zona, tipo,
@@ -68,17 +70,20 @@ if ($hasMig019) {
          ON DUPLICATE KEY UPDATE id = id'
     );
 } else {
-    // Schema antigo (migration 016): dedup por placa
-    $stmt = db()->prepare(
+    // Schema antigo (016): UNIQUE em placa — usamos SELECT-antes-INSERT para
+    // garantir unicidade por transação (placa + dt_registro + valor) em vez de
+    // tratar cada exportação como bloco.
+    $stmtChk = db()->prepare(
+        'SELECT COUNT(*) FROM pc_vendas
+          WHERE placa = :placa AND dt_registro = :dt_reg AND ROUND(valor,2) = :valor'
+    );
+    $stmtIns = db()->prepare(
         'INSERT INTO pc_vendas
            (placa, dt_registro, dt_inicial, periodo, usuario, cargo,
             origem, trecho, forma_pag, valor, irregular, canal, zona, tipo)
          VALUES
            (:placa, :dt_reg, :dt_ini, :periodo, :usuario, :cargo,
-            :origem, :trecho, :forma_pag, :valor, :irregular, :canal, :zona, :tipo)
-         ON DUPLICATE KEY UPDATE
-           dt_registro = VALUES(dt_registro),
-           valor       = VALUES(valor)'
+            :origem, :trecho, :forma_pag, :valor, :irregular, :canal, :zona, :tipo)'
     );
 }
 
@@ -97,7 +102,7 @@ try {
         if ($hasMig019) {
             $hashSrc = ($dtReg ?? '') . '|' . $placa . '|' . $valor;
             $hash    = $r['hash_dedup'] ?? sha1($hashSrc);
-            $stmt->execute([
+            $stmtIns->execute([
                 ':hash'         => $hash,
                 ':placa'        => $placa,
                 ':dt_reg'       => $dtReg,
@@ -115,8 +120,17 @@ try {
                 ':tipo'         => $r['tipo'] ?: null,
                 ':nome_arquivo' => $r['nome_arquivo'] ?: null,
             ]);
+            $rc = $stmtIns->rowCount();
+            if ($rc === 1) $inseridos++;
+            else           $duplicatas++;
         } else {
-            $stmt->execute([
+            // Verifica existência por placa+dt_registro+valor antes de inserir
+            $stmtChk->execute([':placa' => $placa, ':dt_reg' => $dtReg, ':valor' => $valor]);
+            if ($stmtChk->fetchColumn() > 0) {
+                $duplicatas++;
+                continue;
+            }
+            $stmtIns->execute([
                 ':placa'     => $placa,
                 ':dt_reg'    => $dtReg,
                 ':dt_ini'    => $r['dt_inicial'] ?: null,
@@ -132,11 +146,8 @@ try {
                 ':zona'      => $r['zona'] ?: null,
                 ':tipo'      => $r['tipo'] ?: null,
             ]);
+            $inseridos++;
         }
-
-        $rc = $stmt->rowCount();
-        if ($rc === 1) $inseridos++;
-        else           $duplicatas++;
     }
     db()->commit();
 } catch (\Throwable $e) {
