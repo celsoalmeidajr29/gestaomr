@@ -87,19 +87,16 @@ foreach ($anexos as $a) {
 }
 $body .= "--{$boundary}--\r\n";
 
-// Envia para cada destinatário (separado para evitar bloqueio em massa)
-$enviados = 0;
+// Envia um único e-mail para todos os destinatários (To com múltiplos endereços)
 $erros = [];
 $assuntoCodificado = encode_header_name($assunto);
+$toHeader = implode(', ', $destinatariosValidos);
+// Adiciona To ao bloco de headers (junto com From/Reply-To/MIME)
+$allHeaders = array_merge($headers, ["To: {$toHeader}"]);
 
-foreach ($destinatariosValidos as $to) {
-    $ok = @mail($to, $assuntoCodificado, $body, implode("\r\n", $headers), '-f' . $remetente);
-    if ($ok) {
-        $enviados++;
-    } else {
-        $erros[] = $to;
-    }
-}
+$ok = @mail($toHeader, $assuntoCodificado, $body, implode("\r\n", $allHeaders), '-f' . $remetente);
+$enviados = $ok ? count($destinatariosValidos) : 0;
+if (!$ok) $erros = $destinatariosValidos;
 
 // Registra em email_logs + atualiza enviado_em no fechamento
 try {

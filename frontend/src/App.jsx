@@ -1,6 +1,6 @@
-// Versão ativa: v1.0.24 — Auto-cadastro funcionários em import lançamentos e avulsos
+// Versão ativa: v1.0.25 — Mensagens pré-definidas para propostas + e-mail medição envia para todos de uma vez
 // Versões anteriores em src/versions/
-import MRSysApp from './versions/MRSys_v1.0.24.jsx'
+import MRSysApp from './versions/MRSys_v1.0.25.jsx'
 
 export default function App(props) {
   return <MRSysApp {...props} />
