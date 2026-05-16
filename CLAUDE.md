@@ -81,9 +81,10 @@ Histórico recente de versões (renomeação a partir de v1.0.x):
 - `let C` declarado no nível do módulo (inicializado com valores dark) + `Object.assign(C, darkMode ? dark : light)` dentro do componente a cada render — garante que helpers de módulo (`renderMd`, `iMd`, `Field`, `FInput`, `FTA`) sempre leem o tema atual sem precisar receber `C` como prop
 - `POMO_MODES.work.color` hardcoded `'#6366f1'` (não referencia `C` diretamente, evita crash de módulo)
 
-**Pare Certo v0.3.0** (versão ativa — `frontend/src/pareceto/versions/PareCetoApp_v0.3.0.jsx`):
-- Dark mode toggle Sol/Lua no header; tema compartilhado via `localStorage` `mr-theme`
-- Rebuild limpo a partir do v0.2.0 (versão anterior com tema claro corporativo)
+**Pare Certo v0.4.0** (versão ativa — `frontend/src/pareceto/versions/PareCetoApp_v0.4.0.jsx`):
+- Top 30 Placas (era Top 20): critério = irregulares não-pagas (`pl.irregular`), não total. Válido em listagem, XLSX, TXT e Relatório Semanal.
+- Backend `vendas/index.php`: quando migration 019 não aplicada, usa SELECT-antes-INSERT por `(placa, dt_registro, valor)` para unicidade por transação em vez de tratar o CSV inteiro como bloco por placa.
+- v0.3.0: Dark mode toggle Sol/Lua no header; tema compartilhado via `localStorage` `mr-theme`
 
 Novidade v99 (PDF medição sem impostos + conversão de despesa/vale em parcelamento + Resumo/Export com parcelamentos consolidados):
 - **PDF de medição enviado por e-mail não exibe mais impostos** — a linha "Imposto: R$ X" foi removida do `gerarMedicaoPDFBlob`. O documento que chega ao cliente mostra apenas serviços prestados e valor bruto faturado. Alíquota/ISS/retenções/líquido continuam visíveis internamente nos resumos e exports, mas não no PDF enviado ao cliente
@@ -456,14 +457,14 @@ Se eu (Celso) der uma instrução que conflita com algo nas Decisões já tomada
 
 ---
 
-*Última atualização: 2026-05-15. MRSys em produção na v1.0.20. Dark mode toggle Sol/Lua em TODOS os sistemas + Hub + Login (tema persiste em `localStorage` chave `mr-theme`, compartilhada). Auditoria completa de tema claro/escuro concluída:*
+*Última atualização: 2026-05-16. MRSys em produção na v1.0.23. Pare Certo em v0.4.0. Dark mode toggle Sol/Lua em TODOS os sistemas + Hub + Login (tema persiste em `localStorage` chave `mr-theme`, compartilhada). Auditoria completa de tema claro/escuro concluída:*
 - *Hub (`SistemasHub.jsx`) e Login (`Login.jsx`) ganharam dark mode + toggle Sol/Lua. `GestaoUsuarios` recebe `darkMode`/`onToggleDark` via props.*
 - *`index.css`: overrides expandidos — backgrounds pastel (indigo/emerald/red/amber/sky/violet/etc), bordas coloridas, `divide-*`, `ring-*`, sombras. Cores `-300` legadas (tema escuro antigo) escurecem no claro e restauram no escuro (cobre ~60 células de dados do MRSys) + variantes `hover:`.*
 - *Cérebro v1.4.0: tokens `C.surface`/`C.surface2`; modal `#0a0d1e` → `C.card`; bold/em/heading hardcoded → `C.*`; `NOTION_CSS` virou função `notionCss()` tema-aware; code blocks com fundo escuro consistente.*
 - *PareCeto v0.3.0: `gridStyle`/`axisStyle`/`PolarGrid` neutralizados (cinza translúcido visível em ambos os temas — antes `#1e293b` invisível no branco). Tooltips de chart permanecem escuros (padrão deliberado).*
 - *MRSys v1.0.20: badges ARMADA/FACILITIES/PRONTA RESPOSTA/Paga/Vencida `-300` → `-600`; chart grid neutralizado.*
 
-*Migrations 019 e 020 pendentes de execução no phpMyAdmin (vendas do Pare Certo só salvam corretamente após rodar a 019). Pendentes MRSys:*
+*Migration 019 melhora dedup (hash por transação em vez de seleção por placa). O backend v0.4.0 já funciona corretamente sem a 019 (SELECT-antes-INSERT por placa+dt_registro+valor), mas rodar a 019 muda a unique key para hash_dedup (mais eficiente). Pendentes MRSys:*
 - *Rodar migration 025 (`database/migrations/025_fechamentos_pagamento_parcial.sql`) no phpMyAdmin antes de usar pagamento parcial de faturas (v1.0.23). Sem ela, valor recebido/pendente não persiste no banco.*
 - *Rodar migration 013 (`database/migrations/013_proposta_itens_operacionais.sql`) no phpMyAdmin antes de testar v98.*
 - *Rodar migration 012 (`database/migrations/012_parcelas.sql`) no phpMyAdmin antes de testar v96/v97.*
