@@ -37,9 +37,9 @@ Gestor/usuário principal: **Celso Almeida** (`celso.almeida@grupomr.seg.br`)
 
 ### Versão ativa do monolito
 
-**`MRSys_v1.0.23.jsx`** — `frontend/src/App.jsx` é wrapper que repassa props para o monolito:
+**`MRSys_v1.0.24.jsx`** — `frontend/src/App.jsx` é wrapper que repassa props para o monolito:
 ```jsx
-import MRSysApp from './versions/MRSys_v1.0.23.jsx'
+import MRSysApp from './versions/MRSys_v1.0.24.jsx'
 export default function App(props) { return <MRSysApp {...props} /> }
 ```
 
@@ -58,6 +58,7 @@ Histórico recente de versões (renomeação a partir de v1.0.x):
 - **v1.0.21** — Propostas: seleção múltipla (checkbox por linha + select-all) + barra de ações em massa (Duplicar / Rejeitar / Arquivar) + botão **Duplicar** por linha. Duplicação é frontend-only: `postCopiaProposta` busca a proposta completa (`carregarPropostaCompleta` com fallback `item.php`) e faz POST em `/api/propostas/index.php` (reusa geração de número + status `Criada`); itens duplicados omitem `servico_id` (cópia nasce não-convertida). Rejeição em massa ignora Aceitas/Rejeitadas e aplica motivo único. **Fix incluso**: badge de categoria na lista de propostas (`text-*-300` → `text-*-700`) — EVENTOS/FACILITIES/OUTROS ficavam ilegíveis no tema claro
 - **v1.0.22** — Faturas: botão **"Importar NF (PDF)"** ao lado do "Importar XML NF-e". `ModalImportarPDFNF` faz extração best-effort do texto do PDF **sem dependência externa**: inflate de streams `FlateDecode` via `DecompressionStream` nativo + parse dos operadores Tj/TJ (`decodePdfStr` trata escapes/octais). `heuristicaNF` pré-preenche número/data/valor/competência/cliente (match por CNPJ ou nome). Formulário **sempre editável** (NFS-e em PDF não tem layout padrão); fallback 100% manual se o navegador não suportar `DecompressionStream` ou o PDF não tiver texto selecionável. Reusa `gerarFaturaDeXML` → fatura `NF-emitida`. **Não adiciona dependência nem endpoint backend**
 - **v1.0.23** — Faturas: **pagamento parcial** (clientes que não pagam tudo). Migration **025** adiciona `fechamentos.valor_recebido DECIMAL` + `pagamentos_recebidos JSON`. `valor_pendente` é **derivado em runtime** (`total_fatura - valor_recebido`), nunca armazenado (evita drift). Backend `item.php` UPDATE usa `COALESCE(:vr, valor_recebido)` (preserva se não enviado). Storage-shim mapeia `valorRecebido`/`pagamentosRecebidos[]` ida e volta. `registrarPagamentoFatura` acumula + empilha histórico e ao quitar (`>= total`) seta status **Paga** + `dataPagamento` automaticamente; `removerPagamentoFatura` recalcula e, se desfez a quitação, volta para `Aprovada`. Card mostra Recebido/Pendente + barra de progresso + badge Parcial/Quitada; `ModalRegistrarPagamento` (atalhos Quitar tudo/Metade + preview do saldo) e `ModalHistoricoPagamentos` (lista + remover individual). **Pendente: rodar migration 025 no phpMyAdmin antes de usar em produção**
+- **v1.0.24** — Auto-cadastro de funcionários em import de lançamentos e lançamentos avulsos. Em `importarLancamentos`, agentes extraídos de `extras.agente1/agente2/agente/motorista` são passados para `garantirFuncionarios()` — cria automaticamente qualquer nome não encontrado. Em `ModalImportarDiariasXLSX.cruzar()`, itens não encontrados passam para `validos` (antes eram ignorados em `naoEncontrados`) e exibidos como "Serão cadastrados automaticamente" no modal.
 
 **UI corporativa (2026-05-14) — não é versão do monolito:**
 - `Login.jsx` reescrito: layout split-screen (painel esquerdo slate-900 com logo/tagline + painel direito branco com form)
@@ -76,10 +77,11 @@ Histórico recente de versões (renomeação a partir de v1.0.x):
 - `fmtN(v)`: helper que retorna inteiro sem casas decimais quando `n === Math.floor(n)`, ou `toFixed(2)` com vírgula. Substitui interpolação direta `${v}h` nas sub-linhas do PDF.
 - `Adic.dom.` sempre incluído na sub-linha (condição `> 0` removida) — exibe `R$ 0,00` quando zero.
 
-**Cérebro v1.4.0** (versão ativa — `frontend/src/cerebro/versions/CerebroApp_v1.4.0.jsx`):
+**Cérebro v1.5.0** (versão ativa — `frontend/src/cerebro/versions/CerebroApp_v1.5.0.jsx`):
 - Dark mode toggle Sol/Lua no header (antes do botão Sair); tema compartilhado via `localStorage` `mr-theme`
 - `let C` declarado no nível do módulo (inicializado com valores dark) + `Object.assign(C, darkMode ? dark : light)` dentro do componente a cada render — garante que helpers de módulo (`renderMd`, `iMd`, `Field`, `FInput`, `FTA`) sempre leem o tema atual sem precisar receber `C` como prop
 - `POMO_MODES.work.color` hardcoded `'#6366f1'` (não referencia `C` diretamente, evita crash de módulo)
+- **v1.5.0** — E-mail: "Responder a todos" (campo CC pré-preenchido com destinatários do original) + campo CC editável + suporte a anexos (FileReader → base64 → multipart/mixed no backend). WhatsApp: nova aba com 2 botões configuráveis (rótulo editável persistido em `localStorage` `cerebro_whatsapp_labels`) que abrem `https://web.whatsapp.com` em nova aba (WhatsApp Web bloqueia iframe). Backend `gmail.php` atualizado: retorna campo `cc` no GET de mensagem individual; POST aceita `cc` e `attachments[]` ({name, mimeType, data:base64}) — constrói multipart/mixed quando há anexos.
 
 **Pare Certo v0.4.0** (versão ativa — `frontend/src/pareceto/versions/PareCetoApp_v0.4.0.jsx`):
 - Top 30 Placas (era Top 20): critério = irregulares não-pagas (`pl.irregular`), não total. Válido em listagem, XLSX, TXT e Relatório Semanal.
@@ -457,10 +459,10 @@ Se eu (Celso) der uma instrução que conflita com algo nas Decisões já tomada
 
 ---
 
-*Última atualização: 2026-05-16. MRSys em produção na v1.0.23. Pare Certo em v0.4.0. Dark mode toggle Sol/Lua em TODOS os sistemas + Hub + Login (tema persiste em `localStorage` chave `mr-theme`, compartilhada). Auditoria completa de tema claro/escuro concluída:*
+*Última atualização: 2026-05-16. MRSys v1.0.24 em produção. Cérebro v1.5.0. Pare Certo v0.4.0. Dark mode toggle Sol/Lua em TODOS os sistemas + Hub + Login (tema persiste em `localStorage` chave `mr-theme`, compartilhada). Auditoria completa de tema claro/escuro concluída:*
 - *Hub (`SistemasHub.jsx`) e Login (`Login.jsx`) ganharam dark mode + toggle Sol/Lua. `GestaoUsuarios` recebe `darkMode`/`onToggleDark` via props.*
 - *`index.css`: overrides expandidos — backgrounds pastel (indigo/emerald/red/amber/sky/violet/etc), bordas coloridas, `divide-*`, `ring-*`, sombras. Cores `-300` legadas (tema escuro antigo) escurecem no claro e restauram no escuro (cobre ~60 células de dados do MRSys) + variantes `hover:`.*
-- *Cérebro v1.4.0: tokens `C.surface`/`C.surface2`; modal `#0a0d1e` → `C.card`; bold/em/heading hardcoded → `C.*`; `NOTION_CSS` virou função `notionCss()` tema-aware; code blocks com fundo escuro consistente.*
+- *Cérebro v1.4.0: tokens `C.surface`/`C.surface2`; modal `#0a0d1e` → `C.card`; bold/em/heading hardcoded → `C.*`; `NOTION_CSS` virou função `notionCss()` tema-aware; code blocks com fundo escuro consistente. v1.5.0: email reply-all/CC/anexos + aba WhatsApp.*
 - *PareCeto v0.3.0: `gridStyle`/`axisStyle`/`PolarGrid` neutralizados (cinza translúcido visível em ambos os temas — antes `#1e293b` invisível no branco). Tooltips de chart permanecem escuros (padrão deliberado).*
 - *MRSys v1.0.20: badges ARMADA/FACILITIES/PRONTA RESPOSTA/Paga/Vencida `-300` → `-600`; chart grid neutralizado.*
 
