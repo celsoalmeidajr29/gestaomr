@@ -169,17 +169,16 @@ function isIrregular(f) {
   return v !== '' && v !== 'Nenhuma' && v !== '—' && v !== '-'
 }
 
-// Gera hash simples para dedup: concatena dtReg|placa|valor (mesmo criterio do backend SHA1)
-function hashTransacao(dtReg, placa, valor) {
-  const src = (dtReg ? dtReg.toISOString().slice(0, 19).replace('T', ' ') : '') + '|' + placa + '|' + String(Math.round(valor * 100) / 100)
-  // djb2 — colisao improvavel para este volume; backend usa SHA1 como autoridade final
+// Chave de dedup local: placa + dt_registro (sem valor — preço pode mudar para a mesma transação)
+function hashTransacao(dtReg, placa) {
+  const src = (dtReg ? dtReg.toISOString().slice(0, 19).replace('T', ' ') : 'null') + '|' + placa
   let h = 5381
   for (let i = 0; i < src.length; i++) h = ((h << 5) + h) ^ src.charCodeAt(i)
   return (h >>> 0).toString(16).padStart(8, '0') + '_' + src.length
 }
 
-// Guarda TODAS as transacoes (sem dedup por placa).
-// Unicidade real e garantida pelo hash_dedup no banco (dt_registro|placa|valor).
+// Unicidade por (placa, dt_registro): mesma placa na mesma data/hora = mesma transação.
+// Dedup local dentro do arquivo apenas; o banco faz upsert por (placa, dt_registro).
 function parseVendas(rows, funcs) {
   const funcMap = {}
   funcs.forEach(f => { funcMap[normalizar(f.login)] = f })
@@ -192,8 +191,8 @@ function parseVendas(rows, funcs) {
     if (!placa) return
     const dtReg = parseDateTime(r['Hora registro'] || r['hora_registro'] || '')
     const valor = num(r['Valor pago'] || r['Valor'] || r['valor'] || 0)
-    // Dedup local: ignora linhas identicas dentro do mesmo arquivo
-    const hk = hashTransacao(dtReg, placa, valor)
+    // Dedup local: mesma placa na mesma data/hora = mesma transação (último prevalece)
+    const hk = hashTransacao(dtReg, placa)
     if (seenHashes.has(hk)) return
     seenHashes.add(hk)
     const origem = r['Origem'] || r['origem'] || ''
@@ -202,7 +201,7 @@ function parseVendas(rows, funcs) {
     const fn = normalizar(usuario)
     const func = funcMap[fn]
     records.push({
-      placa, dtReg, hashDedup: hk,
+      placa, dtReg,
       dtInicial: parseDateTime(r['Hora inicial'] || ''),
       periodo: r['Periodo'] || r['periodo'] || '',
       usuario, cargo: func ? func.cargo : 'Não cadastrado',
@@ -4071,7 +4070,7 @@ export default function PareCetoApp({ usuario, onVoltarHub, onLogout }) {
   async function handleUploadVendas(filesInput) {
     const files = filesInput instanceof File ? [filesInput] : Array.from(filesInput)
     if (!files.length) return
-    let totalInseridos = 0; let totalDuplic = 0; let todosPremissas = []; let allRecords = []
+    let totalInseridos = 0; let totalAtualizados = 0; let todosPremissas = []; let allRecords = []
     for (let fi = 0; fi < files.length; fi++) {
       const file = files[fi]
       const prefix = files.length > 1 ? `[${fi+1}/${files.length}] ` : ''
@@ -4104,7 +4103,7 @@ export default function PareCetoApp({ usuario, onVoltarHub, onLogout }) {
         setProcessandoVendas({ pct: 88, label: `${prefix}Salvando no banco...` })
         const nomeArq = file.name
         const payload = records.map(r => ({
-          hash_dedup: r.hashDedup || null, placa: r.placa,
+          placa: r.placa,
           dt_registro: r.dtReg ? r.dtReg.toISOString().slice(0,19).replace('T',' ') : null,
           dt_inicial:  r.dtInicial ? r.dtInicial.toISOString().slice(0,19).replace('T',' ') : null,
           periodo: r.periodo || null, usuario: r.usuario || null, cargo: r.cargo || null,
@@ -4113,7 +4112,7 @@ export default function PareCetoApp({ usuario, onVoltarHub, onLogout }) {
           canal: r.canal || null, zona: r.zona || null, tipo: r.tipo || null, nome_arquivo: nomeArq,
         }))
         const res = await apiFetch('/vendas/index.php', { method: 'POST', body: JSON.stringify(payload) })
-        totalInseridos += res.inseridos || 0; totalDuplic += res.duplicatas || 0
+        totalInseridos += res.inseridos || 0; totalAtualizados += res.atualizados || 0
         await apiFetch('/relatorios/index.php', { method: 'POST', body: JSON.stringify({
           modulo: 'vendas',
           periodo_inicio: analise.dataMin?.toISOString().slice(0,10) || new Date().toISOString().slice(0,10),
@@ -4135,7 +4134,7 @@ export default function PareCetoApp({ usuario, onVoltarHub, onLogout }) {
     setProcessandoVendas({ pct: 97, label: 'Sincronizando com banco...' })
     await carregarVendas()
     const msg = [`${totalInseridos} novas`]
-    if (totalDuplic > 0) msg.push(`${totalDuplic} já existiam`)
+    if (totalAtualizados > 0) msg.push(`${totalAtualizados} atualizadas`)
     if (files.length > 1) msg.push(`${files.length} arquivos`)
     showToast(msg.join(' · '), 'sucesso')
     setProcessandoVendas(null)
