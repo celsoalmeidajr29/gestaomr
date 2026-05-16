@@ -132,6 +132,7 @@ if ($method === 'GET') {
             'threadId' => $detail['threadId'],
             'from'     => gmail_header($headers, 'From'),
             'to'       => gmail_header($headers, 'To'),
+            'cc'       => gmail_header($headers, 'Cc'),
             'subject'  => gmail_header($headers, 'Subject'),
             'date'     => gmail_header($headers, 'Date'),
             'body'     => gmail_body($detail['payload'] ?? []),
@@ -147,24 +148,56 @@ if ($method === 'GET') {
 // ---------------------------------------------------------------------------
 
 if ($method === 'POST') {
-    $data    = json_input();
-    $to      = trim((string) ($data['to']      ?? ''));
-    $subject = trim((string) ($data['subject'] ?? ''));
-    $body    = trim((string) ($data['body']    ?? ''));
+    $data        = json_input();
+    $to          = trim((string) ($data['to']      ?? ''));
+    $subject     = trim((string) ($data['subject'] ?? ''));
+    $body        = trim((string) ($data['body']    ?? ''));
+    $cc          = trim((string) ($data['cc']      ?? ''));
+    $attachments = is_array($data['attachments'] ?? null) ? $data['attachments'] : [];
     if (!$to || !$subject || !$body) json_error('to, subject e body sao obrigatorios', 422);
 
-    // Codifica assunto em UTF-8 Q-encoding se necessário
     $subjEnc = mb_detect_encoding($subject, 'ASCII', true) ? $subject
              : '=?UTF-8?B?' . base64_encode($subject) . '?=';
 
-    $raw  = "To: {$to}\r\n";
-    $raw .= "Subject: {$subjEnc}\r\n";
-    $raw .= "Content-Type: text/plain; charset=utf-8\r\n";
-    $raw .= "Content-Transfer-Encoding: base64\r\n\r\n";
-    $raw .= chunk_split(base64_encode($body));
+    $boundary = '------Cerebro_' . bin2hex(random_bytes(8));
+
+    if (empty($attachments)) {
+        // Mensagem simples sem anexos
+        $raw  = "To: {$to}\r\n";
+        if ($cc) $raw .= "Cc: {$cc}\r\n";
+        $raw .= "Subject: {$subjEnc}\r\n";
+        $raw .= "Content-Type: text/plain; charset=utf-8\r\n";
+        $raw .= "Content-Transfer-Encoding: base64\r\n\r\n";
+        $raw .= chunk_split(base64_encode($body));
+    } else {
+        // Mensagem multipart/mixed com anexos
+        $raw  = "To: {$to}\r\n";
+        if ($cc) $raw .= "Cc: {$cc}\r\n";
+        $raw .= "Subject: {$subjEnc}\r\n";
+        $raw .= "MIME-Version: 1.0\r\n";
+        $raw .= "Content-Type: multipart/mixed; boundary=\"{$boundary}\"\r\n\r\n";
+        // Corpo de texto
+        $raw .= "--{$boundary}\r\n";
+        $raw .= "Content-Type: text/plain; charset=utf-8\r\n";
+        $raw .= "Content-Transfer-Encoding: base64\r\n\r\n";
+        $raw .= chunk_split(base64_encode($body)) . "\r\n";
+        // Anexos
+        foreach ($attachments as $att) {
+            $name     = basename((string) ($att['name']     ?? 'arquivo'));
+            $mime     = (string) ($att['mimeType'] ?? 'application/octet-stream');
+            $b64data  = (string) ($att['data']     ?? '');
+            if (!$b64data) continue;
+            $nameEnc = '=?UTF-8?B?' . base64_encode($name) . '?=';
+            $raw .= "--{$boundary}\r\n";
+            $raw .= "Content-Type: {$mime}; name=\"{$nameEnc}\"\r\n";
+            $raw .= "Content-Disposition: attachment; filename=\"{$nameEnc}\"\r\n";
+            $raw .= "Content-Transfer-Encoding: base64\r\n\r\n";
+            $raw .= chunk_split($b64data) . "\r\n";
+        }
+        $raw .= "--{$boundary}--\r\n";
+    }
 
     $encoded = rtrim(strtr(base64_encode($raw), '+/', '-_'), '=');
-
     $payload = ['raw' => $encoded];
     if (!empty($data['threadId'])) $payload['threadId'] = $data['threadId'];
 

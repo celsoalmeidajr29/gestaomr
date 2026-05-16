@@ -1,3 +1,3 @@
-// Versão ativa: v1.4.0 — Dark mode toggle Sol/Lua + objeto C dinâmico
-import CerebroApp from './versions/CerebroApp_v1.4.0.jsx'
+// Versão ativa: v1.5.0 — Email: responder a todos + anexos; WhatsApp: duas abas configuráveis
+import CerebroApp from './versions/CerebroApp_v1.5.0.jsx'
 export default CerebroApp
